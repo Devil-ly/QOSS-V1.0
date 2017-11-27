@@ -141,6 +141,7 @@
     <ClCompile Include="Calculation\Mathematical_Functions.cpp" />
     <ClCompile Include="Calculation\Matrix4D.cpp" />
     <ClCompile Include="Calculation\Position3D.cpp" />
+    <ClCompile Include="Calculation\RayTracing.cpp" />
     <ClCompile Include="Calculation\SourceModeGeneration.cpp" />
     <ClCompile Include="Calculation\Vector3D.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_mainwindow.cpp">

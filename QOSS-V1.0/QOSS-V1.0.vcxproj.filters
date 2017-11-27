@@ -143,6 +143,9 @@
     <ClCompile Include="VTK\src\LightShow.cpp">
       <Filter>Source Files\VTK</Filter>
     </ClCompile>
+    <ClCompile Include="Calculation\RayTracing.cpp">
+      <Filter>Source Files\Calculation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwindow.h">
