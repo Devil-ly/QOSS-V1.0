@@ -1,10 +1,7 @@
 #include "RayTracing.h"
 
-calculation::RayTracing::RayTracing()
-{
-}
-
-calculation::RayTracing::RayTracing(const vector<Vector3>& _startPiont, const vector<Vector3>& _direction)
+calculation::RayTracing::RayTracing(Mirror* _mirror)
+	:mirror(_mirror)
 {
 }
 
@@ -17,63 +14,84 @@ void calculation::RayTracing::setMirror(Mirror * mirror)
 	this->mirror = mirror;
 }
 
-void calculation::RayTracing::setIncidence(const vector<Vector3>& _startPiont,
-	const vector<Vector3>& _direction)
-{
-	startPiont.assign(_startPiont.begin(), _startPiont.end());
-	direction.assign(_direction.begin(), _direction.end());
-}
-
-void calculation::RayTracing::calcReflect(vector<Vector3> &reflex, vector<Vector3> &intersection,
-	vector<bool> &isIntersect)
+void calculation::RayTracing::calcReflectBatch(const vector<vector<Vector3>>& startPiont,
+	const vector<vector<Vector3>>& direction,
+	vector<vector<Vector3>> &reflex, vector<vector<Vector3>> &intersection,
+	vector<vector<bool>> &isIntersect)
 {
 	switch (mirror->getMirrorsType())
 	{
 	case PLANEMIRROR:
-		calcReflectByPolyData(reflex, intersection, isIntersect);
+		calcReflectByPolyDataBatch(startPiont, direction, reflex, intersection, isIntersect);
 		break;
 	default:
 		break;
 	}
 }
 
-void calculation::RayTracing::calcReflectByPolyData(vector<Vector3> &reflex, 
-	vector<Vector3> &intersection, vector<bool> &isIntersect)
+void calculation::RayTracing::calcReflect(const Vector3 & startPiont, const Vector3 & direction, 
+	Vector3 & reflex, Vector3 & intersection, bool & isIntersect)
+{
+	switch (mirror->getMirrorsType())
+	{
+	case PLANEMIRROR:
+		calcReflectByPolyData(startPiont, direction, reflex, intersection, isIntersect);
+		break;
+	default:
+		break;
+	}
+}
+
+
+void calculation::RayTracing::calcReflectByPolyDataBatch(const vector<vector<Vector3>>& startPiont,
+	const vector<vector<Vector3>>& direction,
+	vector<vector<Vector3>> &reflex, vector<vector<Vector3>> &intersection,
+	vector<vector<bool>> &isIntersect)
+{
+	for (int i = 0; i < startPiont.size(); i++)
+		for (int j = 0; j < startPiont[i].size(); j++)
+		{
+			bool isTmep = false;
+			calcReflectByPolyData(startPiont[i][j], direction[i][j], reflex[i][j],
+				intersection[i][j], isTmep);
+			isIntersect[i][j] = isTmep;
+		}
+}
+
+void calculation::RayTracing::calcReflectByPolyData(const Vector3 & startPiont, 
+	const Vector3 & direction, Vector3 & reflex, 
+	Vector3 & intersection, bool & isIntersect)
 {
 	vtkSmartPointer<vtkPolyData> polyData = mirror->getPolyData();
 	int EleNum = polyData->GetNumberOfCells();
 	double t;
-	for (int j = 0; j < startPiont.size(); j++)
+	for (int i = 0; i < EleNum; i++)  //求与反射面的交点
 	{
-		for (int i = 0; i < EleNum; i++)  //求与反射面的交点
+		vtkIdList * p;
+		p = polyData->GetCell(i)->GetPointIds();
+		double * point;
+		point = polyData->GetPoint(p->GetId(0));
+		Vector3 NodesXYZ1(point[0], point[1], point[2]);
+		point = polyData->GetPoint(p->GetId(1));
+		Vector3 NodesXYZ2(point[0], point[1], point[2]);
+		point = polyData->GetPoint(p->GetId(2));
+		Vector3 NodesXYZ3(point[0], point[1], point[2]);
+		if (this->isIntersect(startPiont, direction, NodesXYZ1,
+			NodesXYZ2, NodesXYZ3, intersection, t))
 		{
-			vtkIdList * p;
-			p = polyData->GetCell(i)->GetPointIds();
-			double * point;
-			point = polyData->GetPoint(p->GetId(0));
-			Vector3 NodesXYZ1(point[0], point[1], point[2]);
-			point = polyData->GetPoint(p->GetId(1));
-			Vector3 NodesXYZ2(point[0], point[1], point[2]);
-			point = polyData->GetPoint(p->GetId(2));
-			Vector3 NodesXYZ3(point[0], point[1], point[2]);
-			if (this->isIntersect(startPiont[j], direction[j], NodesXYZ1,
-				NodesXYZ2, NodesXYZ3, intersection[j], t))
+			if (t >= 0)
 			{
-				if (t >= 0)
-				{
-					Vector3 tempa = NodesXYZ1 - NodesXYZ2;
-					Vector3 tempb = NodesXYZ1 - NodesXYZ3;
-					Vector3 n_light = tempa.Cross(tempb);  //法向量
+				Vector3 tempa = NodesXYZ1 - NodesXYZ2;
+				Vector3 tempb = NodesXYZ1 - NodesXYZ3;
+				Vector3 n_light = tempa.Cross(tempb);  //法向量
 
-					isIntersect[j] = true;
-					reflex[j] = reflectLight(intersection[j], n_light);
-					break;
-				}				
+				isIntersect = true;
+				reflex = reflectLight(intersection, n_light);
+				break;
 			}
 		}
-		isIntersect[j] = false;
 	}
-	
+	isIntersect = false;
 }
 
 bool calculation::RayTracing::isIntersect(const Vector3 & orig, const Vector3 & dir,

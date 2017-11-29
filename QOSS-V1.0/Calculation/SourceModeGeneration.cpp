@@ -296,7 +296,8 @@ bool calculation::SourceModeGeneration::SetFieldAmplitude(double K)
 	return true;
 }
 
-bool calculation::SourceModeGeneration::GetCircularWaveguideProperty(double &phi1, double &theta1, double &Rc)
+bool calculation::SourceModeGeneration::GetCircularWaveguideProperty(double &phi1,
+	double &theta1, double &Rc)
 {
 	if (SourceKind == 3) return false;//该函数不适用于矩形波导
 
@@ -360,9 +361,7 @@ bool calculation::SourceModeGeneration::GetCircularConverterLauncherTriangle_TE0
 
 	P1= Vector3(-Radius, 0, 0);
 	P2= Vector3(Radius, 0, 0);
-	double phi; 
-	double theta; 
-	double Rc;
+	double phi; double theta; double Rc;
 	if (GetCircularWaveguideProperty(phi, theta, Rc))
 		P3 = Vector3(Radius, 0, 2.0*Radius / (tan(phi)));
 	return true;
@@ -375,9 +374,7 @@ bool calculation::SourceModeGeneration::GetCircularSystemOpticalPath_TE0n_2Mirro
 	if ((SourceKind != 1) && (SourceType != 1) && (m != 0)) return false;
 	
 	P4 = Vector3(Radius, 0, 0);
-	double phi; 
-	double theta; 
-	double Rc;
+	double phi; double theta; double Rc;
 	if (GetCircularWaveguideProperty(phi, theta, Rc))//让李赟帮我检查一下
 		V1 = Vector3(-1, 0, 1 / (tan(phi)));
 	Length1 = (1 + 1 * 1.25)*Radius / (sin(phi));
@@ -398,9 +395,7 @@ bool calculation::SourceModeGeneration::GetCircularSystemOpticalPath_TE0n_3Mirro
 	if ((SourceKind != 1) && (SourceType != 1) && (m != 0)) return false;
 
 	P4 = Vector3(Radius, 0, 0);
-	double phi; 
-	double theta;
-	double Rc;
+	double phi; double theta; double Rc;
 	if (GetCircularWaveguideProperty(phi, theta, Rc))//让李赟帮我检查一下
 		V1 = Vector3(-1, 0, 1 / (tan(phi)));
 	Length1 = (1 + 1 * 1.25)*Radius / (sin(phi));
@@ -444,6 +439,67 @@ bool calculation::SourceModeGeneration::GetCircularSystemOpticalPath_TE0n_4Mirro
 }
 //四镜面光路初值设置完成20171116
 
+//生成一群波导内TE模式的射线向量，用于光线追踪
+//20171129已测试TE01模式，没问题
+//高阶模式未测试
+bool calculation::SourceModeGeneration::GetRayTracingSource(int phiNum, int cylinderNum,
+	vector <vector <Vector3>> &RayPosition, vector <vector <Vector3>> &RayVector)
+{
+	if ((SourceKind==3) || (SourceType==2))//如果是矩形波导或者是TM模式，不计算直接报错
+	return false;
+	if ((phiNum<=0) || (cylinderNum <= 0))//Phi采样点数和圈数都不能小于等于0
+	return false;
+
+	//下面开始对Ray的坐标和方向向量矩阵进行resize
+	RayPosition.resize(phiNum); RayVector.resize(phiNum);
+	for (int i = 0; i < phiNum; i++)
+	   {
+		   RayPosition[i].resize(cylinderNum);
+		   RayVector[i].resize(cylinderNum);
+	   }
+
+	double phiGap = 2 * Pi / phiNum;//phi采样间隔
+
+	double phi1; double theta1; double Rc1;
+	double cylinderGap;
+	if (GetCircularWaveguideProperty(phi1, theta1, Rc1))
+	cylinderGap = (Radius - Rc1) / (cylinderNum + 1);//圆周的采样间隔
+
+	//下面开始为两个矩阵赋值
+	for (int i = 0; i < phiNum; i++)
+	{
+		for (int j = 0; j < cylinderNum; j++)
+		{
+			RayPosition[i][j] = Vector3((Rc1 + cylinderGap*(j + 1))*cos(phiGap*i), 
+				                        (Rc1 + cylinderGap*(j + 1))*sin(phiGap*i),
+				                         0);
+			//完成坐标矩阵赋值
+
+			double theta = asin(Rc1 / (Rc1 + cylinderGap*(j + 1)));//切线与圆心线的夹角
+
+			if (Rotation != 1)//非左旋情况
+			{
+				RayVector[i][j] = Vector3(sin(phi1)*cos(phiGap*i + theta),
+					                      sin(phi1)*sin(phiGap*i + theta),
+					                      cos(phi1));
+			}
+
+			if (Rotation == 1)//左旋情况
+			{
+				RayVector[i][j] = Vector3(sin(phi1)*cos(phiGap*i - theta),
+					                      sin(phi1)*sin(phiGap*i - theta),
+					                      cos(phi1));
+			}
+
+		}
+	}
+		
+
+
+	
+
+
+}
 
 void calculation::SourceModeGeneration::GetEX(vector<vector<complex<double>>>& EX0)
 {

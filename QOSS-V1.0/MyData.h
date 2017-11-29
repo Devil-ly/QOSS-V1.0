@@ -14,6 +14,8 @@
 #include "MirrorPosition.h"
 
 class Mirror;
+class LightShow;
+class Radiator;
 
 class MyData //单例
 {
@@ -58,6 +60,13 @@ public:
 	void setLimitBox(const shared_ptr<LimitBox> &);
 	shared_ptr<LimitBox> getLimitBox() { return limitBox; }
 
+	// 生成默认的光线（有给定的源生成）
+	void createDefaultLigthShow();
+	shared_ptr<LightShow> getDefaultLightShow() { return defaultLigthShow; }
+
+	// 生成辐射器
+	void createRadiator();
+	shared_ptr<Radiator> getRadiator() { return radiator; }
 
 private:
 	static MyData * _myData;
@@ -74,6 +83,9 @@ private:
 	shared_ptr<LimitBox> limitBox;
 	shared_ptr<calculation::SourceModeGeneration> source;
 	shared_ptr<calculation::MirrorPosition> mirrorPosition;
+
+	shared_ptr<LightShow> defaultLigthShow;
+	shared_ptr<Radiator> radiator;
 
 };
 

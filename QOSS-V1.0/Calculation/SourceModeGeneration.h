@@ -103,6 +103,11 @@ namespace calculation
 			Vector3 &V5);
 		//李赟画二维示意图中的用于画辐射器三角形的光路设置函数(四镜面)
 
+		//生成用于光线追踪的光线向量分布
+		bool GetRayTracingSource(int phiNum,int cylinderNum, 
+			vector <vector <Vector3>> &RayPosition,
+			vector <vector <Vector3>> &RayVector);
+
 		void GetEX(vector <vector <complex <double>>> &EX0);//输出EX
 		void GetHX(vector <vector <complex <double>>> &HX0);//输出HX
 		void GetEY(vector <vector <complex <double>>> &EY0);//输出EY
@@ -110,23 +115,10 @@ namespace calculation
 		void GetEZ(vector <vector <complex <double>>> &EZ0);//输出EZ
 		void GetHZ(vector <vector <complex <double>>> &HZ0);//输出HZ
 
-
-
-
-		// 若有分配内存 最好重写赋值构造和重载 = 
-		//TraceLight(const TraceLight& traceLight) {
-//
-	//	}
-	//	TraceLight operator = (const TraceLight& traceLight) {
-//
-	//	}
-
-		/*
-		* 简单函数功能介绍 + 参数说明 以及返回参数说明
-		*/
-	//	void fun() {};
-
+		double getRadius() const { return Radius; }
+		
 	private:
+
 		int SourceKind;//这是种类，1是低阶TE模式；2是高阶TE模式；3是矩形波导模式
 		int SourceType;//这是TE模式或者TM模式，TE为1，TM为2
 		int Rotation;//左右旋，不存在的为0，左旋为1，右旋为2

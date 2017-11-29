@@ -204,9 +204,13 @@
     <ClCompile Include="Qt\src\QPaintField.cpp" />
     <ClCompile Include="VTK\src\LightShow.cpp" />
     <ClCompile Include="VTK\src\LimitBox.cpp" />
+    <ClCompile Include="VTK\src\LowOrderRadiator.cpp" />
     <ClCompile Include="VTK\src\Mirror.cpp" />
     <ClCompile Include="VTK\src\MirrorFactory.cpp" />
     <ClCompile Include="VTK\src\PlaneMirror.cpp" />
+    <ClCompile Include="VTK\src\QuadricSurfaceMirror.cpp" />
+    <ClCompile Include="VTK\src\Radiator.cpp" />
+    <ClCompile Include="VTK\src\RadiatorFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwindow.h">
@@ -257,6 +261,10 @@
     <ClInclude Include="GeneratedFiles\ui_mainwindow.h" />
     <ClInclude Include="MirrorPosition.h" />
     <ClInclude Include="MyData.h" />
+    <ClInclude Include="VTK\include\LowOrderRadiator.h" />
+    <ClInclude Include="VTK\include\QuadricSurfaceMirror.h" />
+    <ClInclude Include="VTK\include\Radiator.h" />
+    <ClInclude Include="VTK\include\RadiatorFactory.h" />
     <CustomBuild Include="Qt\include\QPaintField.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing QPaintField.h...</Message>

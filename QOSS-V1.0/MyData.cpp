@@ -1,6 +1,8 @@
 #include "MyData.h"
 #include "VTK/include/Mirror.h"
 #include "VTK/include/MirrorFactory.h"
+#include "VTK/include/RadiatorFactory.h"
+#include "../VTK/include/LightShow.h"
 #include "util/Definition.h"
 
 using namespace calculation;
@@ -87,4 +89,20 @@ void MyData::setMirrorPosition(const shared_ptr<calculation::MirrorPosition>&ptr
 void MyData::setLimitBox(const shared_ptr<LimitBox>&ptr)
 {
 	limitBox = ptr;
+}
+
+void MyData::createDefaultLigthShow()
+{
+	defaultLigthShow = make_shared<LightShow>(mirrors, numOfMirrors);
+	defaultLigthShow->createStartPointBySource(source);	
+	defaultLigthShow->updateData();
+}
+
+void MyData::createRadiator()
+{
+	if (0 == pattern) // µÍ½×
+	{
+		radiator = RadiatorFactory::getRadiator(LOWORDER, source);
+	}
+	radiator->calActorModel();
 }

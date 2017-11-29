@@ -18,7 +18,8 @@
 
 enum MirrorsType
 {
-	PLANEMIRROR = 0
+	PLANEMIRROR = 0,
+	QUADRICSURFACE
 };
 
 class actor;
@@ -27,7 +28,6 @@ class Mirror
 public:
 	Mirror();
 	virtual ~Mirror();
-
 
 	MirrorsType getMirrorsType() const;
 
@@ -41,7 +41,7 @@ public:
 
 	virtual void updateData() = 0;
 
-	// 输出入射光线计算反射光线和交点
+	// 输出入射光线计算交点和法线
 	virtual void calcReflectedRay(const Vector3&, Vector3&, Vector3&) = 0;
 
 

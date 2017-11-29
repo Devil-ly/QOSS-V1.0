@@ -18,25 +18,37 @@ namespace calculation
 	class RayTracing
 	{
 	public:
-		RayTracing(const vector<Vector3>& _startPiont,
-			const vector<Vector3>& _direction);
+		RayTracing(Mirror* _mirror);
 
 		~RayTracing();
 
 		void setMirror(Mirror* mirror);
 
-		void setIncidence(const vector<Vector3>& _startPiont,
-			const vector<Vector3>& _direction);
-
 		// 输出反射光线和交点以及是否相交
-		void calcReflect(vector<Vector3> &reflex,vector<Vector3> &intersection,
-			vector<bool> &isIntersect);
+		void calcReflect(const Vector3& startPiont,
+			const Vector3& direction,
+			Vector3 &reflex, Vector3 &intersection,
+			bool &isIntersect);
+
+		void calcReflectBatch(const vector<vector<Vector3>>& startPiont,
+			const vector<vector<Vector3>>& direction,
+			vector<vector<Vector3>> &reflex, vector<vector<Vector3>> &intersection,
+			vector<vector<bool>> &isIntersect);
 
 	private:
 
 		// 根据模型剖分数据计算反射
-		void calcReflectByPolyData(vector<Vector3> &reflex, vector<Vector3> &intersection,
-			vector<bool> &isIntersect);
+		void calcReflectByPolyDataBatch(const vector<vector<Vector3>>& startPiont,
+			const vector<vector<Vector3>>& direction,
+			vector<vector<Vector3>> &reflex, vector<vector<Vector3>> &intersection,
+			vector<vector<bool>> &isIntersect);
+
+		void calcReflectByPolyData(const Vector3& startPiont,
+			const Vector3& direction, Vector3 &reflex,
+			Vector3 &intersection,
+			bool &isIntersect);
+
+		//calcReflectByPolyData
 
 		// 三角形与直线相交判断
 		bool isIntersect(const Vector3 &orig, const Vector3 &dir,
@@ -47,8 +59,6 @@ namespace calculation
 		Vector3 reflectLight(const Vector3& a, const Vector3& n);
 
 		Mirror* mirror;
-		vector<Vector3> startPiont;
-		vector<Vector3> direction;
 
 
 	};

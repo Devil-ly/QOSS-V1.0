@@ -146,6 +146,18 @@
     <ClCompile Include="Calculation\RayTracing.cpp">
       <Filter>Source Files\Calculation</Filter>
     </ClCompile>
+    <ClCompile Include="VTK\src\QuadricSurfaceMirror.cpp">
+      <Filter>Source Files\VTK</Filter>
+    </ClCompile>
+    <ClCompile Include="VTK\src\Radiator.cpp">
+      <Filter>Source Files\VTK</Filter>
+    </ClCompile>
+    <ClCompile Include="VTK\src\RadiatorFactory.cpp">
+      <Filter>Source Files\VTK</Filter>
+    </ClCompile>
+    <ClCompile Include="VTK\src\LowOrderRadiator.cpp">
+      <Filter>Source Files\VTK</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwindow.h">
@@ -221,6 +233,18 @@
     </ClInclude>
     <ClInclude Include="Calculation\RayTracing.h">
       <Filter>Header Files\Calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="VTK\include\QuadricSurfaceMirror.h">
+      <Filter>Header Files\VTK</Filter>
+    </ClInclude>
+    <ClInclude Include="VTK\include\Radiator.h">
+      <Filter>Header Files\VTK</Filter>
+    </ClInclude>
+    <ClInclude Include="VTK\include\RadiatorFactory.h">
+      <Filter>Header Files\VTK</Filter>
+    </ClInclude>
+    <ClInclude Include="VTK\include\LowOrderRadiator.h">
+      <Filter>Header Files\VTK</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

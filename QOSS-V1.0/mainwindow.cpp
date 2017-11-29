@@ -3,7 +3,11 @@
 #include "Qt/include/ModelWizard.h"
 #include "VTK/include/Mirror.h"
 #include "VTK/include/LimitBox.h"
+#include "VTK/include/LightShow.h"
+#include "VTK/include/Radiator.h"
+
 #include "util/Definition.h"
+
 
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkRenderWindow.h>
@@ -36,14 +40,27 @@ mainWindow::mainWindow(QWidget *parent)
 		exit(1);
 	}
 	myData = MyData::getInstance();
+
 	// 创建默认的镜子
 	myData->createDefaultMirror();
 	for (int i = 0; i < myData->getNumOfMirrors(); ++i)
 	{
 		renderer->AddActor(myData->getMirrorByNum(i)->getActor());
 	}
+
 	// 加入限制盒子
 	renderer->AddActor(myData->getLimitBox()->getActor());
+
+	// 创建默认的光线
+	myData->createDefaultLigthShow();
+	std::list<vtkSmartPointer<vtkActor>> tempActors = 
+		myData->getDefaultLightShow()->getActors();
+	for (auto& x : tempActors)
+		renderer->AddActor(x);
+
+	myData->createRadiator();
+	renderer->AddActor(myData->getRadiator()->getActorModel());
+
 	double axesScale = myData->getLimitBox()->getMaxSize();
 	// 初始化vtk窗口
 	axes = vtkSmartPointer<vtkAxesActor>::New();
