@@ -49,17 +49,19 @@ mainWindow::mainWindow(QWidget *parent)
 	}
 
 	// 加入限制盒子
-	renderer->AddActor(myData->getLimitBox()->getActor());
+	//renderer->AddActor(myData->getLimitBox()->getActor());
 
 	// 创建默认的光线
-	myData->createDefaultLigthShow();
-	std::list<vtkSmartPointer<vtkActor>> tempActors = 
-		myData->getDefaultLightShow()->getActors();
-	for (auto& x : tempActors)
-		renderer->AddActor(x);
+	//myData->createDefaultLigthShow();
+	//std::list<vtkSmartPointer<vtkActor>> tempActors = 
+	//	myData->getDefaultLightShow()->getActors();
+	//for (auto& x : tempActors)
+	//	renderer->AddActor(x);
 
 	myData->createRadiator();
 	renderer->AddActor(myData->getRadiator()->getActorModel());
+	renderer->AddActor(myData->getRadiator()->getActorRay());
+
 
 	double axesScale = myData->getLimitBox()->getMaxSize();
 	// 初始化vtk窗口

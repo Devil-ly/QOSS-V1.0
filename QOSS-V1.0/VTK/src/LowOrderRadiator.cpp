@@ -1,4 +1,5 @@
 #include "..\include\LowOrderRadiator.h"
+#include "../../Calculation/RayTracing.h"
 
 #include <vtkCylinderSource.h>
 #include <vtkTransform.h>
@@ -7,6 +8,9 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkCubeSource.h>
 #include <vtkBooleanOperationPolyDataFilter.h>
+#include <vtkPoints.h>
+#include <vtkCellArray.h>
+#include <vtkLine.h>
 
 LowOrderRadiator::LowOrderRadiator(shared_ptr<calculation::SourceModeGeneration> s)
 {
@@ -20,12 +24,16 @@ LowOrderRadiator::~LowOrderRadiator()
 
 void LowOrderRadiator::calActorModel()
 {
+	double r = radius;
+	double h = 2 * radius*tan(Pi / 2.0 - theta);
+
+	double max = (r + h) * 2;
 	//theta = Pi / 4;
 	vtkSmartPointer<vtkCubeSource> cube = vtkSmartPointer<vtkCubeSource>::New();
-	cube->SetXLength(0.5);
-	cube->SetZLength(0.5);
-	cube->SetYLength(0.5);
-	cube->SetCenter(0, 0, radius * cos(theta)-0.25);
+	cube->SetXLength(max);
+	cube->SetZLength(max);
+	cube->SetYLength(max);
+	cube->SetCenter(0, 0, radius * cos(theta)- max/2);
 	cube->Update();
 
 	vtkSmartPointer<vtkPolyData> polyData1 = cube->GetOutput();
@@ -45,8 +53,7 @@ void LowOrderRadiator::calActorModel()
 	triangleFilter1->Update();
 	polyData1 = triangleFilter1->GetOutput();
 
-	float r = radius;
-	float h = 2 * radius*tan(Pi / 2.0 - theta);
+
 	vtkSmartPointer<vtkCylinderSource> cylinder = vtkSmartPointer<vtkCylinderSource>::New();
 	//plane->SetCenter(0, 0, 0);
 	cylinder->SetHeight(h);
@@ -97,5 +104,65 @@ void LowOrderRadiator::calActorModel()
 void LowOrderRadiator::calActorRay()
 {
 	source->GetRayTracingSource(phiNum, cylinderNum, rayPosition, rayVector);
+
+	vtkSmartPointer<vtkPoints> points =
+		vtkSmartPointer<vtkPoints>::New();
+	vtkSmartPointer<vtkCellArray> pLineCell =
+		vtkSmartPointer<vtkCellArray>::New();
+
+	vtkSmartPointer<vtkLine> p1 = vtkSmartPointer<vtkLine>::New();
+	int cout = 0;
+	for (int i = 0; i < phiNum; i++)
+		for (int j = 0; j < cylinderNum; j++)
+		{
+			double tempRadius = sqrt(rayPosition[i][j].x * rayPosition[i][j].x +
+				rayPosition[i][j].y * rayPosition[i][j].y);
+			double tempx = radius / tempRadius * rayPosition[i][j].x;
+			double tempRadiusVector = sqrt(rayVector[i][j].x * rayVector[i][j].x +
+				rayVector[i][j].y * rayVector[i][j].y);
+
+			double tempz = (radius - tempRadius) / tempRadiusVector * rayVector[i][j].z;
+			double tempy = 0;
+			if (tempz < (tempx + radius) / tan(theta)) // 反射
+			{
+				tempy = radius / tempRadius * rayPosition[i][j].y;
+				points->InsertNextPoint(rayPosition[i][j].x, rayPosition[i][j].y, rayPosition[i][j].z);
+				points->InsertNextPoint(tempx, tempy, tempz);
+				rayPosition[i][j].x = tempx;
+				rayPosition[i][j].y = tempy;
+				rayPosition[i][j].z = tempz;
+				// 法线
+				Vector3 n_ray(-2 * tempx, -2 * tempy, 0);
+				// 求反射
+				rayVector[i][j] = calculation::RayTracing::reflectLight(rayVector[i][j], n_ray);
+
+				p1->GetPointIds()->SetId(0, cout++);
+				p1->GetPointIds()->SetId(1, cout++);
+				pLineCell->InsertNextCell(p1);
+
+			}
+
+			points->InsertNextPoint(rayPosition[i][j].x, rayPosition[i][j].y, rayPosition[i][j].z);
+			points->InsertNextPoint(rayPosition[i][j].x + rayVector[i][j].x * 0.1,
+				rayPosition[i][j].y + rayVector[i][j].y * 0.1,
+				rayPosition[i][j].z + rayVector[i][j].z * 0.1);
+			
+
+			p1->GetPointIds()->SetId(0, cout++);
+			p1->GetPointIds()->SetId(1, cout++);
+			pLineCell->InsertNextCell(p1);
+		}
+
+	vtkSmartPointer<vtkPolyData>pointsData = vtkSmartPointer<vtkPolyData>::New();
+	pointsData->SetPoints(points); //获得网格模型中的几何数据：点集  
+	pointsData->SetLines(pLineCell);
+
+	vtkSmartPointer<vtkPolyDataMapper> pointMapper =
+		vtkSmartPointer<vtkPolyDataMapper>::New();
+	pointMapper->SetInputData(pointsData);
+	pointMapper->Update();
+
+	actorRay->SetMapper(pointMapper);
+	actorRay->SetProperty(propertyRay);
 
 }

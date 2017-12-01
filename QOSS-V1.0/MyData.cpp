@@ -105,4 +105,5 @@ void MyData::createRadiator()
 		radiator = RadiatorFactory::getRadiator(LOWORDER, source);
 	}
 	radiator->calActorModel();
+	radiator->calActorRay();
 }

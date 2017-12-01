@@ -36,6 +36,7 @@ public:
 	vtkSmartPointer<vtkActor> getActorModel() const { return actorModel; }
 
 	virtual void calActorRay() = 0;
+	vtkSmartPointer<vtkActor> getActorRay() const { return actorRay; }
 
 protected:
 
@@ -47,6 +48,7 @@ protected:
 
 	bool isTransparent; //  «∑Òœ‘ æ
 	vtkSmartPointer<vtkProperty> property;
+	vtkSmartPointer<vtkProperty> propertyRay;
 
 	shared_ptr<calculation::SourceModeGeneration> source;
 
