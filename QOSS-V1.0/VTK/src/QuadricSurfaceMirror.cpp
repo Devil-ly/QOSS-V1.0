@@ -5,6 +5,10 @@
 #include <vtkTransform.h>
 #include <vtkTransformPolyDataFilter.h>
 
+QuadricSurfaceMirror::QuadricSurfaceMirror()
+{
+}
+
 QuadricSurfaceMirror::QuadricSurfaceMirror(const GraphTrans & _graphTrans)
 {
 	type = QUADRICSURFACE;
@@ -15,6 +19,9 @@ QuadricSurfaceMirror::QuadricSurfaceMirror(const GraphTrans & _graphTrans)
 QuadricSurfaceMirror::QuadricSurfaceMirror(const GraphTrans & _graphTrans, 
 	const std::vector<double> parameter)
 {
+	type = QUADRICSURFACE;
+	graphTrans = _graphTrans;
+	updateData();
 }
 
 QuadricSurfaceMirror::~QuadricSurfaceMirror()
@@ -26,7 +33,8 @@ void QuadricSurfaceMirror::calPolyData(double ds)
 	double radius = 1;
 	double temp = -4 * 1; // data[7] 表示焦距
 	vtkSmartPointer<vtkQuadric>quadric = vtkSmartPointer<vtkQuadric>::New();
-	quadric->SetCoefficients(1, 1, 0, 0, 0, 0, 0, 0, temp, 0);
+	quadric->SetCoefficients(data[0], data[1], data[2], data[3], data[4], data[5], data[6], 
+		data[7], data[8], data[9]+1);
 
 	//二次函数采样分辨率
 	vtkSmartPointer<vtkSampleFunction>sample = vtkSmartPointer<vtkSampleFunction>::New();
@@ -36,9 +44,7 @@ void QuadricSurfaceMirror::calPolyData(double ds)
 		sample->SetSampleDimensions(int(radius / ds) * 2,
 			int(radius / ds) * 2, int(-temp / ds) * 2); // 采样点和ds有关
 	sample->SetImplicitFunction(quadric);
-	double xmin = -radius * 2, xmax = radius * 2, ymin = -radius * 2,
-		ymax = radius * 2, zmin = 1.0f / temp, zmax = -radius / temp + 1.0f / temp;
-	sample->SetModelBounds(xmin, xmax, ymin, ymax, zmin, zmax);
+	sample->SetModelBounds(data[10], data[11], data[12], data[13], data[14], data[15]);
 	vtkSmartPointer<vtkContourFilter> contourFilter = vtkSmartPointer<vtkContourFilter>::New();
 	contourFilter->SetInputConnection(sample->GetOutputPort());
 	contourFilter->GenerateValues(1, 1, 1);
@@ -52,8 +58,6 @@ void QuadricSurfaceMirror::calPolyData(double ds)
 		graphTrans.getTrans_y(), graphTrans.getTrans_z());
 	transform->RotateWXYZ(graphTrans.getRotate_theta(), graphTrans.getRotate_x(),
 		graphTrans.getRotate_y(), graphTrans.getRotate_z());
-
-	transform->Translate(0, 0, -zmin);
 
 	vtkSmartPointer<vtkTransformPolyDataFilter> TransFilter =
 		vtkSmartPointer<vtkTransformPolyDataFilter>::New();

@@ -47,13 +47,15 @@ private:
 	// 
 	void isNeedSave();
 
+	void updateVtk();
 
 
 private slots:
 
+	// 菜单响应函数
 	void openFile();
 	void newFile();
-
+	void on_isShowBox();
 
 private:
 	vtkSmartPointer<vtkOrientationMarkerWidget> widget1;
@@ -92,9 +94,12 @@ private:
 	QAction * saveFileAction;
 	QAction * openFileAction;
 	QAction * newFileAction;
+	//文件菜单--view
 	QAction * viewAction;  // 视角
 	QLabel * viewLabel;
 	QComboBox * viewComboBox;
+
+	QAction * isShowBoxAction;
 
 	//------------- TreeWidgetItem------------------- 
 	QTreeWidgetItem * definitionsTreeItem;

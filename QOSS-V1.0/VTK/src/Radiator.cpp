@@ -1,4 +1,5 @@
 #include "..\include\Radiator.h"
+#include <vector>
 
 Radiator::Radiator()
 {
@@ -29,4 +30,16 @@ void Radiator::setSource(shared_ptr<calculation::SourceModeGeneration> source)
 RadiatorType Radiator::getMirrorsType() const
 {
 	return type;
+}
+
+double Radiator::getFirstMirrorHeight(double x)
+{	
+	return 0.0;
+}
+
+void Radiator::getRay(std::vector<std::vector<Vector3>>& rayPosition,
+	std::vector<std::vector<Vector3>>& rayVector) const
+{
+	rayPosition.assign(this->rayPosition.begin(), this->rayPosition.end());
+	rayVector.assign(this->rayVector.begin(), this->rayVector.end());
 }

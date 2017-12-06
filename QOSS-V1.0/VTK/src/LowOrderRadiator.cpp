@@ -141,15 +141,15 @@ void LowOrderRadiator::calActorRay()
 				pLineCell->InsertNextCell(p1);
 
 			}
-
+			/*
 			points->InsertNextPoint(rayPosition[i][j].x, rayPosition[i][j].y, rayPosition[i][j].z);
-			points->InsertNextPoint(rayPosition[i][j].x + rayVector[i][j].x * 0.1,
-				rayPosition[i][j].y + rayVector[i][j].y * 0.1,
-				rayPosition[i][j].z + rayVector[i][j].z * 0.1);
-			
+			points->InsertNextPoint(rayPosition[i][j].x + rayVector[i][j].x * 0.2,
+				rayPosition[i][j].y + rayVector[i][j].y * 0.2,
+				rayPosition[i][j].z + rayVector[i][j].z * 0.2);
+			 
 
 			p1->GetPointIds()->SetId(0, cout++);
-			p1->GetPointIds()->SetId(1, cout++);
+			p1->GetPointIds()->SetId(1, cout++);*/
 			pLineCell->InsertNextCell(p1);
 		}
 
@@ -166,3 +166,10 @@ void LowOrderRadiator::calActorRay()
 	actorRay->SetProperty(propertyRay);
 
 }
+
+
+double LowOrderRadiator::getFirstMirrorHeight(double x)
+{
+	return ((x + radius) / tan(theta) + 2 * radius*tan(Pi / 2.0 - theta))* 1.2;
+}
+

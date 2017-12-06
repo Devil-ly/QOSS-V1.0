@@ -56,15 +56,31 @@ void MyData::createDefaultMirror()
 {
 	vector<GraphTrans> position;
 	mirrorPosition->getInitialPosition(position);
-	for (int i = 0; i < position.size(); ++i)
+	if (0 == pattern) // µÍ½×
 	{
-		if (mirrors[i])
+		GraphTrans mirror1Position;
+		mirror1Position.updateTranslate(Vector3(position[0].getTrans_x(),
+			0, 0));
+		double temp = abs(position[0].getTrans_x());
+		vector<double> parameter(4);
+		parameter[0] = temp;
+		parameter[1] = temp * 2;
+		parameter[2] = 0;
+		parameter[3] = radiator->getFirstMirrorHeight(temp);
+
+		mirrors[0] = MirrorFactory::getMirror(PARABOLICCYLINDER, mirror1Position, parameter);
+
+
+		for (int i = 1; i < position.size(); ++i)
 		{
-			delete mirrors[i];
-			mirrors[i] = nullptr;
+			if (mirrors[i])
+			{
+				delete mirrors[i];
+				mirrors[i] = nullptr;
+			}
+			mirrors[i] = MirrorFactory::getDefaultMirror(position[i]);
 		}
-		mirrors[i] = MirrorFactory::getDefaultMirror(position[i]);
-	}
+	}	
 }
 
 Mirror * MyData::getMirrorByNum(int num) const
@@ -94,7 +110,7 @@ void MyData::setLimitBox(const shared_ptr<LimitBox>&ptr)
 void MyData::createDefaultLigthShow()
 {
 	defaultLigthShow = make_shared<LightShow>(mirrors, numOfMirrors);
-	defaultLigthShow->createStartPointBySource(source);	
+	defaultLigthShow->createStartPointByRadiator(radiator);
 	defaultLigthShow->updateData();
 }
 

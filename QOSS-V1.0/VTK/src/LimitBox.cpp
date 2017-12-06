@@ -66,3 +66,16 @@ double LimitBox::getMaxSize() const
 		else
 			return height;
 }
+
+void LimitBox::setIsTransparent(bool ok)
+{
+	if (ok)
+	{
+		property->SetOpacity(0.2);
+	}
+	else
+	{
+		property->SetOpacity(0);
+	}
+
+}

@@ -19,14 +19,21 @@ public:
 	~LimitBox();
 
 	void setLength(double _length);
+	double getLength() const { return length; }
+
 	void setWidth(double _width);
+	double getWidth() const { return width; }
+
 	void setHeight(double _height);
+	double getHeight() const { return height; }
 
 	void updateData();
 
 	vtkSmartPointer<vtkActor> getActor() const;
 
 	double getMaxSize() const;
+
+	void setIsTransparent(bool);
 
 private:
 	vtkSmartPointer<vtkActor> actor;

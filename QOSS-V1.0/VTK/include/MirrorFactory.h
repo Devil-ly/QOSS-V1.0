@@ -16,7 +16,7 @@ class MirrorFactory
 public:
 
 	static Mirror* getMirror(MirrorsType type, const GraphTrans& graphTrans, 
-		const std::vector<double> parameter);
+		const std::vector<double>& parameter);
 	static Mirror* getMirror(MirrorsType type, const GraphTrans& graphTrans);
 	static Mirror* getDefaultMirror(const GraphTrans& graphTrans);
 

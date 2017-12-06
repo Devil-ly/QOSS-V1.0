@@ -16,7 +16,7 @@
 #include <vector>
 #include "../util/Vector3.h"
 #include "../VTK/include/Mirror.h"
-#include "../Calculation/SourceModeGeneration.h"
+#include "../VTK/include/Radiator.h"
 #include <memory>
 
 class LightShow
@@ -30,7 +30,7 @@ public:
 
 	std::list<vtkSmartPointer<vtkActor>> getActors() const;
 
-	void createStartPointBySource(shared_ptr<calculation::SourceModeGeneration>);
+	void createStartPointByRadiator(shared_ptr<Radiator>);
 
 private:
 

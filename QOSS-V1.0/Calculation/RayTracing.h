@@ -13,6 +13,9 @@
 #include "../util/Vector3.h"
 #include "../VTK/include/Mirror.h"
 
+#include "../Calculation/Matrix4D.h"
+#include "../Calculation/Vector3D.h"
+
 namespace calculation
 {
 	class RayTracing
@@ -38,6 +41,8 @@ namespace calculation
 		// 根据入射光线和法线求反射光线
 		static Vector3 reflectLight(const Vector3& a, const Vector3& n);
 
+		// 如果是解析需要 提前计算好变换矩阵
+		void calcMatrix();
 	private:
 
 		// 根据模型剖分数据计算反射
@@ -51,6 +56,11 @@ namespace calculation
 			Vector3 &intersection,
 			bool &isIntersect);
 
+		void calcReflectByQuadricSurface(const Vector3& startPiont,
+			const Vector3& direction, Vector3 &reflex,
+			Vector3 &intersection,
+			bool &isIntersect);
+
 		//calcReflectByPolyData
 
 		// 三角形与直线相交判断
@@ -58,10 +68,20 @@ namespace calculation
 			const Vector3 &v0, const Vector3 &v1, const Vector3 &v2,
 			Vector3 &intersection, double &t);
 
-	
+		bool ray_CurvedSurface(const vector<double> & a, Vector3 n, Vector3 org,
+			double &t, Vector3 &interPoint);
 
 		Mirror* mirror;
 
+		bool isCalcMatrix;
+
+		// 世界坐标系转到模型的相对坐标系矩阵（逆矩阵）先旋转后平移
+		Matrix4D R_rotatMatrix;
+		Matrix4D R_translateMatrix;
+
+		// 模型的相对坐标系转到世界坐标矩阵
+		Matrix4D rotatMatrix; 
+		Matrix4D translateMatrix; 
 
 	};
 

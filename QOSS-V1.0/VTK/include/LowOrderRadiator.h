@@ -20,6 +20,8 @@ public:
 
 	virtual void calActorRay();
 
+	virtual double getFirstMirrorHeight(double x);
+
 private:
 
 

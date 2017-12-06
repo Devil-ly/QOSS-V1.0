@@ -5,6 +5,7 @@
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
+#include "../Calculation/RayTracing.h"
 
 
 LightShow::LightShow(std::vector<Mirror*> _mirrors, int num)
@@ -30,6 +31,14 @@ void LightShow::updateData()
 
 void LightShow::calRayActor()
 {
+	std::vector <std::vector <Vector3>> tempRayPosition(rayPosition);
+	std::vector <std::vector <Vector3>> tempRayVector(rayVector);
+	std::vector <std::vector <bool>> isIntersect(rayPosition.size(),
+		std::vector<bool>(rayPosition[0].size(), false));
+	calculation::RayTracing rayTracing(mirrors[0]);
+	//rayTracing.calcReflectBatch(tempRayPosition, tempRayVector, 
+	//	tempRayVector, tempRayPosition, isIntersect);
+
 	vtkSmartPointer<vtkPoints> points =
 		vtkSmartPointer<vtkPoints>::New();
 	vtkSmartPointer<vtkCellArray> pLineCell =
@@ -37,17 +46,56 @@ void LightShow::calRayActor()
 
 	vtkSmartPointer<vtkLine> p1 = vtkSmartPointer<vtkLine>::New();
 	int cout = 0;
-	for (int i = 0; i < phiNum; i++)
-		for (int j = 0; j < cylinderNum; j++)
+	Vector3 tempIntersect;
+	Vector3 tempReflect;
+	bool tempIsIntersect;
+	
+	for (int i = 0; i < tempRayPosition.size(); i++)
+		for (int j = 0; j < tempRayPosition[i].size(); j++)
 		{
-			points->InsertNextPoint(rayPosition[i][j].x, rayPosition[i][j].y, rayPosition[i][j].z);
-			points->InsertNextPoint(rayPosition[i][j].x + rayVector[i][j].x * 1,
-				rayPosition[i][j].y + rayVector[i][j].y * 1,
-				rayPosition[i][j].z + rayVector[i][j].z * 1);
-			p1->GetPointIds()->SetId(0, cout++);
-			p1->GetPointIds()->SetId(1, cout++);
-			pLineCell->InsertNextCell(p1);
+			rayTracing.calcReflect(tempRayPosition[i][j], tempRayVector[i][j], tempReflect,
+				tempIntersect, tempIsIntersect);
+			if (tempIsIntersect)
+			{
+				points->InsertNextPoint(tempRayPosition[i][j].x,
+					tempRayPosition[i][j].y, tempRayPosition[i][j].z);
+				points->InsertNextPoint(tempIntersect.x,
+					tempIntersect.y, tempIntersect.z);
+
+				p1->GetPointIds()->SetId(0, cout++);
+				p1->GetPointIds()->SetId(1, cout++);
+				pLineCell->InsertNextCell(p1);
+
+				points->InsertNextPoint(tempIntersect.x,
+					tempIntersect.y, tempIntersect.z);
+				points->InsertNextPoint(tempIntersect.x + tempReflect.x,
+					tempIntersect.y + tempReflect.y, tempIntersect.z + tempReflect.z);
+				p1->GetPointIds()->SetId(0, cout++);
+				p1->GetPointIds()->SetId(1, cout++);
+
+				pLineCell->InsertNextCell(p1);
+
+			}	
 		}
+		
+	/*
+	rayTracing.calcReflect(Vector3(1,0,0), Vector3(-2, 0, 1), tempReflect, 
+		tempIntersect, tempIsIntersect);
+	points->InsertNextPoint(1, 0, 0);
+	points->InsertNextPoint(tempIntersect.x,
+		tempIntersect.y, tempIntersect.z);
+	p1->GetPointIds()->SetId(0, cout++);
+	p1->GetPointIds()->SetId(1, cout++);
+	pLineCell->InsertNextCell(p1);
+
+	points->InsertNextPoint(tempIntersect.x,
+		tempIntersect.y, tempIntersect.z);
+	points->InsertNextPoint(tempIntersect.x + tempReflect.x,
+		tempIntersect.y + tempReflect.y, tempIntersect.z + tempReflect.z);
+	p1->GetPointIds()->SetId(0, cout++);
+	p1->GetPointIds()->SetId(1, cout++);
+
+	pLineCell->InsertNextCell(p1);*/
 
 	vtkSmartPointer<vtkPolyData>pointsData = vtkSmartPointer<vtkPolyData>::New();
 	pointsData->SetPoints(points); //获得网格模型中的几何数据：点集  
@@ -67,7 +115,7 @@ std::list<vtkSmartPointer<vtkActor>> LightShow::getActors() const
 	return actors;
 }
 
-void LightShow::createStartPointBySource(shared_ptr<calculation::SourceModeGeneration> source)
+void LightShow::createStartPointByRadiator(shared_ptr<Radiator> radiator)
 {
-	source->GetRayTracingSource(phiNum, cylinderNum, rayPosition, rayVector);
+	radiator->getRay(rayPosition, rayVector);
 }

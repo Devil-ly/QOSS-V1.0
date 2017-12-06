@@ -19,7 +19,8 @@
 enum MirrorsType
 {
 	PLANEMIRROR = 0,
-	QUADRICSURFACE
+	QUADRICSURFACE,
+	PARABOLICCYLINDER
 };
 
 class actor;
@@ -44,6 +45,9 @@ public:
 	// 输出入射光线计算交点和法线
 	virtual void calcReflectedRay(const Vector3&, Vector3&, Vector3&) = 0;
 
+	const vector<double>& getData() const { return data; }
+
+	GraphTrans getGraphTrans() const { return graphTrans; }
 
 protected:
 	GraphTrans graphTrans; // 旋转平移参数

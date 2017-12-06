@@ -38,6 +38,11 @@ public:
 	virtual void calActorRay() = 0;
 	vtkSmartPointer<vtkActor> getActorRay() const { return actorRay; }
 
+	virtual double getFirstMirrorHeight(double x);
+
+	void getRay(std::vector <std::vector <Vector3>>&,
+		std::vector <std::vector <Vector3>>&) const;
+
 protected:
 
 	RadiatorType type;

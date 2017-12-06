@@ -41,6 +41,11 @@ mainWindow::mainWindow(QWidget *parent)
 	}
 	myData = MyData::getInstance();
 
+	//创建默认辐射器
+	myData->createRadiator();
+	renderer->AddActor(myData->getRadiator()->getActorModel());
+	renderer->AddActor(myData->getRadiator()->getActorRay());
+
 	// 创建默认的镜子
 	myData->createDefaultMirror();
 	for (int i = 0; i < myData->getNumOfMirrors(); ++i)
@@ -49,18 +54,16 @@ mainWindow::mainWindow(QWidget *parent)
 	}
 
 	// 加入限制盒子
-	//renderer->AddActor(myData->getLimitBox()->getActor());
+	renderer->AddActor(myData->getLimitBox()->getActor());
 
 	// 创建默认的光线
-	//myData->createDefaultLigthShow();
-	//std::list<vtkSmartPointer<vtkActor>> tempActors = 
-	//	myData->getDefaultLightShow()->getActors();
-	//for (auto& x : tempActors)
-	//	renderer->AddActor(x);
+	myData->createDefaultLigthShow();
+	std::list<vtkSmartPointer<vtkActor>> tempActors = 
+		myData->getDefaultLightShow()->getActors();
+	for (auto& x : tempActors)
+		renderer->AddActor(x);
 
-	myData->createRadiator();
-	renderer->AddActor(myData->getRadiator()->getActorModel());
-	renderer->AddActor(myData->getRadiator()->getActorRay());
+	
 
 
 	double axesScale = myData->getLimitBox()->getMaxSize();
@@ -165,6 +168,8 @@ void mainWindow::createActions()
 	newFileAction->setStatusTip(tr("New a file"));
 	connect(newFileAction, SIGNAL(triggered()), this, SLOT(newFile()));
 
+	// view 视图
+
 	//初始化视角
 	viewAction = new QAction(QIcon(tr("Qt/images/view.png")), tr("View"), this);
 	viewAction->setStatusTip(tr("Initialize the view"));
@@ -173,13 +178,19 @@ void mainWindow::createActions()
 	//修改视角
 	viewLabel = new QLabel(tr("View"));
 	viewComboBox = new QComboBox;
-	viewComboBox->addItem("View YZ plane(original)");
-	viewComboBox->addItem("View XZ plane");
+	viewComboBox->addItem("View XZ plane(original)");
+	viewComboBox->addItem("View YZ plane");
 	viewComboBox->addItem("View XY plane");
 	viewComboBox->addItem("View -YZ plane");
 	viewComboBox->addItem("View -XZ plane");
 	viewComboBox->addItem("View -XY plane");
 	connect(viewComboBox, SIGNAL(activated(int)), this, SLOT(setView(int)));
+
+	isShowBoxAction = new QAction(tr("Box"), this);
+	isShowBoxAction->setStatusTip(tr("is show Box"));
+	isShowBoxAction->setCheckable(true);
+	isShowBoxAction->setChecked(true);
+	connect(isShowBoxAction, SIGNAL(triggered()), this, SLOT(on_isShowBox()));
 
 
 }
@@ -197,6 +208,9 @@ void mainWindow::createMenus()
 	//fileMenu->addAction(LightSourceAction);
 
 	viewMenu = this->menuBar()->addMenu(tr("View"));
+
+	viewMenu->addAction(isShowBoxAction);
+
 	eidtMenu = this->menuBar()->addMenu(tr("Edit"));
 	ModelMenu = this->menuBar()->addMenu(tr("Model"));
 	SourceMenu = this->menuBar()->addMenu(tr("Source"));
@@ -280,25 +294,52 @@ void mainWindow::createTreeWidgetItem()
 	QTreeWidgetItem *childFre = new QTreeWidgetItem;
 	childFre->setText(0, tr("Fre = ") + QString::number(myData->getFrequency()));
 	sourceTreeItem->addChild(childFre);
+
+	// 模式
 	QTreeWidgetItem *childPar = new QTreeWidgetItem;
+	// 辐射器
+	QTreeWidgetItem *childRadiator = new QTreeWidgetItem;
+
 	if (0 == myData->getPattern())
+	{
 		childPar->setText(0, tr("Pattern: Lower order"));
+		childRadiator->setText(0, tr("Vlasov Launcher"));
+	}	
 	else if (1 == myData->getPattern())
 		childPar->setText(0, tr("Pattern: Higher order"));
 	else
 		childPar->setText(0, tr("Pattern: Waveguide"));
 	sourceTreeItem->addChild(childPar);
+	sourceTreeItem->addChild(childRadiator);
+
 	sourceTreeItem->setExpanded(true);
 
 	geometryTreeItem = new QTreeWidgetItem(QStringList(QString("Geometry")));
 	modelTreeItem->addChild(geometryTreeItem);
 
+	// 镜子的tree
 	for (int i = 0; i < myData->getNumOfMirrors(); ++i)
 	{
 		QTreeWidgetItem *childMirror = new QTreeWidgetItem;
 		childMirror->setText(0, tr("Mirror") + QString::number(i+1));
 		geometryTreeItem->addChild(childMirror);
 	}
+
+	// 盒子的tree
+	QTreeWidgetItem *childBox = new QTreeWidgetItem;
+	childBox->setText(0, tr("LimitBox"));
+	geometryTreeItem->addChild(childBox);
+	QTreeWidgetItem *childBoxX = new QTreeWidgetItem;
+	childBoxX->setText(0, tr("X = ") + QString::number(myData->getLimitBox()->getLength()));
+	childBox->addChild(childBoxX);
+	QTreeWidgetItem *childBoxY = new QTreeWidgetItem;
+	childBoxY->setText(0, tr("Y = ") + QString::number(myData->getLimitBox()->getHeight()));
+	childBox->addChild(childBoxY);
+	QTreeWidgetItem *childBoxZ = new QTreeWidgetItem;
+	childBoxZ->setText(0, tr("Z = ") + QString::number(myData->getLimitBox()->getWidth()));
+	childBox->addChild(childBoxZ);
+	childBox->setExpanded(true);
+
 	geometryTreeItem->setExpanded(true);
 
 	lightTreeItem = new QTreeWidgetItem(QStringList(QString("Light")));
@@ -349,4 +390,21 @@ void mainWindow::newFile()
 		return;
 	}
 
+}
+
+void mainWindow::on_isShowBox()
+{
+	//isShowBoxAction->isChecked();
+	myData->getLimitBox()->setIsTransparent(isShowBoxAction->isChecked());
+
+	updateVtk();
+}
+
+
+void mainWindow::updateVtk()
+{
+	auto window = widget.GetRenderWindow();
+
+	//window->AddRenderer(renderer);
+	window->Render();
 }
