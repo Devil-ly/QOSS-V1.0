@@ -71,15 +71,8 @@ void MyData::createDefaultMirror()
 
 		mirrors[1] = MirrorFactory::getMirror(PARABOLOID, position[1]);
 
-		for (int i = 2; i < position.size(); ++i)
-		{
-			if (mirrors[i])
-			{
-				delete mirrors[i];
-				mirrors[i] = nullptr;
-			}
-			mirrors[i] = MirrorFactory::getDefaultMirror(position[i]);
-		}
+		mirrors[2] = MirrorFactory::getMirror(ELLIPSOID, position[2]);
+		
 	}	
 }
 

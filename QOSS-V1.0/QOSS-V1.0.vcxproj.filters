@@ -164,6 +164,18 @@
     <ClCompile Include="VTK\src\Paraboloid.cpp">
       <Filter>Source Files\VTK</Filter>
     </ClCompile>
+    <ClCompile Include="VTK\src\Ellipsoid.cpp">
+      <Filter>Source Files\VTK</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_MirrorTypeWidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_MirrorTypeWidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Qt\src\MirrorTypeWidget.cpp">
+      <Filter>Source Files\Qt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwindow.h">
@@ -185,6 +197,9 @@
       <Filter>Header Files\Qt</Filter>
     </CustomBuild>
     <CustomBuild Include="Qt\include\QPaint2DMirror.h">
+      <Filter>Header Files\Qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Qt\include\MirrorTypeWidget.h">
       <Filter>Header Files\Qt</Filter>
     </CustomBuild>
   </ItemGroup>

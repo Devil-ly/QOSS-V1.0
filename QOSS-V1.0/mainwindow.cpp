@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include <Qt/include/PreDialog.h>
 #include "Qt/include/ModelWizard.h"
+#include "Qt/include/MirrorTypeWidget.h"
+
 #include "VTK/include/Mirror.h"
 #include "VTK/include/LimitBox.h"
 #include "VTK/include/LightShow.h"
@@ -363,7 +365,7 @@ void mainWindow::createRightMenu()
 	modifyingMirrorAction->setStatusTip(tr("Modifying parameters"));
 	connect(modifyingMirrorAction, SIGNAL(triggered()), this, SLOT(on_modifyingMirror()));
 
-	restrictionAction = new QAction(tr("Restriction"), this);
+	restrictionAction = new QAction(tr("Add restriction"), this);
 	restrictionAction->setFont(font);
 	restrictionAction->setStatusTip(tr("Modifying parameters"));
 	connect(restrictionAction, SIGNAL(triggered()), this, SLOT(on_restriction()));
@@ -415,6 +417,15 @@ void mainWindow::on_isShowBox()
 	updateVtk();
 }
 
+void mainWindow::on_modifyingMirror()
+{
+	MirrorTypeWidget mirrorTypeWidget;
+	if (mirrorTypeWidget.exec() != QDialog::Accepted)
+	{
+		exit(1);
+	}
+}
+
 void mainWindow::on_treeWidget_ContextMenuRequested(QPoint pos)
 {
 	rightSelectItem = treeWidget->itemAt(pos);
@@ -446,10 +457,11 @@ void mainWindow::on_treeWidget_leftPressed(QTreeWidgetItem * item, int column)
 			if (item->data(0, Qt::UserRole) == 0)
 			{
 				int num = item->data(1, Qt::UserRole).toInt();
-				myData->getMirrorByNum(num);
+				//myData->getMirrorByNum(num)->setSelected();
 			}
 
 		}
+	updateVtk();
 }
 
 

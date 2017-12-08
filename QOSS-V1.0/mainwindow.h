@@ -57,6 +57,8 @@ private slots:
 	void newFile();
 	void on_isShowBox();
 
+	void on_modifyingMirror();
+
 	// ------------------- ×ó¼üÓÒ¼üº¯Êý ----------------------------------
 	void on_treeWidget_ContextMenuRequested(QPoint pos);// ÓÒ¼ü²Ëµ¥
 	void on_treeWidget_leftPressed(QTreeWidgetItem *item, int column);

@@ -42,8 +42,10 @@ vtkSmartPointer<vtkPolyData> Mirror::getPolyData() const
 
 void Mirror::setSelected()
 {
-	property->SetOpacity(0.2);
-	property->SetColor(0, 1, 0);
+	actor->GetProperty()->SetOpacity(0.5);
+	actor->GetProperty()->SetColor(0, 1, 0);
+	//property->SetOpacity(0.2);
+	//property->SetColor(0, 1, 0);
 }
 
 QTreeWidgetItem * Mirror::getTransformTree()

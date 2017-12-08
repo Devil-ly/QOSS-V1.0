@@ -131,7 +131,7 @@ void calculation::MirrorPosition::getInitialPosition(vector<GraphTrans>& positio
 		// 计算旋转 平面镜与x轴的夹角
 		tempMirror = lightDirection[i] + lightDirection[i + 1];
 		double phi = acos(tempMirror.x);
-		if (tempMirror.Cross(Vector3(1, 0, 0)).y > 0)
+		if (tempMirror.Cross(lightDirection[i]).y > 0)
 		{
 			phi = -phi;
 		}
