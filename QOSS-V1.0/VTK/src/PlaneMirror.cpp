@@ -12,7 +12,8 @@ PlaneMirror::PlaneMirror(const GraphTrans & _graphTrans)
 	updateData();
 }
 
-PlaneMirror::PlaneMirror(const GraphTrans & _graphTrans, const std::vector<double> parameter)
+PlaneMirror::PlaneMirror(const GraphTrans & _graphTrans, 
+	const std::vector<double> parameter)
 {
 	type = PLANEMIRROR;
 	graphTrans = _graphTrans;
@@ -67,4 +68,14 @@ void PlaneMirror::calcReflectedRay(const Vector3 &incidence, Vector3 &reflex,
 	Vector3 &intersection)
 {
 
+}
+
+QTreeWidgetItem * PlaneMirror::getTree()
+{
+	QTreeWidgetItem * tree = new QTreeWidgetItem;
+	tree->setText(0, "PlaneMirror");
+	tree->setData(0, Qt::UserRole, QVariant(PLANEMIRROR));
+
+	tree->addChild(getTransformTree());
+	return tree;
 }

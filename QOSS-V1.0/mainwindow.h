@@ -57,6 +57,10 @@ private slots:
 	void newFile();
 	void on_isShowBox();
 
+	// ------------------- ×ó¼üÓÒ¼üº¯Êý ----------------------------------
+	void on_treeWidget_ContextMenuRequested(QPoint pos);// ÓÒ¼ü²Ëµ¥
+	void on_treeWidget_leftPressed(QTreeWidgetItem *item, int column);
+
 private:
 	vtkSmartPointer<vtkOrientationMarkerWidget> widget1;
 	QVTKWidget widget; // vtk ÏÔÊ¾´°¿Ú
@@ -100,6 +104,10 @@ private:
 	QComboBox * viewComboBox;
 
 	QAction * isShowBoxAction;
+
+	// ÓÒ¼ü
+	QAction * modifyingMirrorAction;
+	QAction * restrictionAction;
 
 	//------------- TreeWidgetItem------------------- 
 	QTreeWidgetItem * definitionsTreeItem;

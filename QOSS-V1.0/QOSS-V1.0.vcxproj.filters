@@ -161,6 +161,9 @@
     <ClCompile Include="VTK\src\ParabolicCylinder.cpp">
       <Filter>Source Files\VTK</Filter>
     </ClCompile>
+    <ClCompile Include="VTK\src\Paraboloid.cpp">
+      <Filter>Source Files\VTK</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwindow.h">
@@ -250,6 +253,12 @@
       <Filter>Header Files\VTK</Filter>
     </ClInclude>
     <ClInclude Include="VTK\include\ParabolicCylinder.h">
+      <Filter>Header Files\VTK</Filter>
+    </ClInclude>
+    <ClInclude Include="VTK\include\Paraboloid.h">
+      <Filter>Header Files\VTK</Filter>
+    </ClInclude>
+    <ClInclude Include="VTK\include\Ellipsoid.h">
       <Filter>Header Files\VTK</Filter>
     </ClInclude>
   </ItemGroup>

@@ -23,7 +23,10 @@ public:
 	virtual double getFirstMirrorHeight(double x);
 
 private:
-
+	
+	// x^2 + y^2 = R^2 与 射线 startPoint + t * startVector 求交点
+	bool getIntersectionOfCircleAndRay(double radius, const Vector3 & startPoint,
+		const Vector3 & startVector, double & t);
 
 
 };

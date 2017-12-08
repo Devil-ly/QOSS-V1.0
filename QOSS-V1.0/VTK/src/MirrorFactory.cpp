@@ -2,7 +2,7 @@
 #include "../include/PlaneMirror.h"
 #include "../include/QuadricSurfaceMirror.h"
 #include "../include/ParabolicCylinder.h"
-
+#include "../include/Paraboloid.h"
 
 Mirror * MirrorFactory::getMirror(MirrorsType type, const GraphTrans & graphTrans, 
 	const std::vector<double>& parameter)
@@ -18,6 +18,10 @@ Mirror * MirrorFactory::getMirror(MirrorsType type, const GraphTrans & graphTran
 		break;
 	case PARABOLICCYLINDER:
 		res = new ParabolicCylinder(graphTrans, parameter);
+		break;
+	case PARABOLOID:
+		res = new Paraboloid(graphTrans, parameter);
+		break;
 	default:
 		break;
 	}
@@ -37,6 +41,10 @@ Mirror * MirrorFactory::getMirror(MirrorsType type, const GraphTrans & graphTran
 		break;
 	case PARABOLICCYLINDER:
 		res = new ParabolicCylinder(graphTrans);
+		break;
+	case PARABOLOID:
+		res = new Paraboloid(graphTrans);
+		break;
 	default:
 		break;
 	}

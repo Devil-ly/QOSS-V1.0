@@ -11,8 +11,8 @@ Radiator::Radiator()
 	propertyRay->SetColor(1, 0, 0);
 	actorModel = vtkSmartPointer<vtkActor>::New();
 	actorRay = vtkSmartPointer<vtkActor>::New();
-	phiNum = 50;
-	cylinderNum = 50;
+	phiNum = 2 * 200;
+	cylinderNum = 10;
 }
 
 Radiator::~Radiator()

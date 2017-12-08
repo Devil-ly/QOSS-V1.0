@@ -67,11 +67,11 @@ void MyData::createDefaultMirror()
 		parameter[1] = temp * 2;
 		parameter[2] = 0;
 		parameter[3] = radiator->getFirstMirrorHeight(temp);
-
 		mirrors[0] = MirrorFactory::getMirror(PARABOLICCYLINDER, mirror1Position, parameter);
 
+		mirrors[1] = MirrorFactory::getMirror(PARABOLOID, position[1]);
 
-		for (int i = 1; i < position.size(); ++i)
+		for (int i = 2; i < position.size(); ++i)
 		{
 			if (mirrors[i])
 			{

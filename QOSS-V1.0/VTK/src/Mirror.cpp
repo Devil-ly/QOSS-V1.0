@@ -39,3 +39,26 @@ vtkSmartPointer<vtkPolyData> Mirror::getPolyData() const
 {
 	return polyData;
 }
+
+void Mirror::setSelected()
+{
+	property->SetOpacity(0.2);
+	property->SetColor(0, 1, 0);
+}
+
+QTreeWidgetItem * Mirror::getTransformTree()
+{
+	QTreeWidgetItem * tree = new QTreeWidgetItem;
+	tree->setText(0, "Transform");
+	QTreeWidgetItem * treeTranslation = new QTreeWidgetItem;
+	string tempTranslation = "Translation: ";
+	tempTranslation.append(graphTrans.getTransString());
+	treeTranslation->setText(0, tempTranslation.c_str());
+	QTreeWidgetItem * treeRotation = new QTreeWidgetItem;
+	string tempRotation = "Rotation: ";
+	tempRotation.append(graphTrans.getRotateString());
+	treeRotation->setText(0, tempRotation.c_str());
+	tree->addChild(treeTranslation);
+	tree->addChild(treeRotation);
+	return tree;
+}

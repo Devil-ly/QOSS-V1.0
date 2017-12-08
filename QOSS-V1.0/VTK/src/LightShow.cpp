@@ -35,7 +35,7 @@ void LightShow::calRayActor()
 	std::vector <std::vector <Vector3>> tempRayVector(rayVector);
 	std::vector <std::vector <bool>> isIntersect(rayPosition.size(),
 		std::vector<bool>(rayPosition[0].size(), false));
-	calculation::RayTracing rayTracing(mirrors[0]);
+
 	//rayTracing.calcReflectBatch(tempRayPosition, tempRayVector, 
 	//	tempRayVector, tempRayPosition, isIntersect);
 
@@ -49,54 +49,60 @@ void LightShow::calRayActor()
 	Vector3 tempIntersect;
 	Vector3 tempReflect;
 	bool tempIsIntersect;
-	
+	for (int n = 0; n < 2; n++)
+	{
+		calculation::RayTracing rayTracing(mirrors[n]);
+
+		for (int i = 0; i < tempRayPosition.size(); i++)
+			for (int j = 0; j < tempRayPosition[i].size(); j++)
+			{
+				rayTracing.calcReflect(tempRayPosition[i][j], tempRayVector[i][j], tempReflect,
+					tempIntersect, tempIsIntersect);
+				if (tempIsIntersect)
+				{
+					points->InsertNextPoint(tempRayPosition[i][j].x,
+						tempRayPosition[i][j].y, tempRayPosition[i][j].z);
+					points->InsertNextPoint(tempIntersect.x,
+						tempIntersect.y, tempIntersect.z);
+
+					p1->GetPointIds()->SetId(0, cout++);
+					p1->GetPointIds()->SetId(1, cout++);
+					pLineCell->InsertNextCell(p1);
+
+					tempRayVector[i][j] = tempReflect;
+					tempRayPosition[i][j] = tempIntersect;
+
+				}
+
+				/*
+				points->InsertNextPoint(tempRayPosition[i][j].x,
+					tempRayPosition[i][j].y, tempRayPosition[i][j].z);
+				points->InsertNextPoint(tempRayPosition[i][j].x + tempRayVector[i][j].x,
+					tempRayPosition[i][j].y + tempRayVector[i][j].y,
+					tempRayPosition[i][j].z + tempRayVector[i][j].z);
+				p1->GetPointIds()->SetId(0, cout++);
+				p1->GetPointIds()->SetId(1, cout++);
+
+				pLineCell->InsertNextCell(p1);
+				*/
+
+			}
+	}
 	for (int i = 0; i < tempRayPosition.size(); i++)
 		for (int j = 0; j < tempRayPosition[i].size(); j++)
 		{
-			rayTracing.calcReflect(tempRayPosition[i][j], tempRayVector[i][j], tempReflect,
-				tempIntersect, tempIsIntersect);
-			if (tempIsIntersect)
-			{
-				points->InsertNextPoint(tempRayPosition[i][j].x,
-					tempRayPosition[i][j].y, tempRayPosition[i][j].z);
-				points->InsertNextPoint(tempIntersect.x,
-					tempIntersect.y, tempIntersect.z);
+			points->InsertNextPoint(tempRayPosition[i][j].x,
+				tempRayPosition[i][j].y, tempRayPosition[i][j].z);
+			points->InsertNextPoint(tempRayPosition[i][j].x + 0.5 * tempRayVector[i][j].x,
+				tempRayPosition[i][j].y + 0.5 * tempRayVector[i][j].y,
+				tempRayPosition[i][j].z + 0.5 * tempRayVector[i][j].z);
+			p1->GetPointIds()->SetId(0, cout++);
+			p1->GetPointIds()->SetId(1, cout++);
 
-				p1->GetPointIds()->SetId(0, cout++);
-				p1->GetPointIds()->SetId(1, cout++);
-				pLineCell->InsertNextCell(p1);
-
-				points->InsertNextPoint(tempIntersect.x,
-					tempIntersect.y, tempIntersect.z);
-				points->InsertNextPoint(tempIntersect.x + tempReflect.x,
-					tempIntersect.y + tempReflect.y, tempIntersect.z + tempReflect.z);
-				p1->GetPointIds()->SetId(0, cout++);
-				p1->GetPointIds()->SetId(1, cout++);
-
-				pLineCell->InsertNextCell(p1);
-
-			}	
+			pLineCell->InsertNextCell(p1);
 		}
-		
-	/*
-	rayTracing.calcReflect(Vector3(1,0,0), Vector3(-2, 0, 1), tempReflect, 
-		tempIntersect, tempIsIntersect);
-	points->InsertNextPoint(1, 0, 0);
-	points->InsertNextPoint(tempIntersect.x,
-		tempIntersect.y, tempIntersect.z);
-	p1->GetPointIds()->SetId(0, cout++);
-	p1->GetPointIds()->SetId(1, cout++);
-	pLineCell->InsertNextCell(p1);
-
-	points->InsertNextPoint(tempIntersect.x,
-		tempIntersect.y, tempIntersect.z);
-	points->InsertNextPoint(tempIntersect.x + tempReflect.x,
-		tempIntersect.y + tempReflect.y, tempIntersect.z + tempReflect.z);
-	p1->GetPointIds()->SetId(0, cout++);
-	p1->GetPointIds()->SetId(1, cout++);
-
-	pLineCell->InsertNextCell(p1);*/
-
+	
+	
 	vtkSmartPointer<vtkPolyData>pointsData = vtkSmartPointer<vtkPolyData>::New();
 	pointsData->SetPoints(points); //获得网格模型中的几何数据：点集  
 	pointsData->SetLines(pLineCell);

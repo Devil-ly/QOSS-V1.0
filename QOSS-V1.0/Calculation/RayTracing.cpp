@@ -41,7 +41,9 @@ void calculation::RayTracing::calcReflect(const Vector3 & startPiont, const Vect
 	case PLANEMIRROR:
 		calcReflectByPolyData(startPiont, direction, reflex, intersection, isIntersect);
 		break;
+	case QUADRICSURFACE:
 	case PARABOLICCYLINDER:
+	case PARABOLOID:
 		calcReflectByQuadricSurface(startPiont, direction, reflex, intersection, isIntersect);
 		break;
 	default:
@@ -133,9 +135,10 @@ void calculation::RayTracing::calcReflectByQuadricSurface(const Vector3 & startP
 			double z = 2 * tempData[2] * intersection.z + tempData[4] * intersection.y +
 				tempData[5] * intersection.x + tempData[8];
 			Vector3 tempn(x, y, z);
-			if (tempn.Dot(direction) > 0)
+			if (tempn.Dot(tempDirection) > 0.0)
 				tempn.set(-x, -y, -z);
-			reflex = reflectLight(direction, tempn);
+
+			reflex = reflectLight(tempDirection, tempn);
 			isIntersect = true;
 
 			// 将模型的相对坐标系转到世界坐标系

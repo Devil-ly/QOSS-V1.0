@@ -47,3 +47,25 @@ void ParabolicCylinder::setParameter(double focus, double yMax, double zMin, dou
 	data[14] = zMin;
 	data[15] = zMax;
 }
+
+QTreeWidgetItem * ParabolicCylinder::getTree()
+{
+	QTreeWidgetItem * tree = new QTreeWidgetItem;
+	tree->setText(0, "ParabolicCylinder");
+	tree->setData(0, Qt::UserRole, QVariant(PARABOLICCYLINDER));
+	QTreeWidgetItem * treeFocus = new QTreeWidgetItem;
+	treeFocus->setText(0, QString("Focus: ")+ QString::number(focus));
+	
+	QTreeWidgetItem * treeYMax = new QTreeWidgetItem;
+	treeYMax->setText(0, QString("YMax: ") + QString::number(yMax));
+
+	QTreeWidgetItem * treeZ = new QTreeWidgetItem;
+	treeZ->setText(0, QString("z: ") + QString::number(zMin) + QString(" ~ ")
+		+ QString::number(zMax));
+
+	tree->addChild(treeFocus);
+	tree->addChild(treeYMax);
+	tree->addChild(treeZ);
+	tree->addChild(getTransformTree());
+	return tree;
+}

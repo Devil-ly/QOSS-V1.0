@@ -208,6 +208,7 @@
     <ClCompile Include="VTK\src\Mirror.cpp" />
     <ClCompile Include="VTK\src\MirrorFactory.cpp" />
     <ClCompile Include="VTK\src\ParabolicCylinder.cpp" />
+    <ClCompile Include="VTK\src\Paraboloid.cpp" />
     <ClCompile Include="VTK\src\PlaneMirror.cpp" />
     <ClCompile Include="VTK\src\QuadricSurfaceMirror.cpp" />
     <ClCompile Include="VTK\src\Radiator.cpp" />
@@ -262,8 +263,10 @@
     <ClInclude Include="GeneratedFiles\ui_mainwindow.h" />
     <ClInclude Include="MirrorPosition.h" />
     <ClInclude Include="MyData.h" />
+    <ClInclude Include="VTK\include\Ellipsoid.h" />
     <ClInclude Include="VTK\include\LowOrderRadiator.h" />
     <ClInclude Include="VTK\include\ParabolicCylinder.h" />
+    <ClInclude Include="VTK\include\Paraboloid.h" />
     <ClInclude Include="VTK\include\QuadricSurfaceMirror.h" />
     <ClInclude Include="VTK\include\Radiator.h" />
     <ClInclude Include="VTK\include\RadiatorFactory.h" />

@@ -7,6 +7,7 @@
 #define GRAPHTRANS_H
 
 #include <fstream>
+#include <sstream>
 #include "Vector3.h"
 using namespace std;
 class GraphTrans
@@ -83,6 +84,33 @@ public:
 		trans_y = tran.y;
 		trans_z = tran.z;
 		rotate_theta = theta;
+	}
+
+	string getTransString() const
+	{
+		string ss;
+		stringstream stream;
+		stream << "(" << trans_x
+			<< "," << trans_y
+			<< "," << trans_z
+			<< ")";
+		stream >> ss;
+		return ss;
+	}
+
+	string getRotateString() const
+	{
+		string ss;
+		stringstream stream;
+		if (rotate_theta == 0.0)
+			return "0";
+
+		stream << "(" << rotate_x
+			<< "," << rotate_y
+			<< "," << rotate_z
+			<< ") " << rotate_theta;
+		stream >> ss;
+		return ss;
 	}
 
 	void save(ofstream & savefile) const

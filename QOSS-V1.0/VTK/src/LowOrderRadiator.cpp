@@ -12,6 +12,8 @@
 #include <vtkCellArray.h>
 #include <vtkLine.h>
 
+#include "../util/Definition.h"
+
 LowOrderRadiator::LowOrderRadiator(shared_ptr<calculation::SourceModeGeneration> s)
 {
 	setSource(s);
@@ -103,7 +105,7 @@ void LowOrderRadiator::calActorModel()
 
 void LowOrderRadiator::calActorRay()
 {
-	source->GetRayTracingSource(phiNum, cylinderNum, rayPosition, rayVector);
+	source->GetRayTracingSource(phiNum/2, cylinderNum, rayPosition, rayVector);
 
 	vtkSmartPointer<vtkPoints> points =
 		vtkSmartPointer<vtkPoints>::New();
@@ -115,17 +117,15 @@ void LowOrderRadiator::calActorRay()
 	for (int i = 0; i < phiNum; i++)
 		for (int j = 0; j < cylinderNum; j++)
 		{
-			double tempRadius = sqrt(rayPosition[i][j].x * rayPosition[i][j].x +
-				rayPosition[i][j].y * rayPosition[i][j].y);
-			double tempx = radius / tempRadius * rayPosition[i][j].x;
-			double tempRadiusVector = sqrt(rayVector[i][j].x * rayVector[i][j].x +
-				rayVector[i][j].y * rayVector[i][j].y);
-
-			double tempz = (radius - tempRadius) / tempRadiusVector * rayVector[i][j].z;
-			double tempy = 0;
+			double t = 0.0;
+			getIntersectionOfCircleAndRay(radius, rayPosition[i][j], rayVector[i][j], t);
+	
+			double tempx = rayPosition[i][j].x + rayVector[i][j].x * t;
+			double tempy = rayPosition[i][j].y + rayVector[i][j].y * t;
+			double tempz = rayPosition[i][j].z + rayVector[i][j].z * t;
+			
 			if (tempz < (tempx + radius) / tan(theta)) // 反射
 			{
-				tempy = radius / tempRadius * rayPosition[i][j].y;
 				points->InsertNextPoint(rayPosition[i][j].x, rayPosition[i][j].y, rayPosition[i][j].z);
 				points->InsertNextPoint(tempx, tempy, tempz);
 				rayPosition[i][j].x = tempx;
@@ -141,6 +141,7 @@ void LowOrderRadiator::calActorRay()
 				pLineCell->InsertNextCell(p1);
 
 			}
+			
 			/*
 			points->InsertNextPoint(rayPosition[i][j].x, rayPosition[i][j].y, rayPosition[i][j].z);
 			points->InsertNextPoint(rayPosition[i][j].x + rayVector[i][j].x * 0.2,
@@ -171,5 +172,54 @@ void LowOrderRadiator::calActorRay()
 double LowOrderRadiator::getFirstMirrorHeight(double x)
 {
 	return ((x + radius) / tan(theta) + 2 * radius*tan(Pi / 2.0 - theta))* 1.2;
+}
+
+bool LowOrderRadiator::getIntersectionOfCircleAndRay(double radius, const Vector3 & startPoint,
+	const Vector3 & startVector, double & t)
+{
+
+	double A = startVector.x * startVector.x + startVector.y * startVector.y;
+	double B = 2 * startPoint.x * startVector.x + 2 * startPoint.y * startVector.y;
+	double C = startPoint.x * startPoint.x + startPoint.y * startPoint.y - radius * radius;
+
+	if (A < -THRESHOLD || A > THRESHOLD)
+	{
+		double temp = B * B - 4 * A * C;
+		if (temp >= 0)
+			temp = pow(temp, 0.5);
+		else
+			return false;
+
+		double tempt1, tempt2;
+		tempt1 = (-B + temp) / 2.0 / A;
+		tempt2 = (-B - temp) / 2.0 / A; // 求根公式的两个解
+
+		if (tempt1 >= 0.0 && tempt2 >= 0.0) // 都大于等于0 取小的
+		{
+			if (tempt1 > tempt2)
+				t = tempt2;
+			else
+				t = tempt1;
+		}
+		else if (tempt1 < 0.0 && tempt2 < 0.0) // 都小于0 无解
+		{
+			return false;
+		}
+		else                           // 取正值
+		{
+			if (tempt1 < tempt2)
+				t = tempt2;
+			else
+				t = tempt1;
+		}
+	}
+	else                          // 只有一个交点，与法线平行
+		t = -C / B;
+
+	if (t < 0.0)
+		return false;
+	else
+		return true;
+
 }
 

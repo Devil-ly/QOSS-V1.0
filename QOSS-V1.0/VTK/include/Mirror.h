@@ -12,6 +12,8 @@
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkProperty.h>
+#include <QTreeWidgetItem>
+#include <QString>
 
 #include <vector>
 #include <../util/Vector3.h>
@@ -20,7 +22,8 @@ enum MirrorsType
 {
 	PLANEMIRROR = 0,
 	QUADRICSURFACE,
-	PARABOLICCYLINDER
+	PARABOLICCYLINDER,
+	PARABOLOID
 };
 
 class actor;
@@ -49,7 +52,14 @@ public:
 
 	GraphTrans getGraphTrans() const { return graphTrans; }
 
+	void setSelected();
+
+	virtual QTreeWidgetItem* getTree() { return nullptr; };
+
 protected:
+
+	QTreeWidgetItem* getTransformTree();
+
 	GraphTrans graphTrans; // 旋转平移参数
 	vector<double> data;
 	MirrorsType type;

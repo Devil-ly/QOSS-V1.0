@@ -25,7 +25,11 @@ public:
 
 	// 输出入射光线计算反射光线和交点
 	virtual void calcReflectedRay(const Vector3&, Vector3&, Vector3&);
+
+	virtual QTreeWidgetItem* getTree();
+
 private:
+
 
 };
 

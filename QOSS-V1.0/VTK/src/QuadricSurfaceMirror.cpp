@@ -76,3 +76,21 @@ void QuadricSurfaceMirror::updateData()
 void QuadricSurfaceMirror::calcReflectedRay(const Vector3 &, Vector3 &, Vector3 &)
 {
 }
+
+QTreeWidgetItem * QuadricSurfaceMirror::getTree()
+{
+	QTreeWidgetItem * tree = new QTreeWidgetItem;
+	tree->setText(0, "QUADRICSURFACE");
+	tree->setData(0, Qt::UserRole, QVariant(QUADRICSURFACE));
+
+	for (int i = 0; i < data.size(); i++)
+	{
+		QTreeWidgetItem * treeData = new QTreeWidgetItem;
+		treeData->setText(0, QString("a") + QString::number(i) 
+			+ QString(": ") + QString::number(data[0]));
+		tree->addChild(treeData);
+	}	
+
+	tree->addChild(getTransformTree());
+	return tree;
+}

@@ -16,6 +16,7 @@
 #include <vtkProperty.h>
 #include <vtkCamera.h>
 #include <vtkOrientationMarkerWidget.h>
+#include <QApplication>
 
 #include <QMessageBox>
 
@@ -64,8 +65,6 @@ mainWindow::mainWindow(QWidget *parent)
 		renderer->AddActor(x);
 
 	
-
-
 	double axesScale = myData->getLimitBox()->getMaxSize();
 	// 初始化vtk窗口
 	axes = vtkSmartPointer<vtkAxesActor>::New();
@@ -133,7 +132,7 @@ mainWindow::mainWindow(QWidget *parent)
 	createMenus();
 	createToolBars();
 	createStatusBar();
-	//createRightMenu();
+	createRightMenu();
 	//createDetails();
 	//creareWindows();
 }
@@ -322,7 +321,10 @@ void mainWindow::createTreeWidgetItem()
 	{
 		QTreeWidgetItem *childMirror = new QTreeWidgetItem;
 		childMirror->setText(0, tr("Mirror") + QString::number(i+1));
+		childMirror->setData(0, Qt::UserRole, QVariant(0));
+		childMirror->setData(0, Qt::UserRole, QVariant(i));
 		geometryTreeItem->addChild(childMirror);
+		childMirror->addChild(myData->getMirrorByNum(i)->getTree());
 	}
 
 	// 盒子的tree
@@ -352,6 +354,19 @@ void mainWindow::createTreeWidgetItem()
 
 void mainWindow::createRightMenu()
 {
+	R_Tree_compenents_childMenu = new QMenu(this);
+	R_BlankMenu = new QMenu(this);
+
+	modifyingMirrorAction = new QAction(tr("Modifying the mirror type"), this);
+	QFont font("Microsoft YaHei", 10, 75);
+	modifyingMirrorAction->setFont(font);
+	modifyingMirrorAction->setStatusTip(tr("Modifying parameters"));
+	connect(modifyingMirrorAction, SIGNAL(triggered()), this, SLOT(on_modifyingMirror()));
+
+	restrictionAction = new QAction(tr("Restriction"), this);
+	restrictionAction->setFont(font);
+	restrictionAction->setStatusTip(tr("Modifying parameters"));
+	connect(restrictionAction, SIGNAL(triggered()), this, SLOT(on_restriction()));
 }
 
 void mainWindow::createProject()
@@ -398,6 +413,43 @@ void mainWindow::on_isShowBox()
 	myData->getLimitBox()->setIsTransparent(isShowBoxAction->isChecked());
 
 	updateVtk();
+}
+
+void mainWindow::on_treeWidget_ContextMenuRequested(QPoint pos)
+{
+	rightSelectItem = treeWidget->itemAt(pos);
+	if (rightSelectItem == NULL)
+	{
+		return;
+	}
+	QVariant var = rightSelectItem->data(0, Qt::UserRole);
+
+	if (var == 0)      //data(...)返回的data已经在之前建立节点时用setdata()设置好  
+	{
+		if (R_BlankMenu->isEmpty())
+		{
+			R_Tree_compenents_childMenu->addAction(modifyingMirrorAction);
+			R_Tree_compenents_childMenu->addAction(restrictionAction);
+
+		}
+		//菜单出现的位置为当前鼠标的位置  
+		R_Tree_compenents_childMenu->exec(QCursor::pos());
+	}
+}
+
+void mainWindow::on_treeWidget_leftPressed(QTreeWidgetItem * item, int column)
+{
+	if (item->parent() != NULL)     // 根节点
+		if (qApp->mouseButtons() == Qt::LeftButton)
+		{
+			//RectangleWidget dialog(this, isSet); 
+			if (item->data(0, Qt::UserRole) == 0)
+			{
+				int num = item->data(1, Qt::UserRole).toInt();
+				myData->getMirrorByNum(num);
+			}
+
+		}
 }
 
 

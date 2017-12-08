@@ -19,6 +19,8 @@ public:
 	ParabolicCylinder(const GraphTrans & _graphTrans, const std::vector<double>& parameter);
 
 	void setParameter(double focus, double yMax, double zMin, double zMax);
+
+	virtual QTreeWidgetItem* getTree();
 private:
 	double focus;
 	double yMax;
