@@ -7,7 +7,7 @@
 Mirror::Mirror()
 {
 	property = vtkSmartPointer<vtkProperty>::New();
-	property->SetOpacity(0.5);
+	property->SetOpacity(1);
 	property->SetColor(180.0 / 255.0, 180.0 / 255.0, 180.0 / 255.0);
 	//property->SetColor(1, 1, 0);
 	actor = vtkSmartPointer<vtkActor>::New();
@@ -51,12 +51,27 @@ void Mirror::setData(const vector<double>&parameter)
 	}
 }
 
-void Mirror::setSelected()
+void Mirror::setGraphTrans(const GraphTrans &graphTrans)
 {
-	actor->GetProperty()->SetOpacity(0.5);
-	actor->GetProperty()->SetColor(0, 1, 0);
-	//property->SetOpacity(0.2);
-	//property->SetColor(0, 1, 0);
+	this->graphTrans = graphTrans;
+	updateData();
+}
+
+void Mirror::setSelected(bool flag = true)
+{
+	//actor->GetProperty()->SetOpacity(0.5);
+	//actor->GetProperty()->SetColor(0, 1, 0);
+	if (flag)
+	{
+		property->SetOpacity(0.2);
+		property->SetColor(0, 0, 1);
+	}
+	else
+	{
+		property->SetOpacity(1);
+		property->SetColor(180.0 / 255.0, 180.0 / 255.0, 180.0 / 255.0);
+	}
+
 }
 
 QTreeWidgetItem * Mirror::getTransformTree()

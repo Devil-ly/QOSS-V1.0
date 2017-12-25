@@ -41,8 +41,16 @@ MyData const * MyData::getConstInstance()
 
 void MyData::setMirror(int index, Mirror * _mirror)
 {
-	if (index < MAX_NUM_OF_MIRROS)
+	if (index >= 0 && index < numOfMirrors)
+	{
+		if (mirrors[index])
+		{
+			delete mirrors[index];
+			mirrors[index] = nullptr;
+		}
 		mirrors[index] = _mirror;
+	}
+		
 }
 
 Mirror * MyData::getMirror(int index) const

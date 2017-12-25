@@ -39,13 +39,37 @@ void Paraboloid::setParameter(double focus, double radius)
 	data[15] = radius * radius / 4.0 / focus;
 
 	// for test
-	data[10] = -radius;
-	data[11] = 0;
-	data[12] = -radius*0.3;
-	data[13] = radius*0.3;
-	data[14] = 0.1;
-	data[15] = radius * radius / 4.0 / focus * 0.7;
+	//data[10] = -radius;
+	//data[11] = 0;
+	//data[12] = -radius*0.3;
+	//data[13] = radius*0.3;
+	//data[14] = 0.1;
+	//data[15] = radius * radius / 4.0 / focus * 0.7;
 
+	updateData();
+}
+
+void Paraboloid::setFocus(double focus)
+{
+	this->focus = focus;
+
+	data[8] = -4.0 * focus;
+	data[15] = radius * radius / 4.0 / focus;
+	updateData();
+}
+
+void Paraboloid::setRadius(double radius)
+{
+	this->radius = radius;
+
+	data[10] = -radius;
+	data[11] = radius;
+	data[12] = -radius;
+	data[13] = radius;
+	data[14] = 0.0;
+	data[15] = radius * radius / 4.0 / focus;
+
+	updateData();
 }
 
 QTreeWidgetItem * Paraboloid::getTree()

@@ -2,7 +2,6 @@
 #include <Qt/include/PreDialog.h>
 #include "Qt/include/ModelWizard.h"
 #include "Qt/include/MirrorTypeWidget.h"
-#include "Qt/include/ParaboloidWidget.h"
 
 #include "VTK/include/Mirror.h"
 #include "VTK/include/MirrorFactory.h"
@@ -139,6 +138,8 @@ mainWindow::mainWindow(QWidget *parent)
 	createRightMenu();
 	//createDetails();
 	//creareWindows();
+
+	init();
 }
 
 mainWindow::~mainWindow()
@@ -148,6 +149,7 @@ mainWindow::~mainWindow()
 
 void mainWindow::init()
 {
+	isExistenceOpenWin = false;
 }
 
 void mainWindow::createActions()
@@ -330,6 +332,7 @@ void mainWindow::createTreeWidgetItem()
 		geometryTreeItem->addChild(childMirror);
 		childMirror->addChild(myData->getMirrorByNum(i)->getTree());
 		childMirror->child(0)->setData(2, Qt::UserRole, QVariant(i));
+		mirrorTreeWidgetItem.push_back(childMirror);
 	}
 
 	// 盒子的tree
@@ -450,22 +453,79 @@ void mainWindow::on_modifyParameters()
 	{
 	case PARABOLOID:
 		tempMirror = MirrorFactory::cloneMirror(myData->getMirrorByNum(index));
+		tempMirror->setSelected(true);
+		renderer->AddActor(tempMirror->getActor());
 		on_createParaboloid();
 		break;
 	default:
 		break;
 	}
-	
+	updateVtk();
 }
 
 void mainWindow::on_createParaboloid()
-{
-	 
-	ParaboloidWidget mirrorTypeWidget;
-	if (mirrorTypeWidget.exec() != QDialog::Accepted)
+{ 
+	if (isExistenceOpenWin)
 	{
-		exit(1);
+		// 已经有窗口打开了
+		QMessageBox::warning(NULL, "Warning",
+			"A window has been opened. Please close and continue!");
+
+		return;
 	}
+	paraboloidWidget = new ParaboloidWidget();
+	paraboloidWidget->setWindowFlags(Qt::WindowStaysOnTopHint); // 子窗口保持置顶
+	connect(paraboloidWidget, SIGNAL(sendData(int)),
+		this, SLOT(toReceiveParaboloid(int)));
+
+	paraboloidWidget->setMirror(tempMirror);
+	paraboloidWidget->show();
+	isExistenceOpenWin = true;
+	
+}
+
+void mainWindow::toReceiveParaboloid(int index)
+{
+	if (1 == index) // 点击确认
+	{
+		int index1 = rightSelectItem->data(2, Qt::UserRole).toInt();
+		tempMirror->setSelected(false);
+		int tempNum = mirrorTreeWidgetItem[index1]->childCount();
+		for (int i = 0; i < tempNum; ++i)
+		{
+			mirrorTreeWidgetItem[index]->removeChild(mirrorTreeWidgetItem[index]->child(i));
+		}
+		myData->setMirror(index1, tempMirror);
+		mirrorTreeWidgetItem[index]->addChild(tempMirror->getTree());
+		mirrorTreeWidgetItem[index]->child(0)->setData(2,
+			Qt::UserRole, QVariant(index));	
+		if (true) // 判断是否保留原来的限制条件
+		{
+			
+			
+		}
+		else
+		{
+
+		}
+		tempMirror = nullptr;
+		delete paraboloidWidget;
+		paraboloidWidget = nullptr;
+		isExistenceOpenWin = false;
+	}
+	else if (0 == index)// 点击取消
+	{
+		renderer->RemoveActor(tempMirror->getActor());
+		int index = rightSelectItem->data(2, Qt::UserRole).toInt();
+
+		renderer->AddActor(myData->getMirrorByNum(index)->getActor());
+		delete tempMirror;
+		tempMirror = nullptr;
+		delete paraboloidWidget;
+		paraboloidWidget = nullptr;
+		isExistenceOpenWin = false;
+	}
+	updateVtk();
 }
 
 void mainWindow::on_treeWidget_ContextMenuRequested(QPoint pos)

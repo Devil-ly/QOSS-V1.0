@@ -3,10 +3,10 @@
 #include <QMessageBox>
 using namespace userInterface;
 
-GraphTransWidget::GraphTransWidget(QWidget *parent, int wayButton)
+GraphTransWidget::GraphTransWidget(QWidget *parent)
 	: QDialog(parent)
 {
-	this->wayButton = wayButton;
+	
 }
 
 GraphTransWidget::~GraphTransWidget()
@@ -45,12 +45,6 @@ void GraphTransWidget::addBaseGroupBox(QGroupBox * _baseGroupBox)
 	VLineEidt->setText(tr("0.0"));
 	NLineEidt->setText(tr("0.0"));
 
-	connect(ULineEidt, SIGNAL(textChanged(QString)),
-		this, SLOT(on_GraphChange(QString)));
-	connect(VLineEidt, SIGNAL(textChanged(QString)),
-		this, SLOT(on_GraphChange(QString)));
-	connect(NLineEidt, SIGNAL(textChanged(QString)),
-		this, SLOT(on_GraphChange(QString)));
 
 	QGridLayout * layout2 = new QGridLayout;
 	layout2->addWidget(Ulabel, 0, 0);
@@ -86,12 +80,7 @@ void GraphTransWidget::addRotateWidget(QWidget * RotateWidget, QString filename)
 	xRotateLineEidt = new QLineEdit;
 	yRotateLineEidt = new QLineEdit;
 	zRotateLineEidt = new QLineEdit;
-	connect(xRotateLineEidt, SIGNAL(textChanged(QString)),
-		this, SLOT(on_GraphChange(QString)));
-	connect(yRotateLineEidt, SIGNAL(textChanged(QString)),
-		this, SLOT(on_GraphChange(QString)));
-	connect(zRotateLineEidt, SIGNAL(textChanged(QString)),
-		this, SLOT(on_GraphChange(QString)));
+	
 
 	xRotateLineEidt->setText(tr("1.0"));
 	yRotateLineEidt->setText(tr("0.0"));
@@ -114,9 +103,6 @@ void GraphTransWidget::addRotateWidget(QWidget * RotateWidget, QString filename)
 	thetaLineEidt = new QLineEdit;
 	thetaLineEidt->setText(tr("0.0"));
 
-	connect(thetaLineEidt, SIGNAL(textChanged(QString)),
-		this, SLOT(on_GraphChange(QString)));
-
 	QGridLayout * layout7 = new QGridLayout;
 	layout7->addWidget(thetalabel, 0, 0);
 	layout7->addWidget(thetaLineEidt, 0, 1);
@@ -136,41 +122,131 @@ void GraphTransWidget::addRotateWidget(QWidget * RotateWidget, QString filename)
 
 void GraphTransWidget::addBtn(QGridLayout * _layoutbt, int wayButton)
 {
-	this->wayButton = wayButton;
-	if (wayButton == 1)
-	{
-		createbtn = new QPushButton(tr("Ok"));
-		addbtn = new QPushButton(tr("Apply"));
-		closebtn = new QPushButton(tr("Cancle"));
 
-		connect(createbtn, SIGNAL(clicked()), this, SLOT(buttonOk()));
-		connect(addbtn, SIGNAL(clicked()), this, SLOT(buttonApply()));
-		connect(closebtn, SIGNAL(clicked()), this, SLOT(buttonClose()));
-	}
-	else
-	{
-		createbtn = new QPushButton(tr("Create"));
-		addbtn = new QPushButton(tr("Add"));
-		closebtn = new QPushButton(tr("Close"));
+	createbtn = new QPushButton(tr("Ok"));
+	closebtn = new QPushButton(tr("Cancle"));
 
-		connect(createbtn, SIGNAL(clicked()), this, SLOT(buttonCreate()));
-		connect(addbtn, SIGNAL(clicked()), this, SLOT(buttonAdd()));
-		connect(closebtn, SIGNAL(clicked()), this, SLOT(buttonClose()));
-	}
+	connect(createbtn, SIGNAL(clicked()), this, SLOT(buttonOk()));
+	connect(closebtn, SIGNAL(clicked()), this, SLOT(buttonClose()));
 
 	_layoutbt->addWidget(createbtn, 0, 0);
-	_layoutbt->addWidget(addbtn, 0, 1);
 	_layoutbt->addWidget(closebtn, 0, 2);
 }
 
-void GraphTransWidget::buttonApply()
+void GraphTransWidget::buttonClose()
 {
-	emit sendData(6);
+	emit sendData(0);
 	
 }
 
 void GraphTransWidget::buttonOk()
 {
-	emit sendData(3);
+	emit sendData(1);
 }
 
+void GraphTransWidget::on_GraphChange(QString var)
+{
+	bool ok = false;
+	double tran_x = ULineEidt->text().toDouble(&ok);
+	if (!ok)
+	{
+		//输出参数有误
+		ULineEidt->setStyleSheet("background-color:rgba(255,0,0,255)");
+		return;
+	}
+	double tran_y = VLineEidt->text().toDouble(&ok);
+	if (!ok)
+	{
+		//输出参数有误
+		VLineEidt->setStyleSheet("background-color:rgba(255,0,0,255)");
+		return;
+	}
+	double tran_z = NLineEidt->text().toDouble(&ok);
+	if (!ok)
+	{
+		//输出参数有误
+		NLineEidt->setStyleSheet("background-color:rgba(255,0,0,255)");
+		return;
+	}
+	double rotate_x = xRotateLineEidt->text().toDouble(&ok);
+	if (!ok)
+	{
+		//输出参数有误
+		xRotateLineEidt->setStyleSheet("background-color:rgba(255,0,0,255)");
+		return;
+	}
+	double rotate_y = yRotateLineEidt->text().toDouble(&ok);
+	if (!ok)
+	{
+		//输出参数有误
+		yRotateLineEidt->setStyleSheet("background-color:rgba(255,0,0,255)");
+		return;
+	}
+	double rotate_z = zRotateLineEidt->text().toDouble(&ok);
+	if (!ok)
+	{
+		//输出参数有误
+		zRotateLineEidt->setStyleSheet("background-color:rgba(255,0,0,255)");
+		return;
+	}
+	double rotate_theta = thetaLineEidt->text().toDouble(&ok);
+	if (!ok)
+	{
+		//输出参数有误
+		thetaLineEidt->setStyleSheet("background-color:rgba(255,0,0,255)");
+		return;
+	}
+
+	GraphTrans graphTransPara;
+	graphTransPara.setGraphTransPar(tran_x, tran_y,
+		tran_z, rotate_x, rotate_y, rotate_z, rotate_theta);
+
+	mirror->setGraphTrans(graphTransPara);
+	ULineEidt->setStyleSheet("background-color:rgba(255,255,255,255)");
+	VLineEidt->setStyleSheet("background-color:rgba(255,255,255,255)");
+	NLineEidt->setStyleSheet("background-color:rgba(255,255,255,255)");
+	xRotateLineEidt->setStyleSheet("background-color:rgba(255,255,255,255)");
+	yRotateLineEidt->setStyleSheet("background-color:rgba(255,255,255,255)");
+	zRotateLineEidt->setStyleSheet("background-color:rgba(255,255,255,255)");
+	thetaLineEidt->setStyleSheet("background-color:rgba(255,255,255,255)");
+
+	emit sendData(2);
+}
+
+void GraphTransWidget::setMirror(Mirror* mirror)
+{
+	this->mirror = mirror;
+
+	GraphTrans graphTrans = mirror->getGraphTrans();
+
+	ULineEidt->setText(QString::number(graphTrans.getTrans_x()));
+	VLineEidt->setText(QString::number(graphTrans.getTrans_y()));
+	NLineEidt->setText(QString::number(graphTrans.getTrans_z()));
+
+	xRotateLineEidt->setText(QString::number(graphTrans.getRotate_x()));
+	yRotateLineEidt->setText(QString::number(graphTrans.getRotate_y()));
+	zRotateLineEidt->setText(QString::number(graphTrans.getRotate_z()));
+	thetaLineEidt->setText(QString::number(graphTrans.getRotate_theta()));
+
+	connect(ULineEidt, SIGNAL(textChanged(QString)),
+		this, SLOT(on_GraphChange(QString)));
+	connect(VLineEidt, SIGNAL(textChanged(QString)),
+		this, SLOT(on_GraphChange(QString)));
+	connect(NLineEidt, SIGNAL(textChanged(QString)),
+		this, SLOT(on_GraphChange(QString)));
+
+	connect(xRotateLineEidt, SIGNAL(textChanged(QString)),
+		this, SLOT(on_GraphChange(QString)));
+	connect(yRotateLineEidt, SIGNAL(textChanged(QString)),
+		this, SLOT(on_GraphChange(QString)));
+	connect(zRotateLineEidt, SIGNAL(textChanged(QString)),
+		this, SLOT(on_GraphChange(QString)));
+
+	connect(thetaLineEidt, SIGNAL(textChanged(QString)),
+		this, SLOT(on_GraphChange(QString)));
+}
+
+void GraphTransWidget::closeEvent(QCloseEvent * event)
+{
+	emit sendData(1);
+}

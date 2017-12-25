@@ -22,6 +22,9 @@
 
 #include "MyData.h"
 
+#include "Qt/include/ParaboloidWidget.h"
+
+using namespace userInterface;
 class mainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -61,6 +64,7 @@ private slots:
 	void on_modifyParameters();
 
 	void on_createParaboloid();
+	void toReceiveParaboloid(int);
 
 	// ------------------- 左键右键函数 ----------------------------------
 	void on_treeWidget_ContextMenuRequested(QPoint pos);// 右键菜单
@@ -128,8 +132,15 @@ private:
 	QTreeWidgetItem * rightSelectItem;
 	QTreeWidgetItem * leftSelectItem; // 右键选中的节点
 
+	vector<QTreeWidgetItem*> mirrorTreeWidgetItem;
+
 	MyData * myData;
 	Mirror * tempMirror;
+
+	// 窗口指针
+	ParaboloidWidget *paraboloidWidget;
+
+	bool isExistenceOpenWin;
 
 };
 

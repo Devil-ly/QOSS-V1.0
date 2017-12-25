@@ -53,8 +53,9 @@ public:
 	void setData(const vector<double>&);
 
 	GraphTrans getGraphTrans() const { return graphTrans; }
+	void setGraphTrans(const GraphTrans&);
 
-	void setSelected();
+	void setSelected(bool);
 
 	virtual QTreeWidgetItem* getTree() { return nullptr; };
 

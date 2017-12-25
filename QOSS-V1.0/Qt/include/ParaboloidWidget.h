@@ -10,6 +10,8 @@
 #include <QPushButton>
 
 #include "Qt/include/GraphTransWidget.h"
+#include "../VTK/include/Paraboloid.h"
+
 
 namespace  userInterface {
 	class ParaboloidWidget : public GraphTransWidget
@@ -17,11 +19,13 @@ namespace  userInterface {
 		Q_OBJECT
 
 	public:
-		ParaboloidWidget(QWidget *parent = 0, int wayButton = 0);
+		ParaboloidWidget(QWidget *parent = 0);
 		~ParaboloidWidget();
+		void setMirror(Mirror*);
 
 	private slots:
-		//void on_DefChange(QString);
+		void on_radiusChange(QString);
+		void on_focusChange(QString);
 
 	private:
 		//page1
@@ -38,6 +42,8 @@ namespace  userInterface {
 
 		QLabel * label;
 		QLineEdit * nameLineEidt;
+
+		Paraboloid * paraboloid;
 	};
 }
 

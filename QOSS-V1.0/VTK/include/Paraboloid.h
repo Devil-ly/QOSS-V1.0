@@ -20,6 +20,12 @@ public:
 
 	void setParameter(double focus, double radius);
 
+	void setFocus(double);
+	double getFocus() const { return focus; }
+
+	void setRadius(double);
+	double getRadius() const { return radius; }
+
 	virtual QTreeWidgetItem* getTree();
 private:
 	double focus;
