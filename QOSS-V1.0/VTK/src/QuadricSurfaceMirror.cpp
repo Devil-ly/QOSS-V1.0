@@ -21,6 +21,7 @@ QuadricSurfaceMirror::QuadricSurfaceMirror(const GraphTrans & _graphTrans,
 {
 	type = QUADRICSURFACE;
 	graphTrans = _graphTrans;
+	setData(parameter);
 	updateData();
 }
 

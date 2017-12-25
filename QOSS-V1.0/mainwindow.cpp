@@ -2,14 +2,15 @@
 #include <Qt/include/PreDialog.h>
 #include "Qt/include/ModelWizard.h"
 #include "Qt/include/MirrorTypeWidget.h"
+#include "Qt/include/ParaboloidWidget.h"
 
 #include "VTK/include/Mirror.h"
+#include "VTK/include/MirrorFactory.h"
 #include "VTK/include/LimitBox.h"
 #include "VTK/include/LightShow.h"
 #include "VTK/include/Radiator.h"
 
 #include "util/Definition.h"
-
 
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkRenderWindow.h>
@@ -47,11 +48,12 @@ mainWindow::mainWindow(QWidget *parent)
 	//创建默认辐射器
 	myData->createRadiator();
 	renderer->AddActor(myData->getRadiator()->getActorModel());
-	renderer->AddActor(myData->getRadiator()->getActorRay());
+	//renderer->AddActor(myData->getRadiator()->getActorRay());
 
 	// 创建默认的镜子
 	myData->createDefaultMirror();
 	for (int i = 0; i < myData->getNumOfMirrors(); ++i)
+	//for (int i = 0; i < 2; ++i)
 	{
 		renderer->AddActor(myData->getMirrorByNum(i)->getActor());
 	}
@@ -63,8 +65,8 @@ mainWindow::mainWindow(QWidget *parent)
 	myData->createDefaultLigthShow();
 	std::list<vtkSmartPointer<vtkActor>> tempActors = 
 		myData->getDefaultLightShow()->getActors();
-	for (auto& x : tempActors)
-		renderer->AddActor(x);
+	//for (auto& x : tempActors)
+	//	renderer->AddActor(x);
 
 	
 	double axesScale = myData->getLimitBox()->getMaxSize();
@@ -324,9 +326,10 @@ void mainWindow::createTreeWidgetItem()
 		QTreeWidgetItem *childMirror = new QTreeWidgetItem;
 		childMirror->setText(0, tr("Mirror") + QString::number(i+1));
 		childMirror->setData(0, Qt::UserRole, QVariant(0));
-		childMirror->setData(0, Qt::UserRole, QVariant(i));
+		childMirror->setData(1, Qt::UserRole, QVariant(i));
 		geometryTreeItem->addChild(childMirror);
 		childMirror->addChild(myData->getMirrorByNum(i)->getTree());
+		childMirror->child(0)->setData(2, Qt::UserRole, QVariant(i));
 	}
 
 	// 盒子的tree
@@ -356,19 +359,31 @@ void mainWindow::createTreeWidgetItem()
 
 void mainWindow::createRightMenu()
 {
-	R_Tree_compenents_childMenu = new QMenu(this);
+	R_Tree_MirrorTypeMenu = new QMenu(this);
 	R_BlankMenu = new QMenu(this);
 
 	modifyingMirrorAction = new QAction(tr("Modifying the mirror type"), this);
 	QFont font("Microsoft YaHei", 10, 75);
 	modifyingMirrorAction->setFont(font);
-	modifyingMirrorAction->setStatusTip(tr("Modifying parameters"));
+	modifyingMirrorAction->setStatusTip(tr("Modifying the mirror type"));
 	connect(modifyingMirrorAction, SIGNAL(triggered()), this, SLOT(on_modifyingMirror()));
 
 	restrictionAction = new QAction(tr("Add restriction"), this);
 	restrictionAction->setFont(font);
-	restrictionAction->setStatusTip(tr("Modifying parameters"));
+	restrictionAction->setStatusTip(tr("Add restriction"));
 	connect(restrictionAction, SIGNAL(triggered()), this, SLOT(on_restriction()));
+
+	R_Tree_MirrorTypeMenu->addAction(modifyingMirrorAction);
+	R_Tree_MirrorTypeMenu->addAction(restrictionAction);
+
+	R_Tree_MirrorParMenu = new QMenu(this);
+	modifyParametersAction = new QAction(tr("Modifying parameters"), this);
+	modifyParametersAction->setFont(font);
+	modifyParametersAction->setStatusTip(tr("Modifying parameters"));
+	connect(modifyParametersAction, SIGNAL(triggered()), this, SLOT(on_modifyParameters()));
+
+	R_Tree_MirrorParMenu->addAction(modifyParametersAction);
+
 }
 
 void mainWindow::createProject()
@@ -426,6 +441,33 @@ void mainWindow::on_modifyingMirror()
 	}
 }
 
+void mainWindow::on_modifyParameters()
+{
+	int varInt = rightSelectItem->data(1, Qt::UserRole).toInt();
+	int index = rightSelectItem->data(2, Qt::UserRole).toInt();
+	renderer->RemoveActor(myData->getMirrorByNum(index)->getActor());
+	switch (varInt)
+	{
+	case PARABOLOID:
+		tempMirror = MirrorFactory::cloneMirror(myData->getMirrorByNum(index));
+		on_createParaboloid();
+		break;
+	default:
+		break;
+	}
+	
+}
+
+void mainWindow::on_createParaboloid()
+{
+	 
+	ParaboloidWidget mirrorTypeWidget;
+	if (mirrorTypeWidget.exec() != QDialog::Accepted)
+	{
+		exit(1);
+	}
+}
+
 void mainWindow::on_treeWidget_ContextMenuRequested(QPoint pos)
 {
 	rightSelectItem = treeWidget->itemAt(pos);
@@ -437,14 +479,21 @@ void mainWindow::on_treeWidget_ContextMenuRequested(QPoint pos)
 
 	if (var == 0)      //data(...)返回的data已经在之前建立节点时用setdata()设置好  
 	{
+		//菜单出现的位置为当前鼠标的位置  
 		if (R_BlankMenu->isEmpty())
 		{
-			R_Tree_compenents_childMenu->addAction(modifyingMirrorAction);
-			R_Tree_compenents_childMenu->addAction(restrictionAction);
+			R_Tree_MirrorTypeMenu->exec(QCursor::pos());
+
+		}		
+	}
+	else if (var == 1)     
+	{
+		//菜单出现的位置为当前鼠标的位置  
+		if (R_BlankMenu->isEmpty())
+		{
+			R_Tree_MirrorParMenu->exec(QCursor::pos());
 
 		}
-		//菜单出现的位置为当前鼠标的位置  
-		R_Tree_compenents_childMenu->exec(QCursor::pos());
 	}
 }
 

@@ -18,6 +18,8 @@ public:
 	static Mirror* getMirror(MirrorsType type, const GraphTrans& graphTrans, 
 		const std::vector<double>& parameter);
 	static Mirror* getMirror(MirrorsType type, const GraphTrans& graphTrans);
+	static Mirror* cloneMirror(Mirror*);
+
 	static Mirror* getDefaultMirror(const GraphTrans& graphTrans);
 
 private:

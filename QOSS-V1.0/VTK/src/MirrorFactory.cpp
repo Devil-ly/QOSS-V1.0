@@ -58,6 +58,15 @@ Mirror * MirrorFactory::getMirror(MirrorsType type, const GraphTrans & graphTran
 	return res;
 }
 
+Mirror * MirrorFactory::cloneMirror(Mirror * mirror)
+{
+	Mirror* res = nullptr;
+	GraphTrans graphTrans = mirror->getGraphTrans();
+	const std::vector<double>& parameter = mirror->getData();
+
+	return getMirror(mirror->getMirrorsType(), graphTrans, parameter);
+}
+
 Mirror * MirrorFactory::getDefaultMirror(const GraphTrans & graphTrans)
 {
 	return getMirror(PLANEMIRROR, graphTrans);

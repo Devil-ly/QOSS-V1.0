@@ -176,6 +176,24 @@
     <ClCompile Include="Qt\src\MirrorTypeWidget.cpp">
       <Filter>Source Files\Qt</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_GraphTransWidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_GraphTransWidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ParaboloidWidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ParaboloidWidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Qt\src\GraphTransWidget.cpp">
+      <Filter>Source Files\Qt</Filter>
+    </ClCompile>
+    <ClCompile Include="Qt\src\ParaboloidWidget.cpp">
+      <Filter>Source Files\Qt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwindow.h">
@@ -200,6 +218,12 @@
       <Filter>Header Files\Qt</Filter>
     </CustomBuild>
     <CustomBuild Include="Qt\include\MirrorTypeWidget.h">
+      <Filter>Header Files\Qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Qt\include\GraphTransWidget.h">
+      <Filter>Header Files\Qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Qt\include\ParaboloidWidget.h">
       <Filter>Header Files\Qt</Filter>
     </CustomBuild>
   </ItemGroup>

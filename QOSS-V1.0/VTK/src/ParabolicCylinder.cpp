@@ -16,20 +16,13 @@ ParabolicCylinder::ParabolicCylinder(const GraphTrans & _graphTrans,
 {
 	type = PARABOLICCYLINDER;
 	graphTrans = _graphTrans;
-	this->focus = parameter[0];
-	this->yMax = parameter[1];
-	this->zMin = parameter[2];
-	this->zMax = parameter[3];
-	data.resize(16);
-	for (auto & x : data)
-		x = 0;
-	data[1] = 1;
-	data[6] = -4 * focus;
-	data[11] = yMax * yMax / focus;
-	data[12] = -yMax;
-	data[13] = yMax;
-	data[14] = zMin;
-	data[15] = zMax;
+	this->focus = -parameter[6]/4;
+	this->yMax = parameter[13];
+	this->zMin = parameter[14];
+	this->zMax = parameter[15];
+
+	setData(parameter);
+
 	updateData();
 }
 
@@ -46,13 +39,15 @@ void ParabolicCylinder::setParameter(double focus, double yMax, double zMin, dou
 	data[13] = yMax;
 	data[14] = zMin;
 	data[15] = zMax;
+	updateData();
 }
 
 QTreeWidgetItem * ParabolicCylinder::getTree()
 {
 	QTreeWidgetItem * tree = new QTreeWidgetItem;
 	tree->setText(0, "ParabolicCylinder");
-	tree->setData(0, Qt::UserRole, QVariant(PARABOLICCYLINDER));
+	tree->setData(0, Qt::UserRole, QVariant(1));
+	tree->setData(1, Qt::UserRole, QVariant(PARABOLICCYLINDER));
 	QTreeWidgetItem * treeFocus = new QTreeWidgetItem;
 	treeFocus->setText(0, QString("Focus: ")+ QString::number(focus));
 	

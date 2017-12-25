@@ -7,7 +7,7 @@ Ellipsoid::Ellipsoid(const GraphTrans & _graphTrans)
 	data.resize(16);
 	for (auto & x : data)
 		x = 0;
-	setParameter(0.08, 0.04, 0.04, 0.2);
+	setParameter(0.2, 0.16, 0.16, 0.2);
 	updateData();
 }
 
@@ -32,7 +32,7 @@ Ellipsoid::Ellipsoid(const GraphTrans & _graphTrans,
 	data[12] = -b;
 	data[13] = b;
 	data[14] = -c;
-	data[15] = -0.5*c;
+	data[15] = 0;
 	updateData();
 }
 
@@ -51,14 +51,23 @@ void Ellipsoid::setParameter(double a, double b, double c, double theta)
 	data[12] = -b;
 	data[13] = b;
 	data[14] = -c;
-	data[15] = -0.5*c;
+	data[15] = 0;
+
+	// for test
+	data[10] = a*0.6;
+	data[11] = a*0.9;
+	data[12] = -b*0.35;
+	data[13] = b*0.35;
+	data[14] = -c;
+	data[15] = 0;
 }
 
 QTreeWidgetItem * Ellipsoid::getTree()
 {
 	QTreeWidgetItem * tree = new QTreeWidgetItem;
 	tree->setText(0, "Ellipsoid");
-	tree->setData(0, Qt::UserRole, QVariant(ELLIPSOID));
+	tree->setData(0, Qt::UserRole, QVariant(1));
+	tree->setData(1, Qt::UserRole, QVariant(ELLIPSOID));
 	QTreeWidgetItem * treea = new QTreeWidgetItem;
 	treea->setText(0, QString("a: ") + QString::number(a));
 

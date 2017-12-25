@@ -74,7 +74,8 @@ QTreeWidgetItem * PlaneMirror::getTree()
 {
 	QTreeWidgetItem * tree = new QTreeWidgetItem;
 	tree->setText(0, "PlaneMirror");
-	tree->setData(0, Qt::UserRole, QVariant(PLANEMIRROR));
+	tree->setData(0, Qt::UserRole, QVariant(1));
+	tree->setData(1, Qt::UserRole, QVariant(PLANEMIRROR));
 
 	tree->addChild(getTransformTree());
 	return tree;

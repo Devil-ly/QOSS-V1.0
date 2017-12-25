@@ -50,6 +50,7 @@ public:
 	virtual void calcReflectedRay(const Vector3&, Vector3&, Vector3&) = 0;
 
 	const vector<double>& getData() const { return data; }
+	void setData(const vector<double>&);
 
 	GraphTrans getGraphTrans() const { return graphTrans; }
 

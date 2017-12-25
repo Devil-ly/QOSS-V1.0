@@ -7,8 +7,9 @@
 Mirror::Mirror()
 {
 	property = vtkSmartPointer<vtkProperty>::New();
-	property->SetOpacity(1);
+	property->SetOpacity(0.5);
 	property->SetColor(180.0 / 255.0, 180.0 / 255.0, 180.0 / 255.0);
+	//property->SetColor(1, 1, 0);
 	actor = vtkSmartPointer<vtkActor>::New();
 }
 
@@ -33,11 +34,21 @@ void Mirror::calActor()
 	mapper->ScalarVisibilityOff();
 
 	actor->SetMapper(mapper);
+	actor->SetProperty(property);
 }
 
 vtkSmartPointer<vtkPolyData> Mirror::getPolyData() const
 {
 	return polyData;
+}
+
+void Mirror::setData(const vector<double>&parameter)
+{
+	data.resize(parameter.size());
+	for (int i = 0; i < parameter.size(); i++)
+	{
+		data[i] = parameter[i];
+	}
 }
 
 void Mirror::setSelected()

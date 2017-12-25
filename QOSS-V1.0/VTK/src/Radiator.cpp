@@ -4,15 +4,17 @@
 Radiator::Radiator()
 {
 	property = vtkSmartPointer<vtkProperty>::New();
-	property->SetOpacity(0.2);
-	property->SetColor(0, 0, 1);
+	//property->SetOpacity(0.2);
+	//property->SetColor(0, 0, 1);
+	property->SetOpacity(0.5);
+	property->SetColor(180.0 / 255.0, 180.0 / 255.0, 180.0 / 255.0);
 	propertyRay = vtkSmartPointer<vtkProperty>::New();
 	propertyRay->SetOpacity(1);
 	propertyRay->SetColor(1, 0, 0);
 	actorModel = vtkSmartPointer<vtkActor>::New();
 	actorRay = vtkSmartPointer<vtkActor>::New();
-	phiNum = 2 * 200;
-	cylinderNum = 10;
+	phiNum = 2 * 20;
+	cylinderNum = 5;
 }
 
 Radiator::~Radiator()

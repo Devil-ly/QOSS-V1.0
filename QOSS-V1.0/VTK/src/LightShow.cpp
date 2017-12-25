@@ -49,7 +49,7 @@ void LightShow::calRayActor()
 	Vector3 tempIntersect;
 	Vector3 tempReflect;
 	bool tempIsIntersect;
-	for (int n = 0; n < 2; n++)
+	for (int n = 0; n < 3; n++)
 	{
 		calculation::RayTracing rayTracing(mirrors[n]);
 

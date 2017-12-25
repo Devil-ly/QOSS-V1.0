@@ -1,5 +1,6 @@
 #include "MyData.h"
 #include "VTK/include/Mirror.h"
+#include "VTK/include/ParabolicCylinder.h"
 #include "VTK/include/MirrorFactory.h"
 #include "VTK/include/RadiatorFactory.h"
 #include "../VTK/include/LightShow.h"
@@ -62,17 +63,22 @@ void MyData::createDefaultMirror()
 		mirror1Position.updateTranslate(Vector3(position[0].getTrans_x(),
 			0, 0));
 		double temp = abs(position[0].getTrans_x());
-		vector<double> parameter(4);
-		parameter[0] = temp;
-		parameter[1] = temp * 2;
-		parameter[2] = 0;
-		parameter[3] = radiator->getFirstMirrorHeight(temp);
-		mirrors[0] = MirrorFactory::getMirror(PARABOLICCYLINDER, mirror1Position, parameter);
+		mirrors[0] = MirrorFactory::getMirror(PARABOLICCYLINDER, mirror1Position);
 
-		mirrors[1] = MirrorFactory::getMirror(PARABOLOID, position[1]);
+		dynamic_cast<ParabolicCylinder*>(mirrors[0])->setParameter(temp, temp * 2, 0,
+			radiator->getFirstMirrorHeight(temp));
 
-		mirrors[2] = MirrorFactory::getMirror(ELLIPSOID, position[2]);
-		
+		GraphTrans mirror2Position;
+		mirror2Position.updateTranslate(Vector3(-0.07, 0, 0.619));
+		mirror2Position.updateRotate(Vector3(0, 1, 0), -164.94);
+		mirrors[1] = MirrorFactory::getMirror(PARABOLOID, mirror2Position);
+		//mirrors[1] = MirrorFactory::getMirror(PARABOLOID, position[1]);
+		GraphTrans mirror3Position;
+		mirror3Position.updateTranslate(Vector3(0.034, 0, 0.605));
+		mirror3Position.updateRotate(Vector3(0, 1, 0), -17.23-180);
+		//mirrors[2] = MirrorFactory::getMirror(ELLIPSOID, position[2]);
+		mirrors[2] = MirrorFactory::getMirror(ELLIPSOID, mirror3Position);
+
 	}	
 }
 

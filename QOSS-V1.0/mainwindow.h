@@ -58,6 +58,9 @@ private slots:
 	void on_isShowBox();
 
 	void on_modifyingMirror();
+	void on_modifyParameters();
+
+	void on_createParaboloid();
 
 	// ------------------- 左键右键函数 ----------------------------------
 	void on_treeWidget_ContextMenuRequested(QPoint pos);// 右键菜单
@@ -88,7 +91,8 @@ private:
 	QMenu * CalMenu;  //计算栏
 
 	//右键菜单
-	QMenu *R_Tree_compenents_childMenu;
+	QMenu *R_Tree_MirrorTypeMenu;
+	QMenu *R_Tree_MirrorParMenu;
 	QMenu *R_BlankMenu;
 
 	//----------- ToolBar ------------------- 
@@ -110,6 +114,7 @@ private:
 	// 右键
 	QAction * modifyingMirrorAction;
 	QAction * restrictionAction;
+	QAction * modifyParametersAction;
 
 	//------------- TreeWidgetItem------------------- 
 	QTreeWidgetItem * definitionsTreeItem;
@@ -124,6 +129,7 @@ private:
 	QTreeWidgetItem * leftSelectItem; // 右键选中的节点
 
 	MyData * myData;
+	Mirror * tempMirror;
 
 };
 

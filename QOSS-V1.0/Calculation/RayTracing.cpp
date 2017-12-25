@@ -44,6 +44,7 @@ void calculation::RayTracing::calcReflect(const Vector3 & startPiont, const Vect
 	case QUADRICSURFACE:
 	case PARABOLICCYLINDER:
 	case PARABOLOID:
+	case ELLIPSOID:
 		calcReflectByQuadricSurface(startPiont, direction, reflex, intersection, isIntersect);
 		break;
 	default:
@@ -120,39 +121,32 @@ void calculation::RayTracing::calcReflectByQuadricSurface(const Vector3 & startP
 
 	if (ray_CurvedSurface(tempData, tempDirection, tempStartPiont, t, intersection))
 	{
-		if (tempData[10] - THRESHOLD < intersection.x  &&
-			intersection.x < tempData[11] + THRESHOLD &&
-			tempData[12] - THRESHOLD < intersection.y && 
-			intersection.y < tempData[13] + THRESHOLD &&
-			tempData[14] - THRESHOLD < intersection.z &&
-			intersection.z < tempData[15] + THRESHOLD)
-			// 判断是否在给出的区间内
-		{
-			double x = 2 * tempData[0] * intersection.x + tempData[3] * intersection.y + 
-				tempData[5] * intersection.z + tempData[6];
-			double y = 2 * tempData[1] * intersection.y + tempData[3] * intersection.x +
-				tempData[4] * intersection.z + tempData[7];
-			double z = 2 * tempData[2] * intersection.z + tempData[4] * intersection.y +
-				tempData[5] * intersection.x + tempData[8];
-			Vector3 tempn(x, y, z);
-			if (tempn.Dot(tempDirection) > 0.0)
-				tempn.set(-x, -y, -z);
 
-			reflex = reflectLight(tempDirection, tempn);
-			isIntersect = true;
+		double x = 2 * tempData[0] * intersection.x + tempData[3] * intersection.y +
+			tempData[5] * intersection.z + tempData[6];
+		double y = 2 * tempData[1] * intersection.y + tempData[3] * intersection.x +
+			tempData[4] * intersection.z + tempData[7];
+		double z = 2 * tempData[2] * intersection.z + tempData[4] * intersection.y +
+			tempData[5] * intersection.x + tempData[8];
+		Vector3 tempn(x, y, z);
+		if (tempn.Dot(tempDirection) > 0.0)
+			tempn.set(-x, -y, -z);
 
-			// 将模型的相对坐标系转到世界坐标系
-			intersection = translateMatrix * rotatMatrix * intersection;
-			reflex = rotatMatrix * reflex; // 更新方向
+		reflex = reflectLight(tempDirection, tempn);
+		isIntersect = true;
 
-		}
-		else
-		{
-			intersection = startPiont; // 让交点等于起点 方向不变 避免对无交点时特殊处理
-			isIntersect = false;
-		}
-			
+		// 将模型的相对坐标系转到世界坐标系
+		intersection = translateMatrix * rotatMatrix * intersection;
+		reflex = rotatMatrix * reflex; // 更新方向
+
 	}
+	else
+	{
+		intersection = startPiont; // 让交点等于起点 方向不变 避免对无交点时特殊处理
+		isIntersect = false;
+	}
+			
+
 }
 
 bool calculation::RayTracing::isIntersect(const Vector3 & orig, const Vector3 & dir,
@@ -162,7 +156,8 @@ bool calculation::RayTracing::isIntersect(const Vector3 & orig, const Vector3 & 
 	return false;
 }
 
-bool calculation::RayTracing::ray_CurvedSurface(const vector<double> &a, Vector3 n, Vector3 org, double & t, Vector3 & interPoint)
+bool calculation::RayTracing::ray_CurvedSurface(const vector<double> &a, 
+	Vector3 n, Vector3 org, double & t, Vector3 & interPoint)
 {
 	double x0 = org.x, y0 = org.y, z0 = org.z;
 	double x1 = n.x, y1 = n.y, z1 = n.z;
@@ -188,12 +183,61 @@ bool calculation::RayTracing::ray_CurvedSurface(const vector<double> &a, Vector3
 		tempt1 = (-B + temp) / 2.0 / A;
 		tempt2 = (-B - temp) / 2.0 / A; // 求根公式的两个解
 
-		if (tempt1 >= 0.0 && tempt2 >= 0.0) // 都大于等于0 取小的
+		if (tempt1 >= 0.0 && tempt2 >= 0.0) // 都大于等于0 需要先比较是否在都在限制条件内
 		{
-			if (tempt1 > tempt2)
-				t = tempt2;
-			else
-				t = tempt1;
+			bool isIn1 = false;
+			Vector3 interPoint1(x0 + x1 * tempt1, y0 + y1 * tempt1, z0 + z1 * tempt1);	
+			// 判断是否在给出的区间内
+			if (a[10] - THRESHOLD < interPoint1.x  &&
+				interPoint1.x < a[11] + THRESHOLD &&
+				a[12] - THRESHOLD < interPoint1.y &&
+				interPoint1.y < a[13] + THRESHOLD &&
+				a[14] - THRESHOLD < interPoint1.z &&
+				interPoint1.z < a[15] + THRESHOLD)
+			{
+				isIn1 = true;
+			}
+			bool isIn2 = false;
+			Vector3 interPoint2(x0 + x1 * tempt2, y0 + y1 * tempt2, z0 + z1 * tempt2);
+			// 判断是否在给出的区间内
+			if (a[10] - THRESHOLD < interPoint2.x  &&
+				interPoint2.x < a[11] + THRESHOLD &&
+				a[12] - THRESHOLD < interPoint2.y &&
+				interPoint2.y < a[13] + THRESHOLD &&
+				a[14] - THRESHOLD < interPoint2.z &&
+				interPoint2.z < a[15] + THRESHOLD)
+			{
+				isIn2 = true;
+			}
+			if (isIn1 && isIn2)
+			{
+				if (tempt1 > tempt2)
+				{
+					interPoint = interPoint1;
+					return true;
+				}
+				else
+				{
+					interPoint = interPoint2;
+					return true;
+				}
+					
+			}
+			else if (isIn1 && !isIn2)
+			{
+				interPoint = interPoint1;
+				return true;
+			}
+			else if (!isIn1 && isIn2)
+			{
+				interPoint = interPoint2;
+				return true;
+			}
+			else 
+			{
+				return false;
+			}
+			
 		}
 		else if (tempt1 < 0.0 && tempt2 < 0.0) // 都小于0 无解
 		{
@@ -214,8 +258,19 @@ bool calculation::RayTracing::ray_CurvedSurface(const vector<double> &a, Vector3
 		return false;
 	else
 	{
+		// 判断是否在给出的区间内
 		interPoint.set(x0 + x1 * t, y0 + y1 * t, z0 + z1 * t);
-		return true;
+		if (a[10] - THRESHOLD < interPoint.x  &&
+			interPoint.x < a[11] + THRESHOLD &&
+			a[12] - THRESHOLD < interPoint.y &&
+			interPoint.y < a[13] + THRESHOLD &&
+			a[14] - THRESHOLD < interPoint.z &&
+			interPoint.z < a[15] + THRESHOLD)
+		{
+			return true;
+		}
+		else
+			return false;
 	}
 }
 
