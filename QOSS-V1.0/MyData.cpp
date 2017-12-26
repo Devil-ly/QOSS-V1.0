@@ -76,6 +76,13 @@ void MyData::createDefaultMirror()
 		dynamic_cast<ParabolicCylinder*>(mirrors[0])->setParameter(temp, temp * 2, 0,
 			radiator->getFirstMirrorHeight(temp));
 
+
+		// test
+		GraphTrans tempgraphTran;
+		tempgraphTran.updateTranslate(Vector3(0, 0, 0.5));
+		mirrors[0] = MirrorFactory::getMirror(PARABOLOID, tempgraphTran);
+
+		//test
 		GraphTrans mirror2Position;
 		mirror2Position.updateTranslate(Vector3(-0.07, 0, 0.619));
 		mirror2Position.updateRotate(Vector3(0, 1, 0), -164.94);

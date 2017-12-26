@@ -4,6 +4,7 @@
 #include "Qt/include/MirrorTypeWidget.h"
 
 #include "VTK/include/Mirror.h"
+#include "VTK/include/Restriction.h"
 #include "VTK/include/MirrorFactory.h"
 #include "VTK/include/LimitBox.h"
 #include "VTK/include/LightShow.h"
@@ -51,8 +52,8 @@ mainWindow::mainWindow(QWidget *parent)
 
 	// 创建默认的镜子
 	myData->createDefaultMirror();
-	for (int i = 0; i < myData->getNumOfMirrors(); ++i)
-	//for (int i = 0; i < 2; ++i)
+	//for (int i = 0; i < myData->getNumOfMirrors(); ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		renderer->AddActor(myData->getMirrorByNum(i)->getActor());
 	}
@@ -67,6 +68,10 @@ mainWindow::mainWindow(QWidget *parent)
 	//for (auto& x : tempActors)
 	//	renderer->AddActor(x);
 
+	//Restriction * test = new Restriction;
+	//renderer->AddActor(test->getActor());
+	//myData->getMirrorByNum(0)->addRestriction(test);
+	//renderer->AddActor(myData->getMirrorByNum(0)->getActor());
 	
 	double axesScale = myData->getLimitBox()->getMaxSize();
 	// 初始化vtk窗口
@@ -150,6 +155,7 @@ mainWindow::~mainWindow()
 void mainWindow::init()
 {
 	isExistenceOpenWin = false;
+	isNew = true;
 }
 
 void mainWindow::createActions()
@@ -333,6 +339,7 @@ void mainWindow::createTreeWidgetItem()
 		childMirror->addChild(myData->getMirrorByNum(i)->getTree());
 		childMirror->child(0)->setData(2, Qt::UserRole, QVariant(i));
 		mirrorTreeWidgetItem.push_back(childMirror);
+		childMirror->setExpanded(true);
 	}
 
 	// 盒子的tree
@@ -376,8 +383,22 @@ void mainWindow::createRightMenu()
 	restrictionAction->setStatusTip(tr("Add restriction"));
 	connect(restrictionAction, SIGNAL(triggered()), this, SLOT(on_restriction()));
 
+	isShowMirrorAction = new QAction(tr("Show"), this);
+	isShowMirrorAction->setStatusTip(tr("isShow"));
+	isShowMirrorAction->setCheckable(true);
+	isShowMirrorAction->setChecked(true);
+	connect(isShowMirrorAction, SIGNAL(triggered()), this, SLOT(on_isShowMirror()));
+
+	isTransparentAction = new QAction(tr("Transparent"), this);
+	isTransparentAction->setStatusTip(tr("isTransparent"));
+	isTransparentAction->setCheckable(true);
+	isTransparentAction->setChecked(false);
+	connect(isTransparentAction, SIGNAL(triggered()), this, SLOT(on_isTransparentMirror()));
+
 	R_Tree_MirrorTypeMenu->addAction(modifyingMirrorAction);
 	R_Tree_MirrorTypeMenu->addAction(restrictionAction);
+	R_Tree_MirrorTypeMenu->addAction(isShowMirrorAction);
+	R_Tree_MirrorTypeMenu->addAction(isTransparentAction);
 
 	R_Tree_MirrorParMenu = new QMenu(this);
 	modifyParametersAction = new QAction(tr("Modifying parameters"), this);
@@ -387,6 +408,18 @@ void mainWindow::createRightMenu()
 
 	R_Tree_MirrorParMenu->addAction(modifyParametersAction);
 
+	R_Tree_RestrictionMenu = new QMenu(this);
+
+	modifyingRestrictionAction = new QAction(tr("Modifying Restriction"), this);
+	modifyingRestrictionAction->setStatusTip(tr("Modifying Restriction"));
+	connect(modifyingRestrictionAction, SIGNAL(triggered()), this, SLOT(on_modifyingRestriction()));
+
+	delRestrictionAction = new QAction(tr("Delete Restriction"), this);
+	delRestrictionAction->setStatusTip(tr("Delete Restriction"));
+	connect(delRestrictionAction, SIGNAL(triggered()), this, SLOT(on_delRestriction()));
+
+	R_Tree_RestrictionMenu->addAction(modifyingRestrictionAction);
+	R_Tree_RestrictionMenu->addAction(delRestrictionAction);
 }
 
 void mainWindow::createProject()
@@ -435,6 +468,55 @@ void mainWindow::on_isShowBox()
 	updateVtk();
 }
 
+void mainWindow::on_isTransparentMirror()
+{
+	int index = rightSelectItem->data(1, Qt::UserRole).toInt();
+	myData->getMirrorByNum(index)->switchIsTransparent();
+	updateVtk();
+}
+
+void mainWindow::on_isShowMirror()
+{
+	int index = rightSelectItem->data(1, Qt::UserRole).toInt();
+	myData->getMirrorByNum(index)->switchIsShow();
+	updateVtk();
+}
+
+void mainWindow::on_modifyingRestriction()
+{
+	if (isExistenceOpenWin)
+	{
+		// 已经有窗口打开了
+		QMessageBox::warning(NULL, "Warning",
+			"A window has been opened. Please close and continue!");
+
+		return;
+	}
+	int index1 = rightSelectItem->data(2, Qt::UserRole).toInt();
+	int indexRestriction = rightSelectItem->data(3, Qt::UserRole).toInt();
+	Restriction* tempPtr = myData->getMirrorByNum(index1)
+		->getRestriction(indexRestriction - 1);
+	isNew = false;
+	tempRestriction = new Restriction(*tempPtr);
+	on_restriction();
+}
+
+void mainWindow::on_delRestriction()
+{
+	int index = rightSelectItem->data(2, Qt::UserRole).toInt();
+	int index2 = rightSelectItem->data(3, Qt::UserRole).toInt();
+	myData->getMirrorByNum(index)->removeRestriction(index2-1);
+	// 对后面的所有Restriction重新编码
+	int tempNum = mirrorTreeWidgetItem[index]->childCount();
+	for (int i = index2 + 1; i < tempNum; ++i)
+	{
+		mirrorTreeWidgetItem[index]->child(i)->setData(3,
+			Qt::UserRole, QVariant(i-1));
+	}
+	mirrorTreeWidgetItem[index]->removeChild(mirrorTreeWidgetItem[index]->child(index2));
+	updateVtk();
+}
+
 void mainWindow::on_modifyingMirror()
 {
 	MirrorTypeWidget mirrorTypeWidget;
@@ -459,6 +541,87 @@ void mainWindow::on_modifyParameters()
 		break;
 	default:
 		break;
+	}
+	updateVtk();
+}
+
+void mainWindow::on_restriction()
+{
+	if (isExistenceOpenWin)
+	{
+		// 已经有窗口打开了
+		QMessageBox::warning(NULL, "Warning",
+			"A window has been opened. Please close and continue!");
+
+		return;
+	}
+	if(isNew)
+		tempRestriction = new Restriction;
+	renderer->AddActor(tempRestriction->getActor());
+	restrictionWidget = new RestrictionWidget();
+	restrictionWidget->setWindowFlags(Qt::WindowStaysOnTopHint); // 子窗口保持置顶
+	connect(restrictionWidget, SIGNAL(sendData(int)),
+		this, SLOT(toReceiveRestriction(int)));
+
+	restrictionWidget->setRestriction(tempRestriction);
+	restrictionWidget->show();
+	isExistenceOpenWin = true;
+}
+
+void mainWindow::toReceiveRestriction(int index)
+{
+	if (1 == index) // 点击确认
+	{
+		int index1 = rightSelectItem->data(2, Qt::UserRole).toInt();
+
+		renderer->RemoveActor(myData->getMirrorByNum(index1)->getActor());
+		renderer->RemoveActor(tempRestriction->getActor());
+		
+		if (!isNew)
+		{
+			int indexRestriction = rightSelectItem->data(3, Qt::UserRole).toInt();
+			myData->getMirrorByNum(index1)->setRestriction(indexRestriction - 1,
+				tempRestriction);
+			mirrorTreeWidgetItem[index1]->insertChild(indexRestriction,
+				tempRestriction->getTree());
+			mirrorTreeWidgetItem[index1]->removeChild(
+				mirrorTreeWidgetItem[index1]->child(indexRestriction));
+
+			isNew = true;
+		}
+		else
+		{
+			// 加入tree 中并编码
+			myData->getMirrorByNum(index1)->addRestriction(tempRestriction);
+
+			int tempNum = mirrorTreeWidgetItem[index1]->childCount();
+			mirrorTreeWidgetItem[index1]->addChild(tempRestriction->getTree());
+			mirrorTreeWidgetItem[index1]->child(tempNum)->setData(2,
+				Qt::UserRole, QVariant(index1));
+			mirrorTreeWidgetItem[index1]->child(tempNum)->setData(3,
+				Qt::UserRole, QVariant(tempNum));
+		}
+		renderer->AddActor(myData->getMirrorByNum(index1)->getActor());
+
+		tempRestriction = nullptr;
+		delete restrictionWidget;
+		restrictionWidget = nullptr;
+		isExistenceOpenWin = false;
+		mirrorTreeWidgetItem[index1]->setExpanded(true);
+	}
+	else if (0 == index)// 点击取消
+	{
+		renderer->RemoveActor(tempRestriction->getActor());
+	
+		delete tempRestriction;
+		tempRestriction = nullptr;
+		delete restrictionWidget;
+		restrictionWidget = nullptr;
+		isExistenceOpenWin = false;
+		if (!isNew)
+		{
+			isNew = true;
+		}
 	}
 	updateVtk();
 }
@@ -496,9 +659,9 @@ void mainWindow::toReceiveParaboloid(int index)
 			mirrorTreeWidgetItem[index]->removeChild(mirrorTreeWidgetItem[index]->child(i));
 		}
 		myData->setMirror(index1, tempMirror);
-		mirrorTreeWidgetItem[index]->addChild(tempMirror->getTree());
-		mirrorTreeWidgetItem[index]->child(0)->setData(2,
-			Qt::UserRole, QVariant(index));	
+		mirrorTreeWidgetItem[index1]->addChild(tempMirror->getTree());
+		mirrorTreeWidgetItem[index1]->child(0)->setData(2,
+			Qt::UserRole, QVariant(index1));
 		if (true) // 判断是否保留原来的限制条件
 		{
 			
@@ -516,9 +679,9 @@ void mainWindow::toReceiveParaboloid(int index)
 	else if (0 == index)// 点击取消
 	{
 		renderer->RemoveActor(tempMirror->getActor());
-		int index = rightSelectItem->data(2, Qt::UserRole).toInt();
+		int index1 = rightSelectItem->data(2, Qt::UserRole).toInt();
 
-		renderer->AddActor(myData->getMirrorByNum(index)->getActor());
+		renderer->AddActor(myData->getMirrorByNum(index1)->getActor());
 		delete tempMirror;
 		tempMirror = nullptr;
 		delete paraboloidWidget;
@@ -542,6 +705,23 @@ void mainWindow::on_treeWidget_ContextMenuRequested(QPoint pos)
 		//菜单出现的位置为当前鼠标的位置  
 		if (R_BlankMenu->isEmpty())
 		{
+			int index = rightSelectItem->data(1, Qt::UserRole).toInt();
+			if (myData->getMirrorByNum(index)->getIsShow())
+			{
+				isShowMirrorAction->setChecked(true);
+			}
+			else
+			{
+				isShowMirrorAction->setChecked(false);
+			}
+			if (myData->getMirrorByNum(index)->getIsTransparent())
+			{
+				isTransparentAction->setChecked(true);
+			}
+			else
+			{
+				isTransparentAction->setChecked(false);
+			}
 			R_Tree_MirrorTypeMenu->exec(QCursor::pos());
 
 		}		
@@ -552,6 +732,14 @@ void mainWindow::on_treeWidget_ContextMenuRequested(QPoint pos)
 		if (R_BlankMenu->isEmpty())
 		{
 			R_Tree_MirrorParMenu->exec(QCursor::pos());
+
+		}
+	}
+	else if (var == 2)
+	{
+		if (R_BlankMenu->isEmpty())
+		{
+			R_Tree_RestrictionMenu->exec(QCursor::pos());
 
 		}
 	}

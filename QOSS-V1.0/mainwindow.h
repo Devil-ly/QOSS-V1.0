@@ -23,6 +23,7 @@
 #include "MyData.h"
 
 #include "Qt/include/ParaboloidWidget.h"
+#include "Qt/include/RestrictionWidget.h"
 
 using namespace userInterface;
 class mainWindow : public QMainWindow
@@ -59,12 +60,21 @@ private slots:
 	void openFile();
 	void newFile();
 	void on_isShowBox();
+	void on_isTransparentMirror();
+	void on_isShowMirror();
+
+	void on_modifyingRestriction();
+	void on_delRestriction();
 
 	void on_modifyingMirror();
 	void on_modifyParameters();
 
+	void on_restriction();
+	void toReceiveRestriction(int);
+
 	void on_createParaboloid();
 	void toReceiveParaboloid(int);
+
 
 	// ------------------- ×ó¼üÓÒ¼üº¯Êý ----------------------------------
 	void on_treeWidget_ContextMenuRequested(QPoint pos);// ÓÒ¼ü²Ëµ¥
@@ -97,6 +107,7 @@ private:
 	//ÓÒ¼ü²Ëµ¥
 	QMenu *R_Tree_MirrorTypeMenu;
 	QMenu *R_Tree_MirrorParMenu;
+	QMenu *R_Tree_RestrictionMenu;
 	QMenu *R_BlankMenu;
 
 	//----------- ToolBar ------------------- 
@@ -118,7 +129,12 @@ private:
 	// ÓÒ¼ü
 	QAction * modifyingMirrorAction;
 	QAction * restrictionAction;
+	QAction * modifyingRestrictionAction;
+	QAction * delRestrictionAction;
+
 	QAction * modifyParametersAction;
+	QAction * isShowMirrorAction;
+	QAction * isTransparentAction;
 
 	//------------- TreeWidgetItem------------------- 
 	QTreeWidgetItem * definitionsTreeItem;
@@ -136,11 +152,14 @@ private:
 
 	MyData * myData;
 	Mirror * tempMirror;
+	Restriction * tempRestriction;
 
 	// ´°¿ÚÖ¸Õë
 	ParaboloidWidget *paraboloidWidget;
+	RestrictionWidget *restrictionWidget;
 
 	bool isExistenceOpenWin;
+	bool isNew;
 
 };
 

@@ -213,7 +213,7 @@ void GraphTransWidget::on_GraphChange(QString var)
 	emit sendData(2);
 }
 
-void GraphTransWidget::setMirror(Mirror* mirror)
+void GraphTransWidget::setMirror(BasicParameters* mirror)
 {
 	this->mirror = mirror;
 

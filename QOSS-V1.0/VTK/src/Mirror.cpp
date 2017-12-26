@@ -11,6 +11,8 @@ Mirror::Mirror()
 	property->SetColor(180.0 / 255.0, 180.0 / 255.0, 180.0 / 255.0);
 	//property->SetColor(1, 1, 0);
 	actor = vtkSmartPointer<vtkActor>::New();
+	isTransparent = false;
+	isShow = true;
 }
 
 Mirror::~Mirror()
@@ -42,21 +44,6 @@ vtkSmartPointer<vtkPolyData> Mirror::getPolyData() const
 	return polyData;
 }
 
-void Mirror::setData(const vector<double>&parameter)
-{
-	data.resize(parameter.size());
-	for (int i = 0; i < parameter.size(); i++)
-	{
-		data[i] = parameter[i];
-	}
-}
-
-void Mirror::setGraphTrans(const GraphTrans &graphTrans)
-{
-	this->graphTrans = graphTrans;
-	updateData();
-}
-
 void Mirror::setSelected(bool flag = true)
 {
 	//actor->GetProperty()->SetOpacity(0.5);
@@ -73,6 +60,74 @@ void Mirror::setSelected(bool flag = true)
 	}
 
 }
+
+void Mirror::addRestriction(Restriction *ptr)
+{
+	restrictions.push_back(ptr);
+	updateData();
+}
+
+void Mirror::setRestriction(int num, Restriction *ptr)
+{
+	if (num > restrictions.size())
+		return;
+	delete restrictions[num];
+	restrictions[num] = ptr;
+	updateData();
+}
+
+void Mirror::removeRestriction(int num)
+{
+	if (num > restrictions.size())
+		return;
+	delete restrictions[num];
+	auto it = restrictions.begin();
+	restrictions.erase(it + num);
+	updateData();
+}
+
+Restriction * Mirror::getRestriction(int num) const
+{
+	if (num > restrictions.size())
+		return nullptr;
+	return restrictions[num];
+}
+
+void Mirror::switchIsTransparent()
+{
+	isTransparent = !isTransparent;
+	if (!isShow)
+		return;
+	if (isTransparent) // Í¸Ã÷ 
+	{
+		property->SetOpacity(0.3);
+	}
+	else
+	{
+		property->SetOpacity(1);
+	}
+}
+
+void Mirror::switchIsShow()
+{
+	isShow = !isShow;
+	if (isShow) // ÏÔÊ¾ 
+	{
+		if (isTransparent) // Í¸Ã÷ 
+		{
+			property->SetOpacity(0.3);
+		}
+		else
+		{
+			property->SetOpacity(1);
+		}
+	}
+	else
+	{
+		property->SetOpacity(0);
+	}
+}
+
 
 QTreeWidgetItem * Mirror::getTransformTree()
 {

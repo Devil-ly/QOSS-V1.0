@@ -1,11 +1,11 @@
-#include "Qt/include/ParaboloidWidget.h"
+#include "Qt/include/RestrictionWidget.h"
 #include <vector>
 #include "../util/Definition.h"
 using namespace userInterface;
 
-ParaboloidWidget::ParaboloidWidget(QWidget *parent)
+RestrictionWidget::RestrictionWidget(QWidget *parent)
 {
-	setWindowTitle(tr("Create paraboloid"));
+	setWindowTitle(tr("Create Restriction"));
 
 	defGroupBox = new QGroupBox;
 	addDefGroupBox(defGroupBox, "Qt/images/Paraboloid_coor.png");
@@ -16,12 +16,10 @@ ParaboloidWidget::ParaboloidWidget(QWidget *parent)
 
 	//dimGroupBox
 	radiuslabel = new QLabel(tr("Radius(R)"));
-	depthlabel = new QLabel(tr("Focal depth(F)"));
+	depthlabel = new QLabel(tr("Depth(D)"));
 
 	radiusLineEidt = new QLineEdit;
 	depthLineEidt = new QLineEdit;
-
-	
 
 	radiusLineEidt->setText(tr("1.0"));
 	depthLineEidt->setText(tr("0.5"));
@@ -66,18 +64,19 @@ ParaboloidWidget::ParaboloidWidget(QWidget *parent)
 
 }
 
-ParaboloidWidget::~ParaboloidWidget()
+RestrictionWidget::~RestrictionWidget()
 {
 
 }
 
-void ParaboloidWidget::setMirror(Mirror *mirror)
+void RestrictionWidget::setRestriction(Restriction *restriction)
 {
-	paraboloid = dynamic_cast<Paraboloid*>(mirror);
 
-	GraphTransWidget::setMirror(mirror);
-	depthLineEidt->setText(QString::number(paraboloid->getFocus()));		
-	radiusLineEidt->setText(QString::number(paraboloid->getRadius()));
+	this->restriction = restriction;
+	GraphTransWidget::setMirror(restriction);
+	const vector<double>& tempData = restriction->getData();
+	depthLineEidt->setText(QString::number(tempData[1]));
+	radiusLineEidt->setText(QString::number(tempData[0]));
 
 	connect(radiusLineEidt, SIGNAL(textChanged(QString)),
 		this, SLOT(on_radiusChange(QString)));
@@ -85,7 +84,7 @@ void ParaboloidWidget::setMirror(Mirror *mirror)
 		this, SLOT(on_focusChange(QString)));
 }
 
-void ParaboloidWidget::on_radiusChange(QString var)
+void RestrictionWidget::on_radiusChange(QString var)
 {
 	bool ok = false;
 	double res = var.toDouble(&ok);
@@ -102,12 +101,12 @@ void ParaboloidWidget::on_radiusChange(QString var)
 		radiusLineEidt->setStyleSheet("background-color:rgba(255,0,0,255)");
 		return;
 	}
-	paraboloid->setRadius(res);
+	restriction->setDataByNum(0,res);
 	radiusLineEidt->setStyleSheet("background-color:rgba(255,255,255,255)");
 	emit sendData(2);
 }
 
-void ParaboloidWidget::on_focusChange(QString var)
+void RestrictionWidget::on_focusChange(QString var)
 {
 	bool ok = false;
 	double res = var.toDouble(&ok);
@@ -124,7 +123,7 @@ void ParaboloidWidget::on_focusChange(QString var)
 		return;
 
 	}
-	paraboloid->setFocus(res);
+	restriction->setDataByNum(1, res);
 	depthLineEidt->setStyleSheet("background-color:rgba(255,255,255,255)");
 	emit sendData(2);
 }

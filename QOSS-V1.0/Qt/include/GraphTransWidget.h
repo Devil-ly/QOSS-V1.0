@@ -9,7 +9,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QCloseEvent>  
-#include "../VTK/include/Mirror.h"
+#include "../VTK/include/BasicParameters.h"
 
 namespace  userInterface {
 	class GraphTransWidget : public QDialog
@@ -25,7 +25,7 @@ namespace  userInterface {
 		void addRotateWidget(QWidget * RotateWidget, QString filename);
 		void addBtn(QGridLayout * _layoutbt, int wayButton = 0);
 
-		void setMirror(Mirror*);
+		void setMirror(BasicParameters*);
 
 	protected:
 		void closeEvent(QCloseEvent *event);
@@ -44,7 +44,7 @@ namespace  userInterface {
 		void sendData(int);
 
 	private:
-		Mirror* mirror;
+		BasicParameters* mirror;
 
 		//page1
 		QLabel * Ulabel;

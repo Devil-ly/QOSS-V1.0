@@ -18,17 +18,20 @@
 #include <vector>
 #include <../util/Vector3.h>
 
+#include "BasicParameters.h"
+#include "Restriction.h"
+
 enum MirrorsType
 {
 	PLANEMIRROR = 0,
 	QUADRICSURFACE,
 	PARABOLICCYLINDER,
 	PARABOLOID,
-	ELLIPSOID
+	ELLIPSOID,
 };
 
 class actor;
-class Mirror 
+class Mirror : public BasicParameters
 {
 public:
 	Mirror();
@@ -49,31 +52,36 @@ public:
 	// 输出入射光线计算交点和法线
 	virtual void calcReflectedRay(const Vector3&, Vector3&, Vector3&) = 0;
 
-	const vector<double>& getData() const { return data; }
-	void setData(const vector<double>&);
-
-	GraphTrans getGraphTrans() const { return graphTrans; }
-	void setGraphTrans(const GraphTrans&);
-
 	void setSelected(bool);
 
 	virtual QTreeWidgetItem* getTree() { return nullptr; };
+
+	void addRestriction(Restriction*);
+	void setRestriction(int,Restriction*);
+	void removeRestriction(int);
+	Restriction* getRestriction(int) const;
+
+	void switchIsTransparent();
+	bool getIsTransparent() const { return isTransparent; }
+
+	void switchIsShow();
+	bool getIsShow() const { return isShow; }
 
 protected:
 
 	QTreeWidgetItem* getTransformTree();
 
-	GraphTrans graphTrans; // 旋转平移参数
-	vector<double> data;
 	MirrorsType type;
 
 	//保存每个模型的显示和剖分数据
 	vtkSmartPointer<vtkActor> actor;
 	vtkSmartPointer<vtkPolyData> polyData;
 
-	bool isTransparent; // 是否显示
+	bool isTransparent; // 是否透明
+	bool isShow; // 是否显示
 	vtkSmartPointer<vtkProperty> property;
 
+	vector<Restriction*> restrictions;
 private:
 
 };
