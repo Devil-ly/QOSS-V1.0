@@ -209,6 +209,27 @@
     <ClCompile Include="GeneratedFiles\Release\moc_RestrictionWidget.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="Calculation\FFT.cpp">
+      <Filter>Source Files\Calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="Calculation\FFTDI.cpp">
+      <Filter>Source Files\Calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="VTK\src\Gaussain.cpp">
+      <Filter>Source Files\VTK</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_GaussianWidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_GaussianWidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Qt\src\GaussianWidget.cpp">
+      <Filter>Source Files\Qt</Filter>
+    </ClCompile>
+    <ClCompile Include="VTK\src\Field.cpp">
+      <Filter>Source Files\VTK</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwindow.h">
@@ -242,6 +263,9 @@
       <Filter>Header Files\Qt</Filter>
     </CustomBuild>
     <CustomBuild Include="Qt\include\RestrictionWidget.h">
+      <Filter>Header Files\Qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Qt\include\GaussianWidget.h">
       <Filter>Header Files\Qt</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -322,6 +346,24 @@
       <Filter>Header Files\VTK</Filter>
     </ClInclude>
     <ClInclude Include="VTK\include\BasicParameters.h">
+      <Filter>Header Files\VTK</Filter>
+    </ClInclude>
+    <ClInclude Include="Calculation\FFT.h">
+      <Filter>Header Files\Calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="Calculation\FFTDI.h">
+      <Filter>Header Files\Calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="Calculation\fftw3.h">
+      <Filter>Header Files\Calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="util\GEMS_Memory.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="VTK\include\Field.h">
+      <Filter>Header Files\VTK</Filter>
+    </ClInclude>
+    <ClInclude Include="VTK\include\Gaussain.h">
       <Filter>Header Files\VTK</Filter>
     </ClInclude>
   </ItemGroup>

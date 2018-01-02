@@ -17,6 +17,7 @@ Mirror::Mirror()
 
 Mirror::~Mirror()
 {
+	clearRestrictionAll();
 }
 
 MirrorsType Mirror::getMirrorsType() const
@@ -86,11 +87,39 @@ void Mirror::removeRestriction(int num)
 	updateData();
 }
 
+void Mirror::removeRestrictionAll()
+{
+	restrictions.clear();
+}
+
+void Mirror::clearRestrictionAll()
+{
+	for (int i = 0; i < restrictions.size(); ++i)
+	{
+		delete restrictions[i];
+		restrictions[i] = nullptr;
+	}
+	restrictions.clear();
+}
+
 Restriction * Mirror::getRestriction(int num) const
 {
 	if (num > restrictions.size())
 		return nullptr;
 	return restrictions[num];
+}
+
+void Mirror::moveRestriction(Mirror * ptr)
+{
+	const vector<Restriction*>& tempRes = ptr->getRestrictionAll();
+	clearRestrictionAll();
+	restrictions.resize(tempRes.size());
+	for (int i = 0; i < restrictions.size(); ++i)
+	{
+		restrictions[i] = tempRes[i];
+	}
+	ptr->removeRestrictionAll();
+	updateData();
 }
 
 void Mirror::switchIsTransparent()
@@ -128,20 +157,3 @@ void Mirror::switchIsShow()
 	}
 }
 
-
-QTreeWidgetItem * Mirror::getTransformTree()
-{
-	QTreeWidgetItem * tree = new QTreeWidgetItem;
-	tree->setText(0, "Transform");
-	QTreeWidgetItem * treeTranslation = new QTreeWidgetItem;
-	string tempTranslation = "Translation: ";
-	tempTranslation.append(graphTrans.getTransString());
-	treeTranslation->setText(0, tempTranslation.c_str());
-	QTreeWidgetItem * treeRotation = new QTreeWidgetItem;
-	string tempRotation = "Rotation: ";
-	tempRotation.append(graphTrans.getRotateString());
-	treeRotation->setText(0, tempRotation.c_str());
-	tree->addChild(treeTranslation);
-	tree->addChild(treeRotation);
-	return tree;
-}

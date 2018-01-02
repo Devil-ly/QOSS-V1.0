@@ -1,6 +1,8 @@
 /*
 *	created by liyun 2017/10/24
-*   function 平面镜(默认的镜子)
+*   function 平面镜(默认的镜子)	  
+*	width --> data[0]
+*	depth --> data[1];
 *   version 1.0
 */
 
@@ -28,7 +30,15 @@ public:
 
 	virtual QTreeWidgetItem* getTree();
 
+	void setWidth(double);
+	double getWidth() const { return data[0]; }
+
+	void setDepth(double);
+	double getDepth() const { return data[1]; }
+
 private:
+
+
 
 
 };

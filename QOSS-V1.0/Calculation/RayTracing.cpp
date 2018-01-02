@@ -1,6 +1,7 @@
 #include "RayTracing.h"
 
 #include "../util/Definition.h"
+#include "../VTK/include/Restriction.h"
 
 
 calculation::RayTracing::RayTracing(Mirror* _mirror)
@@ -116,11 +117,43 @@ void calculation::RayTracing::calcReflectByQuadricSurface(const Vector3 & startP
 	}
 
 	// 将世界坐标系转到模型的相对坐标系
-	Vector3 tempStartPiont = R_translateMatrix * R_rotatMatrix * startPiont;
-	Vector3 tempDirection = R_rotatMatrix * direction; // 向量只用求旋转
+	Vector3 tempStartPiont = R_translateMatrix[0] * R_rotatMatrix[0] * startPiont;
+	Vector3 tempDirection = R_rotatMatrix[0] * direction; // 向量只用求旋转
 
 	if (ray_CurvedSurface(tempData, tempDirection, tempStartPiont, t, intersection))
 	{
+		const vector<Restriction*> restrictions = mirror->getRestrictionAll();
+		// 将模型的相对坐标系转到世界坐标系
+		Vector3 intersectionGlobal = translateMatrix[0] * rotatMatrix[0] * intersection;
+		bool isInRestriction = true;
+		for (int i = 0; i < restrictions.size(); i++)
+		{
+			const vector<double>& tempRestrictionData = restrictions[i]->getData();
+			// 将世界坐标系转到限制条件的相对坐标系
+			Vector3 intersectionLocal = R_translateMatrix[i + 1] *
+				R_rotatMatrix[i + 1] * intersectionGlobal;
+			if (intersectionLocal.z > tempRestrictionData[1] ||
+				intersectionLocal.z < 0.0)
+			{
+				isInRestriction = false;
+				break;
+			}
+			double tempRadius = intersectionLocal.x * intersectionLocal.x +
+				intersectionLocal.y * intersectionLocal.y;
+
+			if (tempRadius > tempRestrictionData[0] * tempRestrictionData[0])
+			{
+				isInRestriction = false;
+				break;
+			}
+		}
+		
+		if (!isInRestriction) //不满足限制条件
+		{
+			intersection = startPiont; // 让交点等于起点 方向不变 避免对无交点时特殊处理
+			isIntersect = false;
+			return;
+		}
 
 		double x = 2 * tempData[0] * intersection.x + tempData[3] * intersection.y +
 			tempData[5] * intersection.z + tempData[6];
@@ -136,8 +169,8 @@ void calculation::RayTracing::calcReflectByQuadricSurface(const Vector3 & startP
 		isIntersect = true;
 
 		// 将模型的相对坐标系转到世界坐标系
-		intersection = translateMatrix * rotatMatrix * intersection;
-		reflex = rotatMatrix * reflex; // 更新方向
+		intersection = intersectionGlobal;
+		reflex = rotatMatrix[0] * reflex; // 更新方向
 
 	}
 	else
@@ -292,22 +325,37 @@ Vector3 calculation::RayTracing::reflectLight(const Vector3 & a, const Vector3 &
 
 void calculation::RayTracing::calcMatrix()
 {
-	GraphTrans tempGraphTrans = mirror->getGraphTrans();
-	// 世界坐标系转到模型的相对坐标系矩阵（逆矩阵）先旋转后平移
-	Vector3D RotateAsix(tempGraphTrans.getRotate_x(),
-		tempGraphTrans.getRotate_y(), tempGraphTrans.getRotate_z());
-	R_rotatMatrix = Matrix4D::getRotateMatrix(-tempGraphTrans.getRotate_theta(),
-		RotateAsix);
-	Vector3D rotatTranslate(tempGraphTrans.getTrans_x(), tempGraphTrans.getTrans_y(),
-		tempGraphTrans.getTrans_z());
-	rotatTranslate = R_rotatMatrix * rotatTranslate; // 先旋转在平移（把平移的坐标一起旋转）
-	R_translateMatrix = Matrix4D::getTranslateMatrix(rotatTranslate * (-1));
+	const vector<Restriction*> restrictions = mirror->getRestrictionAll();
+	int num = restrictions.size() + 1;
+	R_rotatMatrix.resize(num);
+	R_translateMatrix.resize(num);
+	rotatMatrix.resize(num);
+	translateMatrix.resize(num);
 
-	// 模型的相对坐标系转到世界坐标矩阵
-	rotatMatrix = Matrix4D::getRotateMatrix(tempGraphTrans.getRotate_theta(),
-		RotateAsix);
-	translateMatrix = Matrix4D::getTranslateMatrix(tempGraphTrans.getTrans_x(), tempGraphTrans.getTrans_y(),
-		tempGraphTrans.getTrans_z());
+	GraphTrans tempGraphTrans;
+
+	for (int i = 0; i < restrictions.size()+1; ++i)
+	{
+		if(0 == i)
+			tempGraphTrans = mirror->getGraphTrans();
+		else
+			tempGraphTrans = restrictions[i-1]->getGraphTrans();
+		// 世界坐标系转到模型的相对坐标系矩阵（逆矩阵）先旋转后平移
+		Vector3D RotateAsix(tempGraphTrans.getRotate_x(),
+			tempGraphTrans.getRotate_y(), tempGraphTrans.getRotate_z());
+		R_rotatMatrix[i] = Matrix4D::getRotateMatrix(-tempGraphTrans.getRotate_theta(),
+			RotateAsix);
+		Vector3D rotatTranslate(tempGraphTrans.getTrans_x(), tempGraphTrans.getTrans_y(),
+			tempGraphTrans.getTrans_z());
+		rotatTranslate = R_rotatMatrix[i] * rotatTranslate; // 先旋转在平移（把平移的坐标一起旋转）
+		R_translateMatrix[i] = Matrix4D::getTranslateMatrix(rotatTranslate * (-1));
+
+		// 模型的相对坐标系转到世界坐标矩阵
+		rotatMatrix[i] = Matrix4D::getRotateMatrix(tempGraphTrans.getRotate_theta(),
+			RotateAsix);
+		translateMatrix[i] = Matrix4D::getTranslateMatrix(tempGraphTrans.getTrans_x(), 
+			tempGraphTrans.getTrans_y(),tempGraphTrans.getTrans_z());
+	}
 
 	isCalcMatrix = true;
 }

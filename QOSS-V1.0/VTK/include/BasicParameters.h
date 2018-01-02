@@ -12,6 +12,7 @@
 #include <vector>
 #include <../util/Vector3.h>
 
+#include <QTreeWidgetItem>
 
 class BasicParameters
 {
@@ -28,6 +29,7 @@ public:
 	void setGraphTrans(const GraphTrans&);
 
 protected:
+	QTreeWidgetItem* getTransformTree();
 
 	GraphTrans graphTrans; // 旋转平移参数
 	vector<double> data;

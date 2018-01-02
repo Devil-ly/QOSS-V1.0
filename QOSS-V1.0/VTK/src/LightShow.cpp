@@ -8,7 +8,7 @@
 #include "../Calculation/RayTracing.h"
 
 
-LightShow::LightShow(std::vector<Mirror*> _mirrors, int num)
+LightShow::LightShow(const std::vector<Mirror*>& _mirrors, int num)
 	:mirrors(_mirrors), phiNum(6), cylinderNum(6)
 {
 	property = vtkSmartPointer<vtkProperty>::New();
@@ -49,7 +49,7 @@ void LightShow::calRayActor()
 	Vector3 tempIntersect;
 	Vector3 tempReflect;
 	bool tempIsIntersect;
-	for (int n = 0; n < 3; n++)
+	for (int n = 0; n < 2; n++)
 	{
 		calculation::RayTracing rayTracing(mirrors[n]);
 

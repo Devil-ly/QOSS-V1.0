@@ -15,6 +15,7 @@
 
 #include "../Calculation/Matrix4D.h"
 #include "../Calculation/Vector3D.h"
+#include <vector>
 
 namespace calculation
 {
@@ -76,12 +77,12 @@ namespace calculation
 		bool isCalcMatrix;
 
 		// 世界坐标系转到模型的相对坐标系矩阵（逆矩阵）先旋转后平移
-		Matrix4D R_rotatMatrix;
-		Matrix4D R_translateMatrix;
+		vector<Matrix4D> R_rotatMatrix;
+		vector<Matrix4D> R_translateMatrix;
 
 		// 模型的相对坐标系转到世界坐标矩阵
-		Matrix4D rotatMatrix; 
-		Matrix4D translateMatrix; 
+		vector<Matrix4D> rotatMatrix;
+		vector<Matrix4D> translateMatrix;
 
 	};
 

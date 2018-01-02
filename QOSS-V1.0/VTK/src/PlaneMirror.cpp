@@ -9,6 +9,9 @@ PlaneMirror::PlaneMirror(const GraphTrans & _graphTrans)
 {
 	type = PLANEMIRROR;
 	graphTrans = _graphTrans;
+	data.resize(2);
+	data[0] = 0.2;
+	data[1] = 0.2;
 	updateData();
 }
 
@@ -17,6 +20,7 @@ PlaneMirror::PlaneMirror(const GraphTrans & _graphTrans,
 {
 	type = PLANEMIRROR;
 	graphTrans = _graphTrans;
+	setData(parameter);
 	updateData();
 }
 
@@ -26,8 +30,8 @@ PlaneMirror::~PlaneMirror()
 
 void PlaneMirror::calPolyData(double ds)
 {
-	float w = 0.2 / 2.0;
-	float d = 0.2 / 2.0;
+	float w = data[0] / 2.0;
+	float d = data[1] / 2.0;
 	vtkSmartPointer<vtkPlaneSource> plane = vtkSmartPointer<vtkPlaneSource>::New();
 	//plane->SetCenter(0, 0, 0);
 	plane->SetOrigin(-w, -d, 0);
@@ -79,4 +83,16 @@ QTreeWidgetItem * PlaneMirror::getTree()
 
 	tree->addChild(getTransformTree());
 	return tree;
+}
+
+void PlaneMirror::setWidth(double w)
+{
+	data[0] = w;
+	updateData();
+}
+
+void PlaneMirror::setDepth(double d)
+{
+	data[1] = d;
+	updateData();
 }

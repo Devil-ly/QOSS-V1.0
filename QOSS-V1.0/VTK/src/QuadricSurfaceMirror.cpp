@@ -127,9 +127,7 @@ void QuadricSurfaceMirror::calcRestriction()
 			booleanOperation->Update();
 
 			polyDataRestriction = booleanOperation->GetOutput();
-		}
-		
-
+		}	
 	}	
 	vtkSmartPointer<vtkBooleanOperationPolyDataFilter> booleanOperation =
 		vtkSmartPointer<vtkBooleanOperationPolyDataFilter>::New();
@@ -175,8 +173,7 @@ void QuadricSurfaceMirror::calcRestriction()
 				+ data[6] * point.x + data[7] * point.y + data[8] * point.z
 				+ data[9];
 
-
-			if (temp < -0.01 || temp > 0.01)
+			if (temp < -0.001 || temp > 0.001)
 			{
 				ok = false;
 				break;

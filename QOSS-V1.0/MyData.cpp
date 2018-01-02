@@ -76,13 +76,6 @@ void MyData::createDefaultMirror()
 		dynamic_cast<ParabolicCylinder*>(mirrors[0])->setParameter(temp, temp * 2, 0,
 			radiator->getFirstMirrorHeight(temp));
 
-
-		// test
-		GraphTrans tempgraphTran;
-		tempgraphTran.updateTranslate(Vector3(0, 0, 0.5));
-		mirrors[0] = MirrorFactory::getMirror(PARABOLOID, tempgraphTran);
-
-		//test
 		GraphTrans mirror2Position;
 		mirror2Position.updateTranslate(Vector3(-0.07, 0, 0.619));
 		mirror2Position.updateRotate(Vector3(0, 1, 0), -164.94);
@@ -136,4 +129,22 @@ void MyData::createRadiator()
 	}
 	radiator->calActorModel();
 	radiator->calActorRay();
+}
+
+void MyData::setSourceField(Field *ptr)
+{
+	if (fieldMap.find(0) != fieldMap.end()) // 已存在 需要删除
+	{
+		delete fieldMap[0];
+	}
+	fieldMap[0] = ptr;
+}
+
+Field * MyData::getSourceField() const
+{
+	if (fieldMap.find(0) != fieldMap.end()) // 已存在 需要删除
+	{
+		return fieldMap.at(0);
+	}
+	return nullptr;
 }

@@ -48,12 +48,12 @@ mainWindow::mainWindow(QWidget *parent)
 	//创建默认辐射器
 	myData->createRadiator();
 	renderer->AddActor(myData->getRadiator()->getActorModel());
-	//renderer->AddActor(myData->getRadiator()->getActorRay());
+	renderer->AddActor(myData->getRadiator()->getActorRay());
 
 	// 创建默认的镜子
 	myData->createDefaultMirror();
 	//for (int i = 0; i < myData->getNumOfMirrors(); ++i)
-	for (int i = 0; i < 1; ++i)
+	for (int i = 0; i < 2; ++i)
 	{
 		renderer->AddActor(myData->getMirrorByNum(i)->getActor());
 	}
@@ -65,13 +65,9 @@ mainWindow::mainWindow(QWidget *parent)
 	myData->createDefaultLigthShow();
 	std::list<vtkSmartPointer<vtkActor>> tempActors = 
 		myData->getDefaultLightShow()->getActors();
-	//for (auto& x : tempActors)
-	//	renderer->AddActor(x);
+	for (auto& x : tempActors)
+		renderer->AddActor(x);
 
-	//Restriction * test = new Restriction;
-	//renderer->AddActor(test->getActor());
-	//myData->getMirrorByNum(0)->addRestriction(test);
-	//renderer->AddActor(myData->getMirrorByNum(0)->getActor());
 	
 	double axesScale = myData->getLimitBox()->getMaxSize();
 	// 初始化vtk窗口
@@ -203,6 +199,11 @@ void mainWindow::createActions()
 	isShowBoxAction->setChecked(true);
 	connect(isShowBoxAction, SIGNAL(triggered()), this, SLOT(on_isShowBox()));
 
+	//高斯源
+	GaussianAction = new QAction(QIcon(tr("Qt/images/Gaussian.png")), tr("Gaussian"), this);
+	GaussianAction->setStatusTip(tr("Create a Gaussian source"));
+	connect(GaussianAction, SIGNAL(triggered()), this, SLOT(createGaussian()));
+
 
 }
 
@@ -241,6 +242,8 @@ void mainWindow::createToolBars()
 	fileTool->addSeparator();
 	fileTool->addWidget(viewLabel);
 	fileTool->addWidget(viewComboBox);
+	fileTool->addSeparator();
+	fileTool->addAction(GaussianAction);
 }
 
 void mainWindow::createStatusBar()
@@ -320,8 +323,14 @@ void mainWindow::createTreeWidgetItem()
 		childPar->setText(0, tr("Pattern: Higher order"));
 	else
 		childPar->setText(0, tr("Pattern: Waveguide"));
+
+	soucreFieldTreeItem = new QTreeWidgetItem(QStringList(QString("SourceField")));
+	soucreFieldTreeItem->setData(0, Qt::UserRole, QVariant(3));
+	soucreFieldTreeItem->setData(1, Qt::UserRole, QVariant(0));
+
 	sourceTreeItem->addChild(childPar);
 	sourceTreeItem->addChild(childRadiator);
+	sourceTreeItem->addChild(soucreFieldTreeItem);
 
 	sourceTreeItem->setExpanded(true);
 
@@ -514,6 +523,7 @@ void mainWindow::on_delRestriction()
 			Qt::UserRole, QVariant(i-1));
 	}
 	mirrorTreeWidgetItem[index]->removeChild(mirrorTreeWidgetItem[index]->child(index2));
+	updateLight();
 	updateVtk();
 }
 
@@ -572,13 +582,11 @@ void mainWindow::toReceiveRestriction(int index)
 {
 	if (1 == index) // 点击确认
 	{
-		int index1 = rightSelectItem->data(2, Qt::UserRole).toInt();
-
-		renderer->RemoveActor(myData->getMirrorByNum(index1)->getActor());
-		renderer->RemoveActor(tempRestriction->getActor());
+		int index1; 
 		
 		if (!isNew)
 		{
+			index1 = rightSelectItem->data(2, Qt::UserRole).toInt();
 			int indexRestriction = rightSelectItem->data(3, Qt::UserRole).toInt();
 			myData->getMirrorByNum(index1)->setRestriction(indexRestriction - 1,
 				tempRestriction);
@@ -591,6 +599,7 @@ void mainWindow::toReceiveRestriction(int index)
 		}
 		else
 		{
+			index1 = rightSelectItem->data(1, Qt::UserRole).toInt();
 			// 加入tree 中并编码
 			myData->getMirrorByNum(index1)->addRestriction(tempRestriction);
 
@@ -601,6 +610,10 @@ void mainWindow::toReceiveRestriction(int index)
 			mirrorTreeWidgetItem[index1]->child(tempNum)->setData(3,
 				Qt::UserRole, QVariant(tempNum));
 		}
+
+		renderer->RemoveActor(myData->getMirrorByNum(index1)->getActor());
+		renderer->RemoveActor(tempRestriction->getActor());
+
 		renderer->AddActor(myData->getMirrorByNum(index1)->getActor());
 
 		tempRestriction = nullptr;
@@ -608,6 +621,7 @@ void mainWindow::toReceiveRestriction(int index)
 		restrictionWidget = nullptr;
 		isExistenceOpenWin = false;
 		mirrorTreeWidgetItem[index1]->setExpanded(true);
+		updateLight();
 	}
 	else if (0 == index)// 点击取消
 	{
@@ -626,6 +640,81 @@ void mainWindow::toReceiveRestriction(int index)
 	updateVtk();
 }
 
+void mainWindow::createGaussian()
+{
+	if (isExistenceOpenWin)
+	{
+		// 已经有窗口打开了
+		QMessageBox::warning(NULL, "Warning",
+			"A window has been opened. Please close and continue!");
+
+		return;
+	}
+	tempMirror = MirrorFactory::getMirror(PLANEMIRROR, GraphTrans());
+	tempMirror->setSelected(true);
+	renderer->AddActor(tempMirror->getActor());
+	gaussianWidget = new GaussianWidget;
+	gaussianWidget->setMirror(tempMirror);
+	gaussianWidget->setWindowFlags(Qt::WindowStaysOnTopHint); // 子窗口保持置顶
+	gaussianWidget->show();
+
+	connect(gaussianWidget, SIGNAL(sendData(int)),
+		this, SLOT(toReceiveGaussian(int)));
+
+	isExistenceOpenWin = true;
+
+}
+
+void mainWindow::toReceiveGaussian(int caseIndex)
+{
+	if (1 == caseIndex)
+	{
+		if (nullptr != myData->getSourceField()) // 如果已有源了 则会覆盖以前的源
+		{
+			// 判断是否保留原来的限制条件
+			switch (QMessageBox::question(this, tr("Question"),
+				tr("Whether or not to cover the original field?"),
+				QMessageBox::Ok | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Ok))
+			{
+			case QMessageBox::Ok:
+				renderer->RemoveActor(myData->getSourceField()->getActor());
+				renderer->RemoveActor(myData->getSourceField()->getActor3D());
+				soucreFieldTreeItem->removeChild(soucreFieldTreeItem->child(0));
+				break;
+			case QMessageBox::No:
+				toReceiveGaussian(0);
+				break;
+			case QMessageBox::Cancel:
+				return;
+			default:
+				break;
+			}
+		}
+		Field * temPtr;
+		if (!gaussianWidget->getField(temPtr))
+		{
+			return;
+		}
+		renderer->AddActor(temPtr->getActor());
+
+		soucreFieldTreeItem->addChild(temPtr->getTree());
+		myData->setSourceField(temPtr);
+		toReceiveGaussian(0);
+	}
+	else if (0 == caseIndex)// 点击取消
+	{
+		renderer->RemoveActor(tempMirror->getActor());
+
+		delete tempMirror;
+		tempMirror = nullptr;
+		delete gaussianWidget;
+		gaussianWidget = nullptr;
+		isExistenceOpenWin = false;
+	}
+
+	updateVtk();
+}
+
 void mainWindow::on_createParaboloid()
 { 
 	if (isExistenceOpenWin)
@@ -638,6 +727,7 @@ void mainWindow::on_createParaboloid()
 	}
 	paraboloidWidget = new ParaboloidWidget();
 	paraboloidWidget->setWindowFlags(Qt::WindowStaysOnTopHint); // 子窗口保持置顶
+
 	connect(paraboloidWidget, SIGNAL(sendData(int)),
 		this, SLOT(toReceiveParaboloid(int)));
 
@@ -647,36 +737,63 @@ void mainWindow::on_createParaboloid()
 	
 }
 
-void mainWindow::toReceiveParaboloid(int index)
+void mainWindow::toReceiveParaboloid(int caseIndex)
 {
-	if (1 == index) // 点击确认
+	if (1 == caseIndex) // 点击确认
 	{
+		
 		int index1 = rightSelectItem->data(2, Qt::UserRole).toInt();
-		tempMirror->setSelected(false);
-		int tempNum = mirrorTreeWidgetItem[index1]->childCount();
-		for (int i = 0; i < tempNum; ++i)
+		bool isFlag = false;
+		// 判断是否保留原来的限制条件
+		switch (QMessageBox::question(this, tr("Question"), 
+			tr("Whether or not the existing restrictions are retained?"),
+			QMessageBox::Ok | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Ok))
 		{
-			mirrorTreeWidgetItem[index]->removeChild(mirrorTreeWidgetItem[index]->child(i));
+		case QMessageBox::Ok:
+			//displayTextEdit->setText(tr("询问按钮 / 确定"));
+			tempMirror->moveRestriction(myData->getMirrorByNum(index1));
+			isFlag = true;
+			break;
+		case QMessageBox::No:
+			isFlag = false;
+			break;
+		case QMessageBox::Cancel:
+			return;
+		default:
+			break;
 		}
+
+
+		tempMirror->setSelected(false);
+		if (isFlag) // 保留
+		{
+			mirrorTreeWidgetItem[index1]->removeChild(mirrorTreeWidgetItem[index1]->child(0));
+		}
+		else // 不保留
+		{
+			QTreeWidgetItem *childMirror = new QTreeWidgetItem;
+			childMirror->setText(0, tr("Mirror") + QString::number(index1+1));
+			childMirror->setData(0, Qt::UserRole, QVariant(0));
+			childMirror->setData(1, Qt::UserRole, QVariant(index1));
+			
+			geometryTreeItem->removeChild(mirrorTreeWidgetItem[index1]);
+			geometryTreeItem->insertChild(index1,childMirror);
+			delete mirrorTreeWidgetItem[index1];
+			mirrorTreeWidgetItem[index1] = childMirror;
+		}
+		
 		myData->setMirror(index1, tempMirror);
-		mirrorTreeWidgetItem[index1]->addChild(tempMirror->getTree());
+		mirrorTreeWidgetItem[index1]->insertChild(0,tempMirror->getTree());
 		mirrorTreeWidgetItem[index1]->child(0)->setData(2,
 			Qt::UserRole, QVariant(index1));
-		if (true) // 判断是否保留原来的限制条件
-		{
-			
-			
-		}
-		else
-		{
 
-		}
 		tempMirror = nullptr;
 		delete paraboloidWidget;
 		paraboloidWidget = nullptr;
 		isExistenceOpenWin = false;
+		updateLight();
 	}
-	else if (0 == index)// 点击取消
+	else if (0 == caseIndex)// 点击取消
 	{
 		renderer->RemoveActor(tempMirror->getActor());
 		int index1 = rightSelectItem->data(2, Qt::UserRole).toInt();
@@ -769,3 +886,9 @@ void mainWindow::updateVtk()
 	//window->AddRenderer(renderer);
 	window->Render();
 }
+
+void mainWindow::updateLight()
+{
+	myData->getDefaultLightShow()->updateData();
+}
+

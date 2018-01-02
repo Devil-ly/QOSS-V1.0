@@ -22,7 +22,7 @@
 class LightShow
 {
 public:
-	LightShow(std::vector<Mirror*>, int);
+	LightShow(const std::vector<Mirror*>&, int);
 	~LightShow();
 
 	void updateData();
@@ -43,7 +43,7 @@ private:
 	int cylinderNum;
 	std::vector <std::vector <Vector3>> rayPosition;
 	std::vector <std::vector <Vector3>> rayVector;
-	std::vector<Mirror*> mirrors;
+	const std::vector<Mirror*>& mirrors;
 };
 
 #endif //LIGHTSHOW_H

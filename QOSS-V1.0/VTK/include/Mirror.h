@@ -59,7 +59,17 @@ public:
 	void addRestriction(Restriction*);
 	void setRestriction(int,Restriction*);
 	void removeRestriction(int);
+
+	// 不调用析构！！！！
+	void removeRestrictionAll();
+
+	// 调用析构！！！！
+	void clearRestrictionAll();
+
 	Restriction* getRestriction(int) const;
+	// 移动mirror中的Restriction，移动后原mirror的Restriction为空
+	void moveRestriction(Mirror*);
+	const vector<Restriction*>& getRestrictionAll() const { return restrictions; }
 
 	void switchIsTransparent();
 	bool getIsTransparent() const { return isTransparent; }
@@ -69,7 +79,7 @@ public:
 
 protected:
 
-	QTreeWidgetItem* getTransformTree();
+	
 
 	MirrorsType type;
 

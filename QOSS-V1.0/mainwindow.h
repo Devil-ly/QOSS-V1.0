@@ -24,6 +24,7 @@
 
 #include "Qt/include/ParaboloidWidget.h"
 #include "Qt/include/RestrictionWidget.h"
+#include "Qt/include/GaussianWidget.h"
 
 using namespace userInterface;
 class mainWindow : public QMainWindow
@@ -53,6 +54,8 @@ private:
 
 	void updateVtk();
 
+	void updateLight();
+
 
 private slots:
 
@@ -71,6 +74,9 @@ private slots:
 
 	void on_restriction();
 	void toReceiveRestriction(int);
+
+	void createGaussian();
+	void toReceiveGaussian(int);
 
 	void on_createParaboloid();
 	void toReceiveParaboloid(int);
@@ -126,6 +132,8 @@ private:
 
 	QAction * isShowBoxAction;
 
+	QAction * GaussianAction;     //高斯场源
+
 	// 右键
 	QAction * modifyingMirrorAction;
 	QAction * restrictionAction;
@@ -142,6 +150,7 @@ private:
 	QTreeWidgetItem * modelTreeItem;
 	QTreeWidgetItem * geometryTreeItem;
 	QTreeWidgetItem * sourceTreeItem;
+	QTreeWidgetItem * soucreFieldTreeItem;
 	QTreeWidgetItem * lightTreeItem;
 	QTreeWidgetItem * fieldTreeItem;
 
@@ -155,8 +164,9 @@ private:
 	Restriction * tempRestriction;
 
 	// 窗口指针
-	ParaboloidWidget *paraboloidWidget;
-	RestrictionWidget *restrictionWidget;
+	ParaboloidWidget * paraboloidWidget;
+	RestrictionWidget * restrictionWidget;
+	GaussianWidget * gaussianWidget;
 
 	bool isExistenceOpenWin;
 	bool isNew;

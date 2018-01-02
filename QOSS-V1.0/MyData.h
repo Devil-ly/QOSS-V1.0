@@ -12,10 +12,12 @@
 #include "../Calculation/SourceModeGeneration.h"
 #include "../VTK/include/LimitBox.h"
 #include "MirrorPosition.h"
+#include <map>
 
 class Mirror;
 class LightShow;
 class Radiator;
+class Field;
 
 class MyData //单例
 {
@@ -68,6 +70,10 @@ public:
 	void createRadiator();
 	shared_ptr<Radiator> getRadiator() { return radiator; }
 
+	// 源
+	void setSourceField(Field*);
+	Field* getSourceField() const; 
+
 private:
 	static MyData * _myData;
 	bool isModifiedFlag;  // 标志该类数据是否被修改
@@ -86,6 +92,9 @@ private:
 
 	shared_ptr<LightShow> defaultLigthShow;
 	shared_ptr<Radiator> radiator;
+
+	// 保存计算结果的场 第0个为源，只能拥有一个源
+	std::map<int, Field*> fieldMap;
 
 };
 
