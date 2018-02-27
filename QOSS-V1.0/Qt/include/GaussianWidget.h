@@ -22,7 +22,7 @@ namespace  userInterface {
 
 	public:
 		GaussianWidget(QWidget *parent = 0);
-		~GaussianWidget();
+		virtual ~GaussianWidget();
 
 		//void setWidgetData(Field const * _Source);
 		//bool getWidgetData(Field * _Source,

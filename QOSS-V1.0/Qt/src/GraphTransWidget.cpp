@@ -248,5 +248,5 @@ void GraphTransWidget::setMirror(BasicParameters* mirror)
 
 void GraphTransWidget::closeEvent(QCloseEvent * event)
 {
-	emit sendData(1);
+	emit sendData(0);
 }

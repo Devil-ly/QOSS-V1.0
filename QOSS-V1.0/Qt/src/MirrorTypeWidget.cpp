@@ -10,8 +10,13 @@ MirrorTypeWidget::MirrorTypeWidget(QWidget *parent)
 	//page1
 	planeBtn = new QPushButton(tr("Plane"));
 	ellipsoidBtn = new QPushButton(tr("Ellipsoid"));
-	paraboloidBtn = new QPushButton(tr("ParaboloidBtn"));
+	paraboloidBtn = new QPushButton(tr("Paraboloid"));
 	parabolicCylinderBtn = new QPushButton(tr("ParabolicCylinder"));
+
+	connect(planeBtn, SIGNAL(clicked()), this, SLOT(on_planeBtn()));
+	connect(ellipsoidBtn, SIGNAL(clicked()), this, SLOT(on_ellipsoidBtn()));
+	connect(paraboloidBtn, SIGNAL(clicked()), this, SLOT(on_paraboloidBtn()));
+	connect(parabolicCylinderBtn, SIGNAL(clicked()), this, SLOT(on_parabolicCylinderBtn()));
 
 	QVBoxLayout * baseLayout = new QVBoxLayout;
 	baseLayout->addWidget(planeBtn);
@@ -41,4 +46,32 @@ MirrorTypeWidget::MirrorTypeWidget(QWidget *parent)
 
 MirrorTypeWidget::~MirrorTypeWidget()
 {
+}
+
+void userInterface::MirrorTypeWidget::on_ellipsoidBtn()
+{
+	emit sendMirrorType(ELLIPSOID);
+	accept();
+	close();
+}
+
+void userInterface::MirrorTypeWidget::on_paraboloidBtn()
+{
+	emit sendMirrorType(PARABOLOID);
+	accept();
+	close();
+}
+
+void userInterface::MirrorTypeWidget::on_parabolicCylinderBtn()
+{
+	emit sendMirrorType(PARABOLICCYLINDER);
+	accept();
+	close();
+}
+
+void userInterface::MirrorTypeWidget::on_planeBtn()
+{
+	emit sendMirrorType(PLANEMIRROR);
+	accept();
+	close();
 }

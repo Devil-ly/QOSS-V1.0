@@ -20,6 +20,18 @@ public:
 
 	void setParameter(double focus, double yMax, double zMin, double zMax);
 
+	void setFocus(double);
+	double getFocus() const { return focus; }
+
+	void setRadius(double);
+	double getRadius() const { return yMax; }
+
+	void setZMin(double);
+	double getZMin() const { return zMin; }
+
+	void setZMax(double);
+	double getZMax() const { return zMax; }
+
 	virtual QTreeWidgetItem* getTree();
 private:
 	double focus;

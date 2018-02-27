@@ -13,6 +13,8 @@
 #include <QToolBar>
 #include <QstatusBar>
 #include <QTreeWidgetItem>
+#include <QButtonGroup>
+#include <QRadioButton>
 
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
@@ -25,11 +27,20 @@
 #include "Qt/include/ParaboloidWidget.h"
 #include "Qt/include/RestrictionWidget.h"
 #include "Qt/include/GaussianWidget.h"
+#include "Qt/include/CalculationWidget.h"
+#include "Qt/include/ParabolicCylinderWidget.h"
+
+#include "Qt/include/GraphTransWidget.h"
 
 using namespace userInterface;
 class mainWindow : public QMainWindow
 {
 	Q_OBJECT
+	enum QVariantType
+	{	
+		FIELD = 10,
+		
+	};
 
 public:
 	mainWindow(QWidget *parent = 0);
@@ -46,6 +57,7 @@ private:
 
 	void createTreeWidgetItem(); // 创建tree
 	void createRightMenu(); // 右键菜单
+	void createDetails(); //zuojian
 
 	void createProject();
 
@@ -55,6 +67,9 @@ private:
 	void updateVtk();
 
 	void updateLight();
+
+	// 改变3D显示窗口
+	void showDetails(int);
 
 
 private slots:
@@ -79,12 +94,22 @@ private slots:
 	void toReceiveGaussian(int);
 
 	void on_createParaboloid();
-	void toReceiveParaboloid(int);
+	void on_createParabolicCylinder();
+
+	//void toReceiveParabolicCylinder(int);
+	void toReceiveMirror(int);
+	void toReceiveMirrorType(int);
+
+	void on_PVVA();
 
 
-	// ------------------- 左键右键函数 ----------------------------------
+	// ------------------- 右键函数 ----------------------------------
 	void on_treeWidget_ContextMenuRequested(QPoint pos);// 右键菜单
+
+	// ------------------- 左键函数 ----------------------------------
 	void on_treeWidget_leftPressed(QTreeWidgetItem *item, int column);
+	void on_Details_FieldClicked(); //details Field 
+
 
 private:
 	vtkSmartPointer<vtkOrientationMarkerWidget> widget1;
@@ -133,6 +158,7 @@ private:
 	QAction * isShowBoxAction;
 
 	QAction * GaussianAction;     //高斯场源
+	QAction * PVVAAction;     //高斯场源
 
 	// 右键
 	QAction * modifyingMirrorAction;
@@ -157,6 +183,24 @@ private:
 	QTreeWidgetItem * rightSelectItem;
 	QTreeWidgetItem * leftSelectItem; // 右键选中的节点
 
+	//****** Details********
+	QButtonGroup * dimensionGroupBtn;
+	QRadioButton * ThreeDBtn;
+	QRadioButton * TwoDBtn;
+	QButtonGroup * fieldGroupBtn;
+	QRadioButton * ExBtn;
+	QRadioButton * EyBtn;
+	QRadioButton * EzBtn;
+	QRadioButton * HxBtn;
+	QRadioButton * HyBtn;
+	QRadioButton * HzBtn;
+	QButtonGroup * pmGroupBtn;
+	QRadioButton * magnitudeBtn;
+	QRadioButton * phaseBtn;
+	QButtonGroup * powerGroupBtn;
+	QRadioButton * linearBtn;
+	QRadioButton * dbBtn;
+
 	vector<QTreeWidgetItem*> mirrorTreeWidgetItem;
 
 	MyData * myData;
@@ -164,12 +208,16 @@ private:
 	Restriction * tempRestriction;
 
 	// 窗口指针
-	ParaboloidWidget * paraboloidWidget;
+	//ParaboloidWidget * paraboloidWidget;
 	RestrictionWidget * restrictionWidget;
 	GaussianWidget * gaussianWidget;
+	//ParabolicCylinderWidget * parabolicCylinderWidget;
+
+	GraphTransWidget * tempWidget;
 
 	bool isExistenceOpenWin;
 	bool isNew;
+	int fieldNum;
 
 };
 

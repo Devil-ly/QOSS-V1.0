@@ -230,6 +230,27 @@
     <ClCompile Include="VTK\src\Field.cpp">
       <Filter>Source Files\VTK</Filter>
     </ClCompile>
+    <ClCompile Include="Calculation\PVVA.cpp">
+      <Filter>Source Files\Calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_CalculationWidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_CalculationWidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Qt\src\CalculationWidget.cpp">
+      <Filter>Source Files\Qt</Filter>
+    </ClCompile>
+    <ClCompile Include="Qt\src\ParabolicCylinderWidget.cpp">
+      <Filter>Source Files\Qt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ParabolicCylinderWidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ParabolicCylinderWidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwindow.h">
@@ -266,6 +287,12 @@
       <Filter>Header Files\Qt</Filter>
     </CustomBuild>
     <CustomBuild Include="Qt\include\GaussianWidget.h">
+      <Filter>Header Files\Qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Qt\include\CalculationWidget.h">
+      <Filter>Header Files\Qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Qt\include\ParabolicCylinderWidget.h">
       <Filter>Header Files\Qt</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -365,6 +392,9 @@
     </ClInclude>
     <ClInclude Include="VTK\include\Gaussain.h">
       <Filter>Header Files\VTK</Filter>
+    </ClInclude>
+    <ClInclude Include="Calculation\PVVA.h">
+      <Filter>Header Files\Calculation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

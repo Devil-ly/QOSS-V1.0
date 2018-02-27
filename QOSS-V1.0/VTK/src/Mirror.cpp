@@ -104,6 +104,8 @@ void Mirror::clearRestrictionAll()
 
 Restriction * Mirror::getRestriction(int num) const
 {
+	if (restrictions.empty())
+		return nullptr;
 	if (num > restrictions.size())
 		return nullptr;
 	return restrictions[num];

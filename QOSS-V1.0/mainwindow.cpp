@@ -53,7 +53,7 @@ mainWindow::mainWindow(QWidget *parent)
 	// 创建默认的镜子
 	myData->createDefaultMirror();
 	//for (int i = 0; i < myData->getNumOfMirrors(); ++i)
-	for (int i = 0; i < 2; ++i)
+	for (int i = 0; i < 3; ++i)
 	{
 		renderer->AddActor(myData->getMirrorByNum(i)->getActor());
 	}
@@ -79,8 +79,6 @@ mainWindow::mainWindow(QWidget *parent)
 	axes->SetConeResolution(20);
 	//axes->SetTotalLength(10, 10, 10); //修改坐标尺寸
 	
-	//renderer->AddActor(axes);
-
 	interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
 	interactor->SetRenderWindow(window);
 
@@ -137,7 +135,7 @@ mainWindow::mainWindow(QWidget *parent)
 	createToolBars();
 	createStatusBar();
 	createRightMenu();
-	//createDetails();
+	createDetails();
 	//creareWindows();
 
 	init();
@@ -152,6 +150,7 @@ void mainWindow::init()
 {
 	isExistenceOpenWin = false;
 	isNew = true;
+	fieldNum = 1;
 }
 
 void mainWindow::createActions()
@@ -204,7 +203,11 @@ void mainWindow::createActions()
 	GaussianAction->setStatusTip(tr("Create a Gaussian source"));
 	connect(GaussianAction, SIGNAL(triggered()), this, SLOT(createGaussian()));
 
-
+	// 
+	PVVAAction = new QAction(QIcon(tr("Qt/images/PVVA.png")), tr("Fast calculation"),
+		this);
+	PVVAAction->setStatusTip(tr("Fast calculation by PVVA"));
+	connect(PVVAAction, SIGNAL(triggered()), this, SLOT(on_PVVA()));
 }
 
 void mainWindow::createMenus()
@@ -244,6 +247,7 @@ void mainWindow::createToolBars()
 	fileTool->addWidget(viewComboBox);
 	fileTool->addSeparator();
 	fileTool->addAction(GaussianAction);
+	fileTool->addAction(PVVAAction);
 }
 
 void mainWindow::createStatusBar()
@@ -324,13 +328,10 @@ void mainWindow::createTreeWidgetItem()
 	else
 		childPar->setText(0, tr("Pattern: Waveguide"));
 
-	soucreFieldTreeItem = new QTreeWidgetItem(QStringList(QString("SourceField")));
-	soucreFieldTreeItem->setData(0, Qt::UserRole, QVariant(3));
-	soucreFieldTreeItem->setData(1, Qt::UserRole, QVariant(0));
 
 	sourceTreeItem->addChild(childPar);
 	sourceTreeItem->addChild(childRadiator);
-	sourceTreeItem->addChild(soucreFieldTreeItem);
+
 
 	sourceTreeItem->setExpanded(true);
 
@@ -343,7 +344,8 @@ void mainWindow::createTreeWidgetItem()
 		QTreeWidgetItem *childMirror = new QTreeWidgetItem;
 		childMirror->setText(0, tr("Mirror") + QString::number(i+1));
 		childMirror->setData(0, Qt::UserRole, QVariant(0));
-		childMirror->setData(1, Qt::UserRole, QVariant(i));
+		childMirror->setData(1, Qt::UserRole, QVariant(i)); 
+		childMirror->setData(2, Qt::UserRole, QVariant(i));
 		geometryTreeItem->addChild(childMirror);
 		childMirror->addChild(myData->getMirrorByNum(i)->getTree());
 		childMirror->child(0)->setData(2, Qt::UserRole, QVariant(i));
@@ -373,6 +375,10 @@ void mainWindow::createTreeWidgetItem()
 
 	fieldTreeItem = new QTreeWidgetItem(QStringList(QString("Field")));
 	modelTreeItem->addChild(fieldTreeItem);
+	soucreFieldTreeItem = new QTreeWidgetItem(QStringList(QString("SourceField")));
+	soucreFieldTreeItem->setData(0, Qt::UserRole, QVariant(FIELD));
+	soucreFieldTreeItem->setData(1, Qt::UserRole, QVariant(0));
+	fieldTreeItem->addChild(soucreFieldTreeItem);
 
 }
 
@@ -429,6 +435,109 @@ void mainWindow::createRightMenu()
 
 	R_Tree_RestrictionMenu->addAction(modifyingRestrictionAction);
 	R_Tree_RestrictionMenu->addAction(delRestrictionAction);
+}
+
+void mainWindow::createDetails()
+{
+	dimensionGroupBtn = new QButtonGroup();
+	ThreeDBtn = new QRadioButton(tr("3D"));
+	TwoDBtn = new QRadioButton(tr("2D"));
+	dimensionGroupBtn->addButton(ThreeDBtn, 0);
+	dimensionGroupBtn->addButton(TwoDBtn, 1);
+	connect(ThreeDBtn, SIGNAL(clicked()), this, SLOT(on_Details_FieldClicked()));
+	connect(TwoDBtn, SIGNAL(clicked()), this, SLOT(on_Details_FieldClicked()));
+
+	QGridLayout * dimensionLayout = new QGridLayout;
+	dimensionLayout->addWidget(ThreeDBtn, 0, 0);
+	dimensionLayout->addWidget(TwoDBtn, 0, 1);
+
+	QGroupBox * dimensionGroupBox = new QGroupBox;
+	dimensionGroupBox->setTitle(tr("dimension"));
+	dimensionGroupBox->setLayout(dimensionLayout);
+
+	fieldGroupBtn = new QButtonGroup();
+	ExBtn = new QRadioButton(tr("Ex"));
+	EyBtn = new QRadioButton(tr("Ey"));
+	EzBtn = new QRadioButton(tr("Ez"));
+	HxBtn = new QRadioButton(tr("Hx"));
+	HyBtn = new QRadioButton(tr("Hy"));
+	HzBtn = new QRadioButton(tr("Hz"));
+
+	fieldGroupBtn->addButton(ExBtn, 0);
+	fieldGroupBtn->addButton(EyBtn, 1);
+	fieldGroupBtn->addButton(EzBtn, 2);
+	fieldGroupBtn->addButton(HxBtn, 3);
+	fieldGroupBtn->addButton(HyBtn, 4);
+	fieldGroupBtn->addButton(HzBtn, 5);
+
+	connect(ExBtn, SIGNAL(clicked()), this, SLOT(on_Details_FieldClicked()));
+	connect(EyBtn, SIGNAL(clicked()), this, SLOT(on_Details_FieldClicked()));
+	connect(EzBtn, SIGNAL(clicked()), this, SLOT(on_Details_FieldClicked()));
+	connect(HxBtn, SIGNAL(clicked()), this, SLOT(on_Details_FieldClicked()));
+	connect(HyBtn, SIGNAL(clicked()), this, SLOT(on_Details_FieldClicked()));
+	connect(HzBtn, SIGNAL(clicked()), this, SLOT(on_Details_FieldClicked()));
+
+	QGridLayout * fieldLayout = new QGridLayout;
+	fieldLayout->addWidget(ExBtn, 0, 0);
+	fieldLayout->addWidget(EyBtn, 1, 0);
+	fieldLayout->addWidget(EzBtn, 2, 0);
+	fieldLayout->addWidget(HxBtn, 0, 1);
+	fieldLayout->addWidget(HyBtn, 1, 1);
+	fieldLayout->addWidget(HzBtn, 2, 1);
+
+	QGroupBox * fieldGroupBox = new QGroupBox;
+	fieldGroupBox->setTitle(tr("field"));
+	fieldGroupBox->setLayout(fieldLayout);
+
+	// pmGroupBox
+	pmGroupBtn = new QButtonGroup();
+	magnitudeBtn = new QRadioButton(tr("magnitude"));
+	phaseBtn = new QRadioButton(tr("phase"));
+
+	pmGroupBtn->addButton(magnitudeBtn, 0);
+	pmGroupBtn->addButton(phaseBtn, 1);
+
+	connect(magnitudeBtn, SIGNAL(clicked()), this, SLOT(on_Details_FieldClicked()));
+	connect(phaseBtn, SIGNAL(clicked()), this, SLOT(on_Details_FieldClicked()));
+
+	QGridLayout * pmLayout = new QGridLayout;
+	pmLayout->addWidget(magnitudeBtn, 0, 0);
+	pmLayout->addWidget(phaseBtn, 0, 1);
+
+	QGroupBox * pmGroupBox = new QGroupBox;
+	pmGroupBox->setTitle(tr("parameter"));
+	pmGroupBox->setLayout(pmLayout);
+
+	// pmGroupBox
+	powerGroupBtn = new QButtonGroup();
+	linearBtn = new QRadioButton(tr("linear"));
+	dbBtn = new QRadioButton(tr("dB"));
+	powerGroupBtn->addButton(dbBtn, 0);
+	powerGroupBtn->addButton(linearBtn, 1);
+
+
+	QGridLayout * powerLayout = new QGridLayout;
+	powerLayout->addWidget(linearBtn, 0, 0);
+	powerLayout->addWidget(dbBtn, 0, 1);
+
+	connect(linearBtn, SIGNAL(clicked()), this, SLOT(on_Details_FieldClicked()));
+	connect(dbBtn, SIGNAL(clicked()), this, SLOT(on_Details_FieldClicked()));
+
+	// powerGroupBox
+	QGroupBox * powerGroupBox = new QGroupBox;
+	powerGroupBox->setTitle(tr("power"));
+	powerGroupBox->setLayout(powerLayout);
+
+	QVBoxLayout * boxLayout = new QVBoxLayout;
+	boxLayout->addWidget(dimensionGroupBox);
+	boxLayout->addWidget(fieldGroupBox);
+	boxLayout->addWidget(pmGroupBox);
+	boxLayout->addWidget(powerGroupBox);
+
+	detailsWidget = new QWidget;
+	detailsWidget->setLayout(boxLayout);
+	detailsDockWidget->setWidget(detailsWidget);
+	detailsDockWidget->close();
 }
 
 void mainWindow::createProject()
@@ -530,9 +639,12 @@ void mainWindow::on_delRestriction()
 void mainWindow::on_modifyingMirror()
 {
 	MirrorTypeWidget mirrorTypeWidget;
+	connect(&mirrorTypeWidget, SIGNAL(sendMirrorType(int)),
+		this, SLOT(toReceiveMirrorType(int)));
+
 	if (mirrorTypeWidget.exec() != QDialog::Accepted)
 	{
-		exit(1);
+		return;
 	}
 }
 
@@ -548,6 +660,12 @@ void mainWindow::on_modifyParameters()
 		tempMirror->setSelected(true);
 		renderer->AddActor(tempMirror->getActor());
 		on_createParaboloid();
+		break;
+	case PARABOLICCYLINDER:
+		tempMirror = MirrorFactory::cloneMirror(myData->getMirrorByNum(index));
+		tempMirror->setSelected(true);
+		renderer->AddActor(tempMirror->getActor());
+		on_createParabolicCylinder();
 		break;
 	default:
 		break;
@@ -725,45 +843,67 @@ void mainWindow::on_createParaboloid()
 
 		return;
 	}
-	paraboloidWidget = new ParaboloidWidget();
-	paraboloidWidget->setWindowFlags(Qt::WindowStaysOnTopHint); // 子窗口保持置顶
+	tempWidget = new ParaboloidWidget();
+	tempWidget->setWindowFlags(Qt::WindowStaysOnTopHint); // 子窗口保持置顶
 
-	connect(paraboloidWidget, SIGNAL(sendData(int)),
-		this, SLOT(toReceiveParaboloid(int)));
+	connect(tempWidget, SIGNAL(sendData(int)),
+		this, SLOT(toReceiveMirror(int)));
 
-	paraboloidWidget->setMirror(tempMirror);
-	paraboloidWidget->show();
+	dynamic_cast<ParaboloidWidget*>(tempWidget)->setMirror(tempMirror);
+	tempWidget->show();
 	isExistenceOpenWin = true;
 	
 }
 
-void mainWindow::toReceiveParaboloid(int caseIndex)
+void mainWindow::on_createParabolicCylinder()
+{
+	if (isExistenceOpenWin)
+	{
+		// 已经有窗口打开了
+		QMessageBox::warning(NULL, "Warning",
+			"A window has been opened. Please close and continue!");
+
+		return;
+	}
+	tempWidget = new ParabolicCylinderWidget();
+	tempWidget->setWindowFlags(Qt::WindowStaysOnTopHint); // 子窗口保持置顶
+
+	connect(tempWidget, SIGNAL(sendData(int)),
+		this, SLOT(toReceiveMirror(int)));
+
+	dynamic_cast<ParabolicCylinderWidget*>(tempWidget)->setMirror(tempMirror);
+	tempWidget->show();
+	isExistenceOpenWin = true;
+}
+
+void mainWindow::toReceiveMirror(int caseIndex)
 {
 	if (1 == caseIndex) // 点击确认
 	{
-		
 		int index1 = rightSelectItem->data(2, Qt::UserRole).toInt();
+
 		bool isFlag = false;
 		// 判断是否保留原来的限制条件
-		switch (QMessageBox::question(this, tr("Question"), 
-			tr("Whether or not the existing restrictions are retained?"),
-			QMessageBox::Ok | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Ok))
+		if (nullptr != myData->getMirrorByNum(index1)->getRestriction(0))
 		{
-		case QMessageBox::Ok:
-			//displayTextEdit->setText(tr("询问按钮 / 确定"));
-			tempMirror->moveRestriction(myData->getMirrorByNum(index1));
-			isFlag = true;
-			break;
-		case QMessageBox::No:
-			isFlag = false;
-			break;
-		case QMessageBox::Cancel:
-			return;
-		default:
-			break;
+			switch (QMessageBox::question(this, tr("Question"),
+				tr("Whether or not the existing restrictions are retained?"),
+				QMessageBox::Ok | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Ok))
+			{
+			case QMessageBox::Ok:
+				//displayTextEdit->setText(tr("询问按钮 / 确定"));
+				tempMirror->moveRestriction(myData->getMirrorByNum(index1));
+				isFlag = true;
+				break;
+			case QMessageBox::No:
+				isFlag = false;
+				break;
+			case QMessageBox::Cancel:
+				return;
+			default:
+				break;
+			}
 		}
-
-
 		tempMirror->setSelected(false);
 		if (isFlag) // 保留
 		{
@@ -772,25 +912,28 @@ void mainWindow::toReceiveParaboloid(int caseIndex)
 		else // 不保留
 		{
 			QTreeWidgetItem *childMirror = new QTreeWidgetItem;
-			childMirror->setText(0, tr("Mirror") + QString::number(index1+1));
+			childMirror->setText(0, tr("Mirror") + QString::number(index1 + 1));
 			childMirror->setData(0, Qt::UserRole, QVariant(0));
 			childMirror->setData(1, Qt::UserRole, QVariant(index1));
-			
+			childMirror->setData(2, Qt::UserRole, QVariant(index1));
+
 			geometryTreeItem->removeChild(mirrorTreeWidgetItem[index1]);
-			geometryTreeItem->insertChild(index1,childMirror);
+			geometryTreeItem->insertChild(index1, childMirror);
 			delete mirrorTreeWidgetItem[index1];
 			mirrorTreeWidgetItem[index1] = childMirror;
 		}
-		
+
 		myData->setMirror(index1, tempMirror);
-		mirrorTreeWidgetItem[index1]->insertChild(0,tempMirror->getTree());
+		mirrorTreeWidgetItem[index1]->insertChild(0, tempMirror->getTree());
 		mirrorTreeWidgetItem[index1]->child(0)->setData(2,
 			Qt::UserRole, QVariant(index1));
+		mirrorTreeWidgetItem[index1]->setExpanded(true);
 
 		tempMirror = nullptr;
-		delete paraboloidWidget;
-		paraboloidWidget = nullptr;
+		delete tempWidget;
+		tempWidget = nullptr;
 		isExistenceOpenWin = false;
+		rightSelectItem = nullptr;
 		updateLight();
 	}
 	else if (0 == caseIndex)// 点击取消
@@ -801,11 +944,57 @@ void mainWindow::toReceiveParaboloid(int caseIndex)
 		renderer->AddActor(myData->getMirrorByNum(index1)->getActor());
 		delete tempMirror;
 		tempMirror = nullptr;
-		delete paraboloidWidget;
-		paraboloidWidget = nullptr;
+		delete tempWidget;
+		tempWidget = nullptr;
+		rightSelectItem = nullptr;
 		isExistenceOpenWin = false;
 	}
 	updateVtk();
+}
+
+void mainWindow::toReceiveMirrorType(int caseInd)
+{
+	int index = rightSelectItem->data(2, Qt::UserRole).toInt();
+	renderer->RemoveActor(myData->getMirrorByNum(index)->getActor());
+	switch (caseInd)
+	{
+	case PARABOLOID:
+		tempMirror = MirrorFactory::getMirror(PARABOLOID,GraphTrans());
+		tempMirror->setSelected(true);
+		renderer->AddActor(tempMirror->getActor());
+		on_createParaboloid();
+		break;
+	case PARABOLICCYLINDER:
+		tempMirror = MirrorFactory::getMirror(PARABOLICCYLINDER, GraphTrans());
+		tempMirror->setSelected(true);
+		renderer->AddActor(tempMirror->getActor());
+		on_createParabolicCylinder();
+		break;
+	default:
+		break;
+	}
+}
+
+void mainWindow::on_PVVA()
+{
+	CalculationWidget calculationDialog;
+	if (calculationDialog.exec() != QDialog::Accepted)
+	{
+		return;
+	}
+	double dis = calculationDialog.getDistance();
+	int numMirror = calculationDialog.getMirrorNum();
+	Field * temPtr = myData->calculateByPVVA(dis, numMirror);
+	renderer->AddActor(temPtr->getActor());
+
+	QTreeWidgetItem * tree = new QTreeWidgetItem(QStringList
+	(QString("Field")+QString::number(fieldNum)));
+	tree->setData(0, Qt::UserRole, QVariant(FIELD));
+	tree->setData(1, Qt::UserRole, QVariant(fieldNum));
+	fieldTreeItem->addChild(tree);
+	fieldNum++;
+	updateVtk();
+	//myData->
 }
 
 void mainWindow::on_treeWidget_ContextMenuRequested(QPoint pos)
@@ -873,11 +1062,63 @@ void mainWindow::on_treeWidget_leftPressed(QTreeWidgetItem * item, int column)
 				int num = item->data(1, Qt::UserRole).toInt();
 				//myData->getMirrorByNum(num)->setSelected();
 			}
+			if (item->data(0, Qt::UserRole) == FIELD)
+			{
+				int index = item->data(1, Qt::UserRole).toInt();
+				leftSelectItem = item;
+				showDetails(index);
+			}
 
 		}
 	updateVtk();
 }
 
+void mainWindow::on_Details_FieldClicked()
+{
+	int index = leftSelectItem->data(1, Qt::UserRole).toInt();
+	Field *tempField = myData->getFieldByNum(index);
+	int dim = dimensionGroupBtn->checkedId();
+	if (dim == 0) // 3D
+	{
+		tempField->set3D(true);
+		renderer->RemoveActor(tempField->getActor());
+		renderer->RemoveActor(tempField->getActor3D());
+		tempField->setShowPara(fieldGroupBtn->checkedId(),
+			powerGroupBtn->checkedId(), pmGroupBtn->checkedId());
+		magnitudeBtn->setChecked(true);
+		phaseBtn->setEnabled(false);
+		magnitudeBtn->setEnabled(false);
+		tempField->calActor3D();
+		renderer->AddActor(tempField->getActor3D());
+	}
+	else // 2D
+	{
+		tempField->set3D(false);
+		phaseBtn->setEnabled(true);
+		magnitudeBtn->setEnabled(true);
+
+		int i = pmGroupBtn->checkedId();
+		if (i == 0)  // 相位没有db形式
+		{
+			linearBtn->setEnabled(true);
+			dbBtn->setEnabled(true);
+		}
+		else
+		{
+			linearBtn->setEnabled(false);
+			dbBtn->setEnabled(false);
+		}
+		tempField->setShowPara(fieldGroupBtn->checkedId(),
+			powerGroupBtn->checkedId(), i);
+
+		renderer->RemoveActor(tempField->getActor());
+		renderer->RemoveActor(tempField->getActor3D());
+		tempField->calActor();
+		renderer->AddActor(tempField->getActor());
+	}
+
+	updateVtk();
+}
 
 void mainWindow::updateVtk()
 {
@@ -890,5 +1131,96 @@ void mainWindow::updateVtk()
 void mainWindow::updateLight()
 {
 	myData->getDefaultLightShow()->updateData();
+}
+
+void mainWindow::showDetails(int index)
+{
+	int content; bool isLinear; bool isPhs;
+	Field *tempField = myData->getFieldByNum(index);
+	tempField->getShowPara(content, isLinear, isPhs);
+
+	switch (tempField->get3D())
+	{
+	case 0:
+		TwoDBtn->setChecked(true);
+		phaseBtn->setEnabled(true);
+		magnitudeBtn->setEnabled(true);
+		break;
+	case 1:
+		ThreeDBtn->setChecked(true);
+		magnitudeBtn->setChecked(true);
+		phaseBtn->setEnabled(false);
+		magnitudeBtn->setEnabled(false);
+		break;
+	default:
+		break;
+	}
+
+	switch (content)
+	{
+	case 0:
+		ExBtn->setChecked(true);
+		break;
+	case 1:
+		EyBtn->setChecked(true);
+		break;
+	case 2:
+		EzBtn->setChecked(true);
+		break;
+	case 3:
+		HxBtn->setChecked(true);
+		break;
+	case 4:
+		HyBtn->setChecked(true);
+		break;
+	case 5:
+		HzBtn->setChecked(true);
+		break;
+	default:
+		break;
+	}
+
+	switch (isPhs)
+	{
+	case true:
+		phaseBtn->setChecked(true);
+		linearBtn->setEnabled(false);
+		dbBtn->setEnabled(false);
+		break;
+	case false:
+		magnitudeBtn->setChecked(true);
+		linearBtn->setEnabled(true);
+		dbBtn->setEnabled(true);
+		break;
+	default:
+		break;
+	}
+
+	switch (isLinear)
+	{
+	case true:
+		linearBtn->setChecked(true);
+		break;
+	case false:
+		dbBtn->setChecked(true);
+		break;
+	}
+
+	if (0 == index)  // 如果是源 EzHxHyHz 不让点
+	{
+		EzBtn->setEnabled(false);
+		HxBtn->setEnabled(false);
+		HyBtn->setEnabled(false);
+		HzBtn->setEnabled(false);
+	}
+	else
+	{
+		EzBtn->setEnabled(true);
+		HxBtn->setEnabled(true);
+		HyBtn->setEnabled(true);
+		HzBtn->setEnabled(true);
+	}
+	
+	detailsDockWidget->show();
 }
 

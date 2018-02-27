@@ -12,6 +12,7 @@
 #include <QtWidgets/QDialog>
 #include <QTabWidget>
 #include <QPushButton>
+#include "../VTK/include/Mirror.h"
 
 
 namespace  userInterface {
@@ -23,8 +24,14 @@ namespace  userInterface {
 		MirrorTypeWidget(QWidget *parent = 0);
 		~MirrorTypeWidget();
 
+	signals:
+		void sendMirrorType(int);
+
 	private slots:
-		
+		void on_planeBtn();
+		void on_ellipsoidBtn();
+		void on_paraboloidBtn();
+		void on_parabolicCylinderBtn();
 	private:
 
 		QTabWidget * tabWidget;

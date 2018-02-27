@@ -26,7 +26,8 @@ ParabolicCylinder::ParabolicCylinder(const GraphTrans & _graphTrans,
 	updateData();
 }
 
-void ParabolicCylinder::setParameter(double focus, double yMax, double zMin, double zMax)
+void ParabolicCylinder::setParameter(double focus, double yMax, 
+	double zMin, double zMax)
 {
 	this->focus = focus;
 	this->yMax = yMax;
@@ -38,6 +39,37 @@ void ParabolicCylinder::setParameter(double focus, double yMax, double zMin, dou
 	data[12] = -yMax;
 	data[13] = yMax;
 	data[14] = zMin;
+	data[15] = zMax;
+	updateData();
+}
+
+void ParabolicCylinder::setFocus(double focus)
+{
+	this->focus = focus;
+	data[6] = -4 * focus;
+	data[11] = yMax * yMax / focus;
+	updateData();
+}
+
+void ParabolicCylinder::setRadius(double yMax)
+{
+	this->yMax = yMax;
+	data[11] = yMax * yMax / focus;
+	data[12] = -yMax;
+	data[13] = yMax;
+	updateData();
+}
+
+void ParabolicCylinder::setZMin(double zMin)
+{
+	this->zMin = zMin;
+	data[14] = zMin;
+	updateData();
+}
+
+void ParabolicCylinder::setZMax(double zMax)
+{
+	this->zMax = zMax;
 	data[15] = zMax;
 	updateData();
 }
