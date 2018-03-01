@@ -1,5 +1,5 @@
-#ifndef ParaboloidWidget_H
-#define ParaboloidWidget_H
+#ifndef PlaneMirrorWidget_H
+#define PlaneMirrorWidget_H
 
 #include <QtWidgets/QDialog>
 #include <QTabWidget>
@@ -10,17 +10,17 @@
 #include <QPushButton>
 
 #include "Qt/include/GraphTransWidget.h"
-#include "../VTK/include/Paraboloid.h"
+#include "../VTK/include/PlaneMirror.h"
 
 
 namespace  userInterface {
-	class ParaboloidWidget : public GraphTransWidget
+	class PlaneMirrorWidget : public GraphTransWidget
 	{
 		Q_OBJECT
 
 	public:
-		ParaboloidWidget(QWidget *parent = 0);
-		~ParaboloidWidget();
+		PlaneMirrorWidget(QWidget *parent = 0);
+		~PlaneMirrorWidget();
 		void setMirror(Mirror*);
 
 	private slots:
@@ -43,9 +43,9 @@ namespace  userInterface {
 		QLabel * label;
 		QLineEdit * nameLineEidt;
 
-		Paraboloid * paraboloid;
+		PlaneMirror * planeMirror;
 	};
 }
 
 
-#endif // ParaboloidWidget_H
+#endif // PlaneMirrorWidget_H

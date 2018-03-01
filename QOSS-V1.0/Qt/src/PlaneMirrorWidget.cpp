@@ -1,11 +1,11 @@
-#include "Qt/include/RestrictionWidget.h"
+#include "Qt/include/PlaneMirrorWidget.h"
 #include <vector>
 #include "../util/Definition.h"
 using namespace userInterface;
 
-RestrictionWidget::RestrictionWidget(QWidget *parent)
+PlaneMirrorWidget::PlaneMirrorWidget(QWidget *parent)
 {
-	setWindowTitle(tr("Create Restriction"));
+	setWindowTitle(tr("Create paraboloid"));
 
 	defGroupBox = new QGroupBox;
 	addDefGroupBox(defGroupBox, "Qt/images/Paraboloid_coor.png");
@@ -15,14 +15,14 @@ RestrictionWidget::RestrictionWidget(QWidget *parent)
 	addBaseGroupBox(baseGroupBox);
 
 	//dimGroupBox
-	radiuslabel = new QLabel(tr("Radius(R)"));
-	depthlabel = new QLabel(tr("Depth(D)"));
+	radiuslabel = new QLabel(tr("width(W)"));
+	depthlabel = new QLabel(tr("depth(D)"));
 
 	radiusLineEidt = new QLineEdit;
 	depthLineEidt = new QLineEdit;
 
 	radiusLineEidt->setText(tr("1.0"));
-	depthLineEidt->setText(tr("0.5"));
+	depthLineEidt->setText(tr("1.0"));
 
 	QGridLayout * layout3 = new QGridLayout;
 	layout3->addWidget(radiuslabel, 0, 0);
@@ -64,19 +64,18 @@ RestrictionWidget::RestrictionWidget(QWidget *parent)
 
 }
 
-RestrictionWidget::~RestrictionWidget()
+PlaneMirrorWidget::~PlaneMirrorWidget()
 {
 
 }
 
-void RestrictionWidget::setRestriction(Restriction *restriction)
+void PlaneMirrorWidget::setMirror(Mirror *mirror)
 {
+	planeMirror = dynamic_cast<PlaneMirror*>(mirror);
 
-	this->restriction = restriction;
-	GraphTransWidget::setMirror(restriction);
-	const vector<double>& tempData = restriction->getData();
-	depthLineEidt->setText(QString::number(tempData[1]));
-	radiusLineEidt->setText(QString::number(tempData[0]));
+	GraphTransWidget::setMirror(mirror);
+	depthLineEidt->setText(QString::number(planeMirror->getDepth()));
+	radiusLineEidt->setText(QString::number(planeMirror->getWidth()));
 
 	connect(radiusLineEidt, SIGNAL(textChanged(QString)),
 		this, SLOT(on_radiusChange(QString)));
@@ -84,7 +83,7 @@ void RestrictionWidget::setRestriction(Restriction *restriction)
 		this, SLOT(on_focusChange(QString)));
 }
 
-void RestrictionWidget::on_radiusChange(QString var)
+void PlaneMirrorWidget::on_radiusChange(QString var)
 {
 	bool ok = false;
 	double res = var.toDouble(&ok);
@@ -101,12 +100,12 @@ void RestrictionWidget::on_radiusChange(QString var)
 		radiusLineEidt->setStyleSheet("background-color:rgba(255,0,0,255)");
 		return;
 	}
-	restriction->setDataByNum(0,res);
+	planeMirror->setWidth(res);
 	radiusLineEidt->setStyleSheet("background-color:rgba(255,255,255,255)");
 	emit sendData(2);
 }
 
-void RestrictionWidget::on_focusChange(QString var)
+void PlaneMirrorWidget::on_focusChange(QString var)
 {
 	bool ok = false;
 	double res = var.toDouble(&ok);
@@ -123,7 +122,7 @@ void RestrictionWidget::on_focusChange(QString var)
 		return;
 
 	}
-	restriction->setDataByNum(1, res);
+	planeMirror->setDepth(res);
 	depthLineEidt->setStyleSheet("background-color:rgba(255,255,255,255)");
 	emit sendData(2);
 }

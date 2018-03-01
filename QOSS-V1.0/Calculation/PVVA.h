@@ -143,18 +143,18 @@ namespace calculation
 		complex<double> ** Ex_In, ** Ey_In;	// 源 
 
 		complex<double> ** Ex_R, ** Ey_R, ** Ez_R;	// 经过反射计算后的到的电场
-		complex<double> ** Ex_R_Inter, ** Ey_R_Inter, ** Ez_R_Inter;	// 插值后的电场
 
 		string ProjName;   // 数据的地址
 		int NodesNum, EleNum;  // .dat的元素和节点的个数
 
-		Vector3 Org_Source, n_Source; //Org_Source平面中点 n_Source平面法向量
+		//Org_Source平面中点 n_Source平面法向量 R_Source反射后的向量
+		Vector3 Org_Source, n_Source, R_Source; 
 		double theta_Source;   // 源与-Z轴的夹角
 
-		Vector3 **Plane;  // 平面各点的坐标（绝对坐标）
+		Vector3 **Plane;    // 平面各点的坐标（绝对坐标）
 		Vector3 **n_Plane;  // 平面传播各点后的法向量
-		Vector3 **R_Plane; // 反射后的各点的坐标
-
+		Vector3 **R_Plane;  // 反射后的各点的坐标
+		Vector3 **Rn_Plane; // 反射后的各点的法向量
 		Vector3 **InterVal_Plane; // 插值平面
 		struct coordinate_ij
 		{

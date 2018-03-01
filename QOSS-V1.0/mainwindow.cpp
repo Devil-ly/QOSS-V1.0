@@ -667,6 +667,12 @@ void mainWindow::on_modifyParameters()
 		renderer->AddActor(tempMirror->getActor());
 		on_createParabolicCylinder();
 		break;
+	case PLANEMIRROR:
+		tempMirror = MirrorFactory::cloneMirror(myData->getMirrorByNum(index));
+		tempMirror->setSelected(true);
+		renderer->AddActor(tempMirror->getActor());
+		on_createPlaneMirror();
+		break;
 	default:
 		break;
 	}
@@ -872,6 +878,27 @@ void mainWindow::on_createParabolicCylinder()
 		this, SLOT(toReceiveMirror(int)));
 
 	dynamic_cast<ParabolicCylinderWidget*>(tempWidget)->setMirror(tempMirror);
+	tempWidget->show();
+	isExistenceOpenWin = true;
+}
+
+void mainWindow::on_createPlaneMirror()
+{
+	if (isExistenceOpenWin)
+	{
+		// 已经有窗口打开了
+		QMessageBox::warning(NULL, "Warning",
+			"A window has been opened. Please close and continue!");
+
+		return;
+	}
+	tempWidget = new PlaneMirrorWidget();
+	tempWidget->setWindowFlags(Qt::WindowStaysOnTopHint); // 子窗口保持置顶
+
+	connect(tempWidget, SIGNAL(sendData(int)),
+		this, SLOT(toReceiveMirror(int)));
+
+	dynamic_cast<PlaneMirrorWidget*>(tempWidget)->setMirror(tempMirror);
 	tempWidget->show();
 	isExistenceOpenWin = true;
 }

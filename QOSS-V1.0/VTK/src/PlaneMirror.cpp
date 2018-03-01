@@ -10,8 +10,8 @@ PlaneMirror::PlaneMirror(const GraphTrans & _graphTrans)
 	type = PLANEMIRROR;
 	graphTrans = _graphTrans;
 	data.resize(2);
-	data[0] = 0.2;
-	data[1] = 0.2;
+	data[0] = 1;
+	data[1] = 1;
 	updateData();
 }
 

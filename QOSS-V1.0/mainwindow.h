@@ -29,6 +29,7 @@
 #include "Qt/include/GaussianWidget.h"
 #include "Qt/include/CalculationWidget.h"
 #include "Qt/include/ParabolicCylinderWidget.h"
+#include "Qt/include/PlaneMirrorWidget.h"
 
 #include "Qt/include/GraphTransWidget.h"
 
@@ -95,6 +96,7 @@ private slots:
 
 	void on_createParaboloid();
 	void on_createParabolicCylinder();
+	void on_createPlaneMirror();
 
 	//void toReceiveParabolicCylinder(int);
 	void toReceiveMirror(int);

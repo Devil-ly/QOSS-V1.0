@@ -2,6 +2,7 @@
 #include "Position3D.h"
 #include "Matrix4D.h"
 #include "Vector3D.h"
+#include <cmath>
 
 using namespace calculation;
 
@@ -32,10 +33,6 @@ PVVA::~PVVA()
 	Free_2D(Ex_R);
 	Free_2D(Ey_R);
 	Free_2D(Ez_R);
-
-	Free_2D(Ex_R_Inter);
-	Free_2D(Ey_R_Inter);
-	Free_2D(Ez_R_Inter);
 }
 
 void PVVA::Initialization()
@@ -58,6 +55,7 @@ void PVVA::Initialization()
 	Plane = NULL;
 	n_Plane = NULL;
 	R_Plane = NULL;
+	Rn_Plane = NULL;
 	InterVal_Plane = NULL;
 
 	Ex1 = NULL;
@@ -70,10 +68,6 @@ void PVVA::Initialization()
 	Ex_R = NULL;
 	Ey_R = NULL;
 	Ez_R = NULL;
-
-	Ex_R_Inter = NULL;
-	Ey_R_Inter = NULL;
-	Ez_R_Inter = NULL;
 }
 
 void PVVA::setUnit(double factor)
@@ -135,9 +129,11 @@ void PVVA::Poynting()
 	//double sum = 0;
 
 	// 源的坐标系转换到绝对坐标系（只求旋转）
-	Vector3D RotateAsixSou(SourceGraphTrans.getRotate_x(), SourceGraphTrans.getRotate_y(),
+	Vector3D RotateAsixSou(SourceGraphTrans.getRotate_x(), 
+		SourceGraphTrans.getRotate_y(),
 		SourceGraphTrans.getRotate_z());
-	Matrix4D rotatMatrixSou = Matrix4D::getRotateMatrix(SourceGraphTrans.getRotate_theta(), RotateAsixSou);
+	Matrix4D rotatMatrixSou = Matrix4D::getRotateMatrix(
+		SourceGraphTrans.getRotate_theta(), RotateAsixSou);
 
 
 	for (int i = 0; i < N; i++)
@@ -206,97 +202,207 @@ void PVVA::updateSource_n(Vector3 new_n)
 
 void PVVA::InterVal()
 {
-    test_Plane = Allocate_2D(test_Plane, N, M);
-	double tempx, tempz;
-	int tempn, tempm;
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = 0; j < M; j++)
-		{
-			tempx = R_Plane[i][j].x - Plane[0][0].x;
-			tempz = R_Plane[i][j].z - Plane[0][0].z;
-			test_Plane[i][j].x = -tempx * cos(theta_Source) - tempz * sin(theta_Source);
-			test_Plane[i][j].y = R_Plane[i][j].y - Plane[0][0].y;
-
-			test_Plane[i][j].x = (test_Plane[i][j].x) / ds;
-			test_Plane[i][j].y = (test_Plane[i][j].y) / ds;
-
-		}
-	}
-	double a, b, c, d;
-	double sum;
-	for (int i = 1; i < N - 1; i++)
-	{
-		for (int j = 1; j < M - 1; j++)
-		{
-			Ex_In[i][j] = 0;
-			Ey_In[i][j] = 0;
-			//Ez_R_Inter[i][j] = 0;
-
-			a = pow((double(i) - test_Plane[i][j].x), 2) + pow((double(j) - test_Plane[i][j].y), 2);
-			b = pow((double(i) - test_Plane[i + 1][j].x), 2) + pow((double(j) - test_Plane[i + 1][j].y), 2);
-			c = pow((double(i) - test_Plane[i + 1][j + 1].x), 2) + pow((double(j) - test_Plane[i + 1][j + 1].y), 2);
-			d = pow((double(i) - test_Plane[i][j + 1].x), 2) + pow((double(j) - test_Plane[i][j + 1].y), 2);
-			sum = 1 / (a*b*c + a*b*d + a*d*c + b*c*d);
-			Ex_In[i][j] = (Ex_R[i][j] * b*c*d + Ex_R[i + 1][j] * a*d*c + Ex_R[i + 1][j + 1] * a*b*d + Ex_R[i][j + 1] * a*b*c) * sum;
-			Ey_In[i][j] = (Ey_R[i][j] * b*c*d + Ey_R[i + 1][j] * a*d*c + Ey_R[i + 1][j + 1] * a*b*d + Ey_R[i][j + 1] * a*b*c) * sum;
-		}
-	}
-
-
-	Vector3D RotateAsix(SourceGraphTrans.getRotate_x(), SourceGraphTrans.getRotate_y(),
-		SourceGraphTrans.getRotate_z());
-	Matrix4D rotatMatrix = Matrix4D::getRotateMatrix(SourceGraphTrans.getRotate_theta(), RotateAsix);
-	Matrix4D translateMatrix = Matrix4D::getTranslateMatrix(SourceGraphTrans.getTrans_x(),
-		SourceGraphTrans.getTrans_y(), SourceGraphTrans.getTrans_z());
-
-
-	// 设置源各个点的位置
+	Vector3 tempPlane;
+	int tempi = 0;
+	int tempj = 0;
+	double a, b, c, d, sum;
 	for (int i = 0; i < N; i++)
 		for (int j = 0; j < M; j++)
 		{
-			Position3D tempPoint((i - (N - 1) / 2) * ds, (j - (M - 1) / 2) * ds, 0);
-			tempPoint = translateMatrix * rotatMatrix * tempPoint;
+			Ex_In[i][j] = complex<double>(0, 0);
+			Ey_In[i][j] = complex<double>(0, 0);
+			Position3D tempPoint((i - (N - 1) / 2) * ds,
+				(j - (M - 1) / 2) * ds, 0);
 			Plane[i][j].set(tempPoint.X(), tempPoint.Y(), tempPoint.Z());
-		}
 
-	Free_2D(test_Plane);
-	/*
-	ofstream outfile1("Ex_R_Inter_M.txt");
-	ofstream outfile2("Ey_R_Inter_M.txt");
+		}
+	// 逆矩阵
+	Vector3D RotateAsix(SourceGraphTrans.getRotate_x(),
+		SourceGraphTrans.getRotate_y(),
+		SourceGraphTrans.getRotate_z());
+	Matrix4D R_rotatMatrix = Matrix4D::getRotateMatrix(
+		-SourceGraphTrans.getRotate_theta(), RotateAsix);
+	Matrix4D R_translateMatrix = Matrix4D::getTranslateMatrix(
+		-SourceGraphTrans.getTrans_x(),
+		-SourceGraphTrans.getTrans_y(), -SourceGraphTrans.getTrans_z());
+	Matrix4D R_Matrix = R_rotatMatrix * R_translateMatrix;
+	//ofstream outfile("xyEy.txt");
+	struct coordinate
+	{
+		int i, j;
+	};
+	vector<vector<vector<coordinate>>> cood(201, vector<vector<coordinate>>(201, vector<coordinate>()));
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < M; j++)
 		{
-			outfile1 << Ex_R_Inter[i][j].real() << " " << Ex_R_Inter[i][j].imag() << "\n";
-			outfile2 << Ey_R_Inter[i][j].real() << " " << Ey_R_Inter[i][j].imag() << "\n";
-		}
-	}
-	outfile1.close();
-	outfile2.close();*/
+			tempPlane = R_Matrix * R_Plane[i][j];
+			tempi = floor(tempPlane.x / ds) + (N - 1) / 2;
+			tempj = floor(tempPlane.y / ds) + (M - 1) / 2;
 
-	/*ofstream outfilex1("Ex2.txt");
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = 0; j < M; j++)
+			//outfile << tempPlane.x << " " << tempPlane.y << " "
+			//	 << sqrt(Ey_R[i][j].real() * Ey_R[i][j].real()
+			//		 	+ Ey_R[i][j].imag()* Ey_R[i][j].imag()) << "\n";
+
+			if (tempi >= 0 && tempj >= 0
+				&& tempi < N - 1 && tempj < M - 1)
+			{
+				a = (tempPlane - Plane[tempi][tempj]).Length();
+				b = (tempPlane - Plane[tempi + 1][tempj]).Length();
+				c = (tempPlane - Plane[tempi + 1][tempj + 1]).Length();
+				d = (tempPlane - Plane[tempi][tempj + 1]).Length();
+				a = a*a;
+				b = b*b;
+				c = c*c;
+				d = d*d;
+				sum = 1 / (a*b*c + a*b*d + a*d*c + b*c*d);
+				//double tempAx = sqrt(Ex_R[i][j].real() * Ex_R[i][j].real()
+				//	+ Ex_R[i][j].imag()* Ex_R[i][j].imag()) * sum;
+				//double tempAy = sqrt(Ey_R[i][j].real() * Ey_R[i][j].real()
+				//	+ Ey_R[i][j].imag()* Ey_R[i][j].imag()) *sum;
+
+				Ex_In[tempi][tempj] += sum * b*c*d * Ex_R[i][j];
+				Ey_In[tempi][tempj] += sum * b*c*d * Ey_R[i][j];
+
+				Ex_In[tempi + 1][tempj] += sum * a*d*c * Ex_R[i][j];
+				Ey_In[tempi + 1][tempj] += sum * a*d*c * Ey_R[i][j];
+
+				Ex_In[tempi + 1][tempj + 1] += sum * a*b*d * Ex_R[i][j];
+				Ey_In[tempi + 1][tempj + 1] += sum * a*b*d * Ey_R[i][j];
+
+				Ex_In[tempi][tempj + 1] += sum * a*b*c * Ex_R[i][j];
+				Ey_In[tempi][tempj + 1] += sum * a*b*c * Ey_R[i][j];
+
+				/*
+				Ex_In[tempi][tempj] =
+					Ex_In[tempi][tempj] + 0.25 * Ex_R[i][j];
+				Ey_In[tempi][tempj] =
+					Ey_In[tempi][tempj] + 0.25 * Ey_R[i][j];
+
+				Ex_In[tempi + 1][tempj] =
+					Ex_In[tempi + 1][tempj] + 0.25 * Ex_R[i][j];
+				Ey_In[tempi + 1][tempj] =
+					Ey_In[tempi + 1][tempj] + 0.25 * Ey_R[i][j];
+
+				Ex_In[tempi + 1][tempj + 1] =
+					Ex_In[tempi + 1][tempj + 1] + 0.25 * Ex_R[i][j];
+				Ey_In[tempi + 1][tempj + 1] =
+					Ey_In[tempi + 1][tempj + 1] + 0.25 * Ey_R[i][j];
+
+				Ex_In[tempi][tempj + 1] =
+					Ex_In[tempi][tempj + 1] + 0.25 * Ex_R[i][j];
+				Ey_In[tempi][tempj + 1] =
+					Ey_In[tempi][tempj + 1] + 0.25 * Ey_R[i][j];
+					*/
+			}
+
+
+
+		}
+
+		//outfile.close();
+		/*
+		test_Plane = Allocate_2D(test_Plane, N, M);
+		double tempx, tempz;
+		int tempn, tempm;
+		for (int i = 0; i < N; i++)
 		{
-			outfilex1 << Ey_In[i][j].real() << " " << Ey_In[i][j].imag() << "\n";
+			for (int j = 0; j < M; j++)
+			{
+				tempx = R_Plane[i][j].x - Plane[0][0].x;
+				tempz = R_Plane[i][j].z - Plane[0][0].z;
+				test_Plane[i][j].x = -tempx * cos(theta_Source) -
+					tempz * sin(theta_Source);
+				test_Plane[i][j].y = R_Plane[i][j].y - Plane[0][0].y;
 
+				test_Plane[i][j].x = (test_Plane[i][j].x) / ds;
+				test_Plane[i][j].y = (test_Plane[i][j].y) / ds;
+
+			}
 		}
-	}
-	outfilex1.close();
-
-	//updateSource_n(n_Source);
-	
-	Vector3 temp(0, 0, 1);
-	for (int i = 0; i < N; i++)     // 更新平面位置
-		for (int j = 0; j < M; j++)
+		double a, b, c, d;
+		double sum;
+		for (int i = 1; i < N - 1; i++)
 		{
-			Plane[i][j] = Plane[i][j] + temp * z1;
-		}
+			for (int j = 1; j < M - 1; j++)
+			{
+				Ex_In[i][j] = 0;
+				Ey_In[i][j] = 0;
+				//Ez_R_Inter[i][j] = 0;
 
+				a = pow((double(i) - test_Plane[i][j].x), 2) +
+					pow((double(j) - test_Plane[i][j].y), 2);
+				b = pow((double(i) - test_Plane[i + 1][j].x), 2) +
+					pow((double(j) - test_Plane[i + 1][j].y), 2);
+				c = pow((double(i) - test_Plane[i + 1][j + 1].x), 2) +
+					pow((double(j) - test_Plane[i + 1][j + 1].y), 2);
+				d = pow((double(i) - test_Plane[i][j + 1].x), 2) +
+					pow((double(j) - test_Plane[i][j + 1].y), 2);
+				sum = 1 / (a*b*c + a*b*d + a*d*c + b*c*d);
+				Ex_In[i][j] = (Ex_R[i][j] * b*c*d + Ex_R[i + 1][j] *
+					a*d*c + Ex_R[i + 1][j + 1] * a*b*d + Ex_R[i][j + 1]
+					* a*b*c) * sum;
+				Ey_In[i][j] = (Ey_R[i][j] * b*c*d + Ey_R[i + 1][j] *
+					a*d*c + Ey_R[i + 1][j + 1] * a*b*d + Ey_R[i][j + 1]
+					* a*b*c) * sum;
+			}
+		}
 	*/
-	//Free_2D(Interpolation);
+
+		Matrix4D rotatMatrix = Matrix4D::getRotateMatrix(
+			SourceGraphTrans.getRotate_theta(), RotateAsix);
+		Matrix4D translateMatrix = Matrix4D::getTranslateMatrix(
+			SourceGraphTrans.getTrans_x(),
+			SourceGraphTrans.getTrans_y(), SourceGraphTrans.getTrans_z());
+
+
+		// 设置源各个点的位置
+		for (int i = 0; i < N; i++)
+			for (int j = 0; j < M; j++)
+			{
+				//Position3D tempPoint((i - (N - 1) / 2) * ds, (j - (M - 1) / 2) * ds, 0);
+				Plane[i][j] = translateMatrix * rotatMatrix * Plane[i][j];
+				//Plane[i][j].set(tempPoint.X(), tempPoint.Y(), tempPoint.Z());
+			}
+
+		//Free_2D(test_Plane);
+
+		ofstream outfile1("Ex_M.txt");
+		ofstream outfile2("Ey_M.txt");
+		for (int i = 0; i < N; i++)
+		{
+			for (int j = 0; j < M; j++)
+			{
+				outfile1 << Ex_In[i][j].real() << " " << Ex_In[i][j].imag() << "\n";
+				outfile2 << Ey_In[i][j].real() << " " << Ey_In[i][j].imag() << "\n";
+			}
+		}
+		outfile1.close();
+		outfile2.close();
+
+		/*ofstream outfilex1("Ex2.txt");
+		for (int i = 0; i < N; i++)
+		{
+			for (int j = 0; j < M; j++)
+			{
+				outfilex1 << Ey_In[i][j].real() << " " << Ey_In[i][j].imag() << "\n";
+
+			}
+		}
+		outfilex1.close();
+
+		//updateSource_n(n_Source);
+
+		Vector3 temp(0, 0, 1);
+		for (int i = 0; i < N; i++)     // 更新平面位置
+			for (int j = 0; j < M; j++)
+			{
+				Plane[i][j] = Plane[i][j] + temp * z1;
+			}
+
+		*/
+		//Free_2D(Interpolation);
+	}
 }
 
 void PVVA::Result(double dis)
@@ -326,12 +432,11 @@ void PVVA::CalAmplitude()
 	Vector3 tempB1, tempB2;
 	Vector3 tempC1, tempC2;
 	Vector3 tempD1, tempD2;
-	Vector3 tempn1, tempn2; // 该点的法向量
 	double tempcos1, tempcos2;
 	double PreSquare, PostSquare;
 	double tempratio;
 	double LAE, TAE;
-	
+	n_Source.Normalization();
 	//中心部分四个顶点
 	for (int i = 1; i < N - 2; i++)
 	{
@@ -339,41 +444,28 @@ void PVVA::CalAmplitude()
 		{
 			// 反射前投影面积
 			tempA1 = Plane[i - 1][j];
-			tempB1 = Plane[i][j - 1];
+			tempB1 = Plane[i][j + 1];
 			tempC1 = Plane[i + 1][j];
-			tempD1 = Plane[i][j + 1];
-			tempn1 = (tempB1 - Plane[i][j]).Cross(tempC1 - Plane[i][j]);
+			tempD1 = Plane[i][j - 1];
 
-			if (tempn1.Length() == 0 || n_Plane[i][j].Length() == 0)
-				tempcos1 = 1;
-			else
-				tempcos1 = tempn1.Dot(n_Plane[i][j]) / tempn1.Length()
-				/ n_Plane[i][j].Length();
+			tempcos1 = n_Plane[i][j].Dot(n_Source);
 		
-			PreSquare = abs(tempcos1) * CalSquare(tempA1, tempB1, tempC1, tempD1);
-			//PreSquare =  CalSquare(tempA1, tempB1, tempC1, tempD1);
+			PreSquare = tempcos1 * ds * ds * 2;
 			LAE = pow((Ex1[i][j].real() * Ex1[i][j].real() + Ex1[i][j].imag() * Ex1[i][j].imag()
 				+ Ey1[i][j].real() * Ey1[i][j].real() + Ey1[i][j].imag() * Ey1[i][j].imag()
 				+ Ez1[i][j].real() * Ez1[i][j].real() + Ez1[i][j].imag() * Ez1[i][j].imag()), 0.5);
 			// 反射后投影面积
 			tempA2 = R_Plane[i - 1][j];
-			tempB2 = R_Plane[i][j - 1];
+			tempB2 = R_Plane[i][j + 1];
 			tempC2 = R_Plane[i + 1][j];
-			tempD2 = R_Plane[i][j + 1];
-			tempn2 = (tempB2 - R_Plane[i][j]).Cross(tempC2 - R_Plane[i][j]);
-
-			if (n_Source.Length() == 0 || R_Plane[i][j].Length() == 0)
-				tempcos2 = 1;
-			else
-				tempcos2 = n_Source.Dot(R_Plane[i][j]) / n_Source.Length()
-				/ R_Plane[i][j].Length();
+			tempD2 = R_Plane[i][j - 1];
+			tempcos2 = Rn_Plane[i][j].Dot(R_Source);
 
 			TAE = pow((Ex_R[i][j].real() * Ex_R[i][j].real() + Ex_R[i][j].imag() * Ex_R[i][j].imag()
 				+ Ey_R[i][j].real() * Ey_R[i][j].real() + Ey_R[i][j].imag() * Ey_R[i][j].imag()
 				+ Ez_R[i][j].real() * Ez_R[i][j].real() + Ez_R[i][j].imag() * Ez_R[i][j].imag()), 0.5);
 
-			PostSquare = abs(tempcos2) * CalSquare(tempA2, tempB2, tempC2, tempD2);
-			//PostSquare = CalSquare(tempA2, tempB2, tempC2, tempD2);
+			PostSquare = tempcos2 * CalSquare(tempA2, tempB2, tempC2, tempD2);
 			if (PostSquare == 0)
 				PostSquare = 1;
 			if (TAE == 0)
@@ -385,6 +477,7 @@ void PVVA::CalAmplitude()
 			Ez_R[i][j] = Ez_R[i][j] * tempratio;
 		}
 	}
+	/*
 	//边界部分三个点
 	  //上边界
 	for (int i = 0; i < N - 2 ; i++)
@@ -593,11 +686,12 @@ void PVVA::CalAmplitude()
 		Ex_R[N - 1][j] = Ex_R[N - 1][j] * tempratio;
 		Ey_R[N - 1][j] = Ey_R[N - 1][j] * tempratio;
 		Ez_R[N - 1][j] = Ez_R[N - 1][j] * tempratio;
-	}
+	}*/
 }
 
-
-void PVVA::CalReflectExyz(const Vector3 & n, const complex<double>& Ex, const complex<double>& Ey, const complex<double>& Ez, complex<double>& Ex_out, complex<double>& Ey_out, complex<double>& Ez_out)
+void PVVA::CalReflectExyz(const Vector3 & n, const complex<double>& Ex,
+	const complex<double>& Ey, const complex<double>& Ez, complex<double>& Ex_out,
+	complex<double>& Ey_out, complex<double>& Ez_out)
 {
 	complex<double> ne(n.x * Ex.real() + n.y * Ey.real() + n.z * Ez.real(),
 		n.x * Ex.imag() + n.y * Ey.imag() + n.z * Ez.imag());
@@ -612,15 +706,22 @@ void PVVA::CalReflectExyz(const Vector3 & n, const complex<double>& Ex, const co
 
 double PVVA::CalSquare(const Vector3 & A, const Vector3 & B, const Vector3 & C, const Vector3 & D) const
 {
-	Vector3 AB = B - A;
-	Vector3 AC = C - A;
-	Vector3 AD = D - A;
-	Vector3 tempS1 = AB.Cross(AC);
-	Vector3 tempS2 = AC.Cross(AD);
-	double tempS = tempS1.Length() + tempS2.Length();
-	return tempS / 2;
+	double AB = (B - A).Length();
+	double AC = (C - A).Length();
+	double AD = (D - A).Length();
+	double BC = (C - B).Length();
+	double DC = (C - D).Length();
+	double p1 = (AB + AC + BC) / 2;
+	double p2 = (AD + AC + DC) / 2;
+	//Vector3 tempS1 = AB.Cross(AC);
+	//Vector3 tempS2 = AC.Cross(AD);
+	double tempS1 = sqrt(p1*(p1 - AB)*(p1 - BC)*(p1 - AC));
+	double tempS2 = sqrt(p2*(p2 - AC)*(p2 - AD)*(p2 - DC));
+	//double tempS = tempS1.Length() + tempS2.Length();
+	return tempS1 + tempS2;
 }
-double PVVA::CalSquare(const Vector3 & A, const Vector3 & B, const Vector3 & C) const
+double PVVA::CalSquare(const Vector3 & A, const Vector3 & B,
+	const Vector3 & C) const
 {
 	Vector3 AB = B - A;
 	Vector3 AC = C - A;
@@ -628,7 +729,6 @@ double PVVA::CalSquare(const Vector3 & A, const Vector3 & B, const Vector3 & C) 
 	double tempS = tempS1.Length();
 	return tempS / 2;
 }
-
 
 void PVVA::AllocateMemory()
 {
@@ -660,12 +760,10 @@ void PVVA::AllocateMemory()
 	Plane = Allocate_2D(Plane, N, M);
 	R_Plane = Allocate_2D(R_Plane, N, M);
 	Plane_org = Allocate_2D(Plane_org, N, M);
+	Rn_Plane = Allocate_2D(Rn_Plane, N, M);
 
 	//差值后的Exyz
 	InterVal_Plane = Allocate_2D(InterVal_Plane, N, M);
-	Ex_R_Inter = Allocate_2D(Ex_R_Inter, N, M);
-	Ey_R_Inter = Allocate_2D(Ey_R_Inter, N, M);
-	Ez_R_Inter = Allocate_2D(Ez_R_Inter, N, M);
 }
 
 void PVVA::setSource(const Field* _field)
@@ -791,8 +889,8 @@ void PVVA::CalZ0Theta()
 	//z0 = 1.2;
 	CalPlane(z0);
 
-	n_Source = tempReflect;
-
+	R_Source = tempReflect;
+	R_Source.Normalization();
 	Poynting();
 	//z0 = 0.525;
 	//cout << "Distance of moving " << z0 << endl;
@@ -897,7 +995,7 @@ void PVVA::Reflect()
 				Ez1[i][j], Ex_R[i][j], Ey_R[i][j], Ez_R[i][j]); // 只做极化变换
 
 			Reflight = RayTracing::reflectLight(n_Plane[i][j], n_light);   // 反射光线
-			n_Plane[i][j] = Reflight;
+			Rn_Plane[i][j] = Reflight;
 
 			if (dir_t == 0.0)  // 平面与反射面相交
 			{
@@ -905,7 +1003,8 @@ void PVVA::Reflect()
 			}
 			else if (dir_t > 0.0)  // 平面在反射面的前面
 			{
-				plane_t = IntersectPlane(InterPoint, Reflight, Org_Source, n_Source, R_Plane[i][j]);
+				plane_t = IntersectPlane(InterPoint, Reflight,
+					Org_Source, R_Source, R_Plane[i][j]);
 				d2 = CalDistance(InterPoint, R_Plane[i][j]);
 				d1 = CalDistance(InterPoint, Plane[i][j]);
 
@@ -921,7 +1020,8 @@ void PVVA::Reflect()
 			}
 			else   // 平面在反射面的后面
 			{
-				plane_t = IntersectPlane(InterPoint, Reflight, Org_Source, n_Source, R_Plane[i][j]);
+				plane_t = IntersectPlane(InterPoint, Reflight,
+					Org_Source, R_Source, R_Plane[i][j]);
 				d2 = CalDistance(InterPoint, R_Plane[i][j]);
 				d1 = CalDistance(InterPoint, Plane[i][j]);
 
@@ -937,12 +1037,24 @@ void PVVA::Reflect()
 		}
 	} // endloop
 
+	CalAmplitude();  // 只做幅度变换
+
 	//源的传播方向改变
+	n_Source = R_Source;
 	updateSource_n(n_Source);
 
-	CalAmplitude();  // 只做幅度变换
-	
-
+	ofstream outfile1("Ex_R.txt");
+	ofstream outfile2("Ey_R.txt");
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < M; j++)
+		{
+			outfile1 << Ex_R[i][j].real() << " " << Ex_R[i][j].imag() << "\n";
+			outfile2 << Ey_R[i][j].real() << " " << Ey_R[i][j].imag() << "\n";
+		}
+	}
+	outfile1.close();
+	outfile2.close();
 }
 
 complex<double> PVVA::ConjugateMul(const complex<double> &A, const complex<double> &B) const
