@@ -71,8 +71,6 @@ namespace calculation
 
 		void Result(double dis = 1.0); // 得到结果面
 
-
-
 		void getPlane(Vector3 ** &_org, Vector3 ** &_n) const; // 得到平面点和点的方向
 
 	private:
@@ -110,29 +108,22 @@ namespace calculation
 		// 计算四个点围城的面积  等效于计算三角形ABC 和 三角形ADC的面积和
 		double CalSquare(const Vector3 &A, const Vector3 &B, const Vector3 &C, const Vector3 &D) const;
 		double CalSquare(const Vector3 &A, const Vector3 &B, const Vector3 &C) const;
-
-		// 插值用的——判断射线与线段是否相交
-		bool InterVal_IsInsect(const Vector2 &A, const Vector2 &B, const Vector2 &C, const Vector2 &D);
-
+		
+		// 插值用的——判断点是否在三角形内部
+		bool InterVal_PointinTriangle(const Vector2 &A, const Vector2 &B,
+			const Vector2 &C, const Vector2 &P);
 
 	private:
 		int N, M; // 计算矩形的长宽 N*M
 		double f; // 频率 默认 10.65e9
 		double lamda; // 波长
-		double k;
-		double theta; // 经过反射后源相对于z正轴的夹角
+		//double k;
 		double ds;
-		double w0; // 束腰
 		double z0; //目标距离
 
 		double unit_factor; // 保存模型的单位转化为米的系数
 
 		Mirror * mirror;
-
-		//模型参数 (解析式用)
-		//vector<float> ModlePara; // 模型参数
-		//GraphTrans ModleGraphTrans; // 旋转参数
-		//int ModleIndex;
 
 		GraphTrans SourceGraphTrans;// 源的旋转参数
 
@@ -144,9 +135,6 @@ namespace calculation
 
 		complex<double> ** Ex_R, ** Ey_R, ** Ez_R;	// 经过反射计算后的到的电场
 
-		string ProjName;   // 数据的地址
-		int NodesNum, EleNum;  // .dat的元素和节点的个数
-
 		//Org_Source平面中点 n_Source平面法向量 R_Source反射后的向量
 		Vector3 Org_Source, n_Source, R_Source; 
 		double theta_Source;   // 源与-Z轴的夹角
@@ -155,18 +143,6 @@ namespace calculation
 		Vector3 **n_Plane;  // 平面传播各点后的法向量
 		Vector3 **R_Plane;  // 反射后的各点的坐标
 		Vector3 **Rn_Plane; // 反射后的各点的法向量
-		Vector3 **InterVal_Plane; // 插值平面
-		struct coordinate_ij
-		{
-			int i, j;
-		};
-		vector<coordinate_ij> **Interpolation; //插值用的中间变量
-											   // test用 删
-		Vector3 InterPoint_test; //
-		Vector3 **Plane_org;   // 反射后的向量
-		Vector3 **test_Plane;
-
-		vector<double> Analytic_data; // 解析解用的所有数据0~6为模型的位置数据
 	};
 }
 

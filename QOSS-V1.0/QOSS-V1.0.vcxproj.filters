@@ -408,5 +408,8 @@
     <ClInclude Include="Calculation\PVVA.h">
       <Filter>Header Files\Calculation</Filter>
     </ClInclude>
+    <ClInclude Include="util\Vector2.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

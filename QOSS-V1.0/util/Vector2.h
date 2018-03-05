@@ -7,13 +7,19 @@
 #ifndef VECTOR2_H
 #define VECTOR2_H
 
-struct Vector2 {
+class Vector2 {
 public:
 	
 	Vector2(double x1 = 0, double y1 = 0)
 		:x(x1), y(y1)
 	{};
 	~Vector2() {};
+
+	void set(double x1, double y1)
+	{
+		x = x1;
+		y = y1;
+	}
 
 	Vector2 operator - (const Vector2 v) const
 	{
@@ -30,7 +36,7 @@ public:
 		return Vector2(x * k, y * k);
 	}
 
-	double dot(const Vector2 v) const
+	double Dot(const Vector2 v) const
 	{
 		return x*v.x + y*v.y;
 	}
@@ -38,6 +44,16 @@ public:
 	Vector2 Vertical() const
 	{
 		return Vector2(y, -x);
+	}
+
+	double  Length() const
+	{
+		return pow((x*x + y*y), 0.5);
+	}
+
+	double area() const
+	{
+		return x*x + y*y;
 	}
 
 	double x, y;

@@ -70,6 +70,11 @@ public:
 		return pow((x*x + y*y + z*z), 0.5);
 	}
 
+	double area() const
+	{
+		return x*x + y*y + z*z;
+	}
+
 	void display()
 	{
 		std::cout << x << " " << y << " " << z << std::endl;

@@ -3,6 +3,11 @@
 #include "Matrix4D.h"
 #include "Vector3D.h"
 #include <cmath>
+#include <vtkFloatArray.h>
+#include <vtkPoints.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
+#include <vtkDelaunay2D.h>
 
 using namespace calculation;
 
@@ -21,7 +26,6 @@ PVVA::~PVVA()
 	Free_2D(Plane);
 	Free_2D(n_Plane);
 	Free_2D(R_Plane);
-	Free_2D(InterVal_Plane);
 	
 	Free_2D(Ex1);
 	Free_2D(Ey1);
@@ -40,8 +44,7 @@ void PVVA::Initialization()
 	N = 0; M = 0;
 	f = 10.65e9;
 	lamda = 0; 
-	k = 0;
-	theta = 0;
+	//k = 0;
 	ds = 0; z0 = 0;
 	unit_factor = 1;
 
@@ -56,7 +59,6 @@ void PVVA::Initialization()
 	n_Plane = NULL;
 	R_Plane = NULL;
 	Rn_Plane = NULL;
-	InterVal_Plane = NULL;
 
 	Ex1 = NULL;
 	Ey1 = NULL;
@@ -197,211 +199,6 @@ void PVVA::updateSource_n(Vector3 new_n)
 	else
 	{
 		SourceGraphTrans.updateRotate(Vector3(0, 0, 1), 0);
-	}
-}
-
-void PVVA::InterVal()
-{
-	Vector3 tempPlane;
-	int tempi = 0;
-	int tempj = 0;
-	double a, b, c, d, sum;
-	for (int i = 0; i < N; i++)
-		for (int j = 0; j < M; j++)
-		{
-			Ex_In[i][j] = complex<double>(0, 0);
-			Ey_In[i][j] = complex<double>(0, 0);
-			Position3D tempPoint((i - (N - 1) / 2) * ds,
-				(j - (M - 1) / 2) * ds, 0);
-			Plane[i][j].set(tempPoint.X(), tempPoint.Y(), tempPoint.Z());
-
-		}
-	// 逆矩阵
-	Vector3D RotateAsix(SourceGraphTrans.getRotate_x(),
-		SourceGraphTrans.getRotate_y(),
-		SourceGraphTrans.getRotate_z());
-	Matrix4D R_rotatMatrix = Matrix4D::getRotateMatrix(
-		-SourceGraphTrans.getRotate_theta(), RotateAsix);
-	Matrix4D R_translateMatrix = Matrix4D::getTranslateMatrix(
-		-SourceGraphTrans.getTrans_x(),
-		-SourceGraphTrans.getTrans_y(), -SourceGraphTrans.getTrans_z());
-	Matrix4D R_Matrix = R_rotatMatrix * R_translateMatrix;
-	//ofstream outfile("xyEy.txt");
-	struct coordinate
-	{
-		int i, j;
-	};
-	vector<vector<vector<coordinate>>> cood(201, vector<vector<coordinate>>(201, vector<coordinate>()));
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = 0; j < M; j++)
-		{
-			tempPlane = R_Matrix * R_Plane[i][j];
-			tempi = floor(tempPlane.x / ds) + (N - 1) / 2;
-			tempj = floor(tempPlane.y / ds) + (M - 1) / 2;
-
-			//outfile << tempPlane.x << " " << tempPlane.y << " "
-			//	 << sqrt(Ey_R[i][j].real() * Ey_R[i][j].real()
-			//		 	+ Ey_R[i][j].imag()* Ey_R[i][j].imag()) << "\n";
-
-			if (tempi >= 0 && tempj >= 0
-				&& tempi < N - 1 && tempj < M - 1)
-			{
-				a = (tempPlane - Plane[tempi][tempj]).Length();
-				b = (tempPlane - Plane[tempi + 1][tempj]).Length();
-				c = (tempPlane - Plane[tempi + 1][tempj + 1]).Length();
-				d = (tempPlane - Plane[tempi][tempj + 1]).Length();
-				a = a*a;
-				b = b*b;
-				c = c*c;
-				d = d*d;
-				sum = 1 / (a*b*c + a*b*d + a*d*c + b*c*d);
-				//double tempAx = sqrt(Ex_R[i][j].real() * Ex_R[i][j].real()
-				//	+ Ex_R[i][j].imag()* Ex_R[i][j].imag()) * sum;
-				//double tempAy = sqrt(Ey_R[i][j].real() * Ey_R[i][j].real()
-				//	+ Ey_R[i][j].imag()* Ey_R[i][j].imag()) *sum;
-
-				Ex_In[tempi][tempj] += sum * b*c*d * Ex_R[i][j];
-				Ey_In[tempi][tempj] += sum * b*c*d * Ey_R[i][j];
-
-				Ex_In[tempi + 1][tempj] += sum * a*d*c * Ex_R[i][j];
-				Ey_In[tempi + 1][tempj] += sum * a*d*c * Ey_R[i][j];
-
-				Ex_In[tempi + 1][tempj + 1] += sum * a*b*d * Ex_R[i][j];
-				Ey_In[tempi + 1][tempj + 1] += sum * a*b*d * Ey_R[i][j];
-
-				Ex_In[tempi][tempj + 1] += sum * a*b*c * Ex_R[i][j];
-				Ey_In[tempi][tempj + 1] += sum * a*b*c * Ey_R[i][j];
-
-				/*
-				Ex_In[tempi][tempj] =
-					Ex_In[tempi][tempj] + 0.25 * Ex_R[i][j];
-				Ey_In[tempi][tempj] =
-					Ey_In[tempi][tempj] + 0.25 * Ey_R[i][j];
-
-				Ex_In[tempi + 1][tempj] =
-					Ex_In[tempi + 1][tempj] + 0.25 * Ex_R[i][j];
-				Ey_In[tempi + 1][tempj] =
-					Ey_In[tempi + 1][tempj] + 0.25 * Ey_R[i][j];
-
-				Ex_In[tempi + 1][tempj + 1] =
-					Ex_In[tempi + 1][tempj + 1] + 0.25 * Ex_R[i][j];
-				Ey_In[tempi + 1][tempj + 1] =
-					Ey_In[tempi + 1][tempj + 1] + 0.25 * Ey_R[i][j];
-
-				Ex_In[tempi][tempj + 1] =
-					Ex_In[tempi][tempj + 1] + 0.25 * Ex_R[i][j];
-				Ey_In[tempi][tempj + 1] =
-					Ey_In[tempi][tempj + 1] + 0.25 * Ey_R[i][j];
-					*/
-			}
-
-
-
-		}
-
-		//outfile.close();
-		/*
-		test_Plane = Allocate_2D(test_Plane, N, M);
-		double tempx, tempz;
-		int tempn, tempm;
-		for (int i = 0; i < N; i++)
-		{
-			for (int j = 0; j < M; j++)
-			{
-				tempx = R_Plane[i][j].x - Plane[0][0].x;
-				tempz = R_Plane[i][j].z - Plane[0][0].z;
-				test_Plane[i][j].x = -tempx * cos(theta_Source) -
-					tempz * sin(theta_Source);
-				test_Plane[i][j].y = R_Plane[i][j].y - Plane[0][0].y;
-
-				test_Plane[i][j].x = (test_Plane[i][j].x) / ds;
-				test_Plane[i][j].y = (test_Plane[i][j].y) / ds;
-
-			}
-		}
-		double a, b, c, d;
-		double sum;
-		for (int i = 1; i < N - 1; i++)
-		{
-			for (int j = 1; j < M - 1; j++)
-			{
-				Ex_In[i][j] = 0;
-				Ey_In[i][j] = 0;
-				//Ez_R_Inter[i][j] = 0;
-
-				a = pow((double(i) - test_Plane[i][j].x), 2) +
-					pow((double(j) - test_Plane[i][j].y), 2);
-				b = pow((double(i) - test_Plane[i + 1][j].x), 2) +
-					pow((double(j) - test_Plane[i + 1][j].y), 2);
-				c = pow((double(i) - test_Plane[i + 1][j + 1].x), 2) +
-					pow((double(j) - test_Plane[i + 1][j + 1].y), 2);
-				d = pow((double(i) - test_Plane[i][j + 1].x), 2) +
-					pow((double(j) - test_Plane[i][j + 1].y), 2);
-				sum = 1 / (a*b*c + a*b*d + a*d*c + b*c*d);
-				Ex_In[i][j] = (Ex_R[i][j] * b*c*d + Ex_R[i + 1][j] *
-					a*d*c + Ex_R[i + 1][j + 1] * a*b*d + Ex_R[i][j + 1]
-					* a*b*c) * sum;
-				Ey_In[i][j] = (Ey_R[i][j] * b*c*d + Ey_R[i + 1][j] *
-					a*d*c + Ey_R[i + 1][j + 1] * a*b*d + Ey_R[i][j + 1]
-					* a*b*c) * sum;
-			}
-		}
-	*/
-
-		Matrix4D rotatMatrix = Matrix4D::getRotateMatrix(
-			SourceGraphTrans.getRotate_theta(), RotateAsix);
-		Matrix4D translateMatrix = Matrix4D::getTranslateMatrix(
-			SourceGraphTrans.getTrans_x(),
-			SourceGraphTrans.getTrans_y(), SourceGraphTrans.getTrans_z());
-
-
-		// 设置源各个点的位置
-		for (int i = 0; i < N; i++)
-			for (int j = 0; j < M; j++)
-			{
-				//Position3D tempPoint((i - (N - 1) / 2) * ds, (j - (M - 1) / 2) * ds, 0);
-				Plane[i][j] = translateMatrix * rotatMatrix * Plane[i][j];
-				//Plane[i][j].set(tempPoint.X(), tempPoint.Y(), tempPoint.Z());
-			}
-
-		//Free_2D(test_Plane);
-
-		ofstream outfile1("Ex_M.txt");
-		ofstream outfile2("Ey_M.txt");
-		for (int i = 0; i < N; i++)
-		{
-			for (int j = 0; j < M; j++)
-			{
-				outfile1 << Ex_In[i][j].real() << " " << Ex_In[i][j].imag() << "\n";
-				outfile2 << Ey_In[i][j].real() << " " << Ey_In[i][j].imag() << "\n";
-			}
-		}
-		outfile1.close();
-		outfile2.close();
-
-		/*ofstream outfilex1("Ex2.txt");
-		for (int i = 0; i < N; i++)
-		{
-			for (int j = 0; j < M; j++)
-			{
-				outfilex1 << Ey_In[i][j].real() << " " << Ey_In[i][j].imag() << "\n";
-
-			}
-		}
-		outfilex1.close();
-
-		//updateSource_n(n_Source);
-
-		Vector3 temp(0, 0, 1);
-		for (int i = 0; i < N; i++)     // 更新平面位置
-			for (int j = 0; j < M; j++)
-			{
-				Plane[i][j] = Plane[i][j] + temp * z1;
-			}
-
-		*/
-		//Free_2D(Interpolation);
 	}
 }
 
@@ -689,6 +486,148 @@ void PVVA::CalAmplitude()
 	}*/
 }
 
+void PVVA::InterVal()
+{
+	// 逆矩阵
+	Vector3D RotateAsix(SourceGraphTrans.getRotate_x(),
+		SourceGraphTrans.getRotate_y(),
+		SourceGraphTrans.getRotate_z());
+	Matrix4D R_rotatMatrix = Matrix4D::getRotateMatrix(
+		-SourceGraphTrans.getRotate_theta(), RotateAsix);
+	Matrix4D R_translateMatrix = Matrix4D::getTranslateMatrix(
+		-SourceGraphTrans.getTrans_x(),
+		-SourceGraphTrans.getTrans_y(), -SourceGraphTrans.getTrans_z());
+	Matrix4D R_Matrix = R_rotatMatrix * R_translateMatrix;
+
+	vtkFloatArray *scalars = vtkFloatArray::New();
+	vtkSmartPointer<vtkPoints> points =
+		vtkSmartPointer<vtkPoints>::New();
+
+	double MAXX = ds * (N - 1) / 2;
+	double MAXY = ds * (M - 1) / 2;
+	int num = 0;
+	for (int i = 0; i < N; ++i)
+		for (int j = 0; j < M; ++j)
+		{
+			Ex_In[i][j] = complex<double>(0, 0);
+			Ey_In[i][j] = complex<double>(0, 0);
+			Position3D tempPoint((i - (N - 1) / 2) * ds,
+				(j - (M - 1) / 2) * ds, 0);
+			Plane[i][j].set(tempPoint.X(), tempPoint.Y(), tempPoint.Z());
+
+			R_Plane[i][j] = R_Matrix * R_Plane[i][j];
+			if (R_Plane[i][j].x < -MAXX || R_Plane[i][j].x > MAXX ||
+				R_Plane[i][j].y < -MAXY || R_Plane[i][j].y > MAXY)
+				continue;
+			points->InsertNextPoint(R_Plane[i][j].x, R_Plane[i][j].y, 0);
+			scalars->InsertTuple1(num++, i*N + j);
+		}
+
+	vtkSmartPointer<vtkPolyData> polydata =
+		vtkSmartPointer<vtkPolyData>::New();
+	polydata->SetPoints(points);
+	polydata->GetPointData()->SetScalars(scalars);
+
+	double scalarsRange[2];
+	scalars->GetRange(scalarsRange);
+	scalars->Delete();
+
+	vtkSmartPointer<vtkDelaunay2D> delaunay =
+		vtkSmartPointer<vtkDelaunay2D>::New();
+	delaunay->SetInputData(polydata);
+	delaunay->Update();
+	polydata = delaunay->GetOutput();
+
+	int EleNum = polydata->GetNumberOfCells();
+	double t;
+	for (int i = 0; i < EleNum; i++)  //求与反射面的交点
+	{
+		double maxX = -MAXX;
+		double minX = MAXX;
+		double maxY = -MAXY;
+		double minY = MAXY;
+
+		vtkIdList * p;
+		p = polydata->GetCell(i)->GetPointIds();
+
+		double * point;
+		vector<Vector2> A(3);
+		vector<int> dataIJ(3);
+		Vector2 P;
+		for (int k = 0; k < 3; k++)
+		{
+			dataIJ[k] = polydata->GetPointData()
+				->GetScalars()->GetVariantValue(p->GetId(k)).ToInt();
+			point = polydata->GetPoint(p->GetId(k));
+			if (maxX < point[0])
+				maxX = point[0];
+			if (minX > point[0])
+				minX = point[0];
+			if (maxY < point[1])
+				maxY = point[1];
+			if (minY > point[1])
+				minY = point[1];
+			A[k].set(point[0], point[1]);
+		}
+		int ii = ceil(minX / ds) + (N - 1) / 2;
+		int iiMax = floor(maxX / ds) + (N - 1) / 2;
+		int jjMin = ceil(minY / ds) + (M - 1) / 2;
+		int jjMax = floor(maxY / ds) + (M - 1) / 2;
+		if (ii < 0)
+			ii = 0;
+		if (jjMin < 0)
+			jjMin = 0;
+		for (; ii <= iiMax&&ii<N; ii++)
+			for (int jj = jjMin; jj <= jjMax&&jj<M; jj++)
+			{
+				P.set(Plane[ii][jj].x, Plane[ii][jj].y);
+				if (InterVal_PointinTriangle(A[0], A[1], A[2], P))
+				{
+					double a = (P - A[0]).area();
+					double b = (P - A[1]).area();
+					double c = (P - A[2]).area();
+
+					Ex_In[ii][jj] = (
+						b * c * Ex_R[dataIJ[0] / N][dataIJ[0] % N] +
+						a * c * Ex_R[dataIJ[1] / N][dataIJ[1] % N] +
+						b * a * Ex_R[dataIJ[2] / N][dataIJ[2] % N]) /
+						(b * c + a * c + b * a);
+					Ey_In[ii][jj] = ( 
+						b * c * Ey_R[dataIJ[0] / N][dataIJ[0] % N] + 
+						a * c * Ey_R[dataIJ[1] / N][dataIJ[1] % N] +
+						b * a * Ey_R[dataIJ[2] / N][dataIJ[2] % N]) /
+						(b * c + a * c + b * a);
+				}
+			}
+	}
+
+	Matrix4D rotatMatrix = Matrix4D::getRotateMatrix(
+		SourceGraphTrans.getRotate_theta(), RotateAsix);
+	Matrix4D translateMatrix = Matrix4D::getTranslateMatrix(
+		SourceGraphTrans.getTrans_x(),
+		SourceGraphTrans.getTrans_y(), SourceGraphTrans.getTrans_z());
+
+	// 设置源各个点的位置
+	for (int i = 0; i < N; i++)
+		for (int j = 0; j < M; j++)
+		{
+			Plane[i][j] = translateMatrix * rotatMatrix * Plane[i][j];
+		}
+	/*
+	ofstream outfile1("Ex_M.txt");
+	ofstream outfile2("Ey_M.txt");
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < M; j++)
+		{
+			outfile1 << Ex_In[i][j].real() << " " << Ex_In[i][j].imag() << "\n";
+			outfile2 << Ey_In[i][j].real() << " " << Ey_In[i][j].imag() << "\n";
+		}
+	}
+	outfile1.close();
+	outfile2.close();*/
+}
+
 void PVVA::CalReflectExyz(const Vector3 & n, const complex<double>& Ex,
 	const complex<double>& Ey, const complex<double>& Ez, complex<double>& Ex_out,
 	complex<double>& Ey_out, complex<double>& Ez_out)
@@ -720,6 +659,7 @@ double PVVA::CalSquare(const Vector3 & A, const Vector3 & B, const Vector3 & C, 
 	//double tempS = tempS1.Length() + tempS2.Length();
 	return tempS1 + tempS2;
 }
+
 double PVVA::CalSquare(const Vector3 & A, const Vector3 & B,
 	const Vector3 & C) const
 {
@@ -759,11 +699,8 @@ void PVVA::AllocateMemory()
 	n_Plane = Allocate_2D(n_Plane, N, M);
 	Plane = Allocate_2D(Plane, N, M);
 	R_Plane = Allocate_2D(R_Plane, N, M);
-	Plane_org = Allocate_2D(Plane_org, N, M);
 	Rn_Plane = Allocate_2D(Rn_Plane, N, M);
 
-	//差值后的Exyz
-	InterVal_Plane = Allocate_2D(InterVal_Plane, N, M);
 }
 
 void PVVA::setSource(const Field* _field)
@@ -850,7 +787,7 @@ void PVVA::setFre(double _fre)
 {
 	f = _fre;
 	lamda = C_Speed / f;
-	k = 2 * Pi * f / C_Speed;
+	//k = 2 * Pi * f / C_Speed;
 }
 
 void PVVA::setMirror(Mirror * mirror)
@@ -886,7 +823,7 @@ void PVVA::CalZ0Theta()
 
 	//计算平移的距离（此时传播方向没有改变）
 	z0 = CalDistance(Org_Source, InterPoint);
-	//z0 = 1.2;
+
 	CalPlane(z0);
 
 	R_Source = tempReflect;
@@ -982,7 +919,8 @@ void PVVA::Reflect()
 			Ey_R[i][j] = 0;
 			Ez_R[i][j] = 0;
 			R_Plane[i][j] = 0;
-			rayTracing.calcNormalOfLine_Mirror(Plane[i][j], n_Plane[i][j], n_light,
+			rayTracing.calcNormalOfLine_Mirror(Plane[i][j],
+				n_Plane[i][j], n_light,
 				InterPoint, isInter, dir_t);
 			if (!isInter)
 				break;
@@ -997,11 +935,7 @@ void PVVA::Reflect()
 			Reflight = RayTracing::reflectLight(n_Plane[i][j], n_light);   // 反射光线
 			Rn_Plane[i][j] = Reflight;
 
-			if (dir_t == 0.0)  // 平面与反射面相交
-			{
-				R_Plane[i][j] = InterPoint;
-			}
-			else if (dir_t > 0.0)  // 平面在反射面的前面
+			if (dir_t > 0.00001)  // 平面在反射面的前面
 			{
 				plane_t = IntersectPlane(InterPoint, Reflight,
 					Org_Source, R_Source, R_Plane[i][j]);
@@ -1018,7 +952,7 @@ void PVVA::Reflect()
 				Ey_R[i][j] = ComMul(Ey_R[i][j], tempejphase);
 				Ez_R[i][j] = ComMul(Ez_R[i][j], tempejphase);
 			}
-			else   // 平面在反射面的后面
+			else if (dir_t < -0.00001)   // 平面在反射面的后面
 			{
 				plane_t = IntersectPlane(InterPoint, Reflight,
 					Org_Source, R_Source, R_Plane[i][j]);
@@ -1034,6 +968,11 @@ void PVVA::Reflect()
 				Ey_R[i][j] = ComMul(Ey_R[i][j], tempejphase);
 				Ez_R[i][j] = ComMul(Ez_R[i][j], tempejphase);
 			}	
+			else  // 平面与反射面相交
+			{
+				R_Plane[i][j] = InterPoint;
+			}
+			
 		}
 	} // endloop
 
@@ -1042,7 +981,7 @@ void PVVA::Reflect()
 	//源的传播方向改变
 	n_Source = R_Source;
 	updateSource_n(n_Source);
-
+	/*
 	ofstream outfile1("Ex_R.txt");
 	ofstream outfile2("Ey_R.txt");
 	for (int i = 0; i < N; i++)
@@ -1054,7 +993,7 @@ void PVVA::Reflect()
 		}
 	}
 	outfile1.close();
-	outfile2.close();
+	outfile2.close();*/
 }
 
 complex<double> PVVA::ConjugateMul(const complex<double> &A, const complex<double> &B) const
@@ -1074,29 +1013,33 @@ double PVVA::CalDistance(const Vector3 &a, const Vector3 &b) const
 	return pow(pow((a.x - b.x), 2) + pow((a.y - b.y), 2)+ pow((a.z - b.z), 2), 0.5);
 }
 
-bool PVVA::InterVal_IsInsect(const Vector2 &A, const Vector2 &B, 
-	const Vector2 &C, const Vector2 &D)
+bool PVVA::InterVal_PointinTriangle(const Vector2 & A, 
+	const Vector2 & B, const Vector2 & C, const Vector2 & P)
 {
-	Vector2 b = B - A; //向量b
-	Vector2 d = D - C;
-	Vector2 c = C - A;
+	Vector2 v0 = C - A;
+	Vector2 v1 = B - A;
+	Vector2 v2 = P - A;
 
-	Vector2 d_V = d.Vertical(); //d的垂线
+	double dot00 = v0.Dot(v0);
+	double dot01 = v0.Dot(v1);
+	double dot02 = v0.Dot(v2);
+	double dot11 = v1.Dot(v1);
+	double dot12 = v1.Dot(v2);
 
-	double t;
-	if (b.dot(d_V) == 0)
-		return false;
-	else
+	double inverDeno = 1.0 / (dot00 * dot11 - dot01 * dot01);
+
+	double u = (dot11 * dot02 - dot01 * dot12) * inverDeno;
+	if (u < -0.0001 || u > 1.00001) // if u out of range, return directly
 	{
-		t = c.dot(d_V) / b.dot(d_V);
-		if (t < 0 || t >1)
-			return false;
-		Vector2 b_V = b.Vertical();
-		double u = c.dot(b_V) / b.dot(d_V);
-		if (u < 0 || u > 1)
-			return false;
-		else
-			return true;
+		return false;
 	}
 
+	double v = (dot00 * dot12 - dot01 * dot02) * inverDeno;
+	if (v < -0.0001 || v > 1.00001) // if v out of range, return directly
+	{
+		return false;
+	}
+
+	return u + v <= 1.00001;
 }
+
