@@ -86,7 +86,12 @@ double PVVA::IntersectPlane(const Vector3 & orig, const Vector3 & dir,
 	double temp2 = Plane_org.Dot(Plane_n) - orig.Dot(Plane_n);
 	double t = temp2 / temp1;
 	intersection = orig + dir * t;
+	if (t > 10)
+	{
+		double l = 0;
+	}
 	return t;
+
 }
 
 double PVVA::IntersectPoint(const Vector3 &orig, const Vector3 &dir,
@@ -205,10 +210,10 @@ void PVVA::updateSource_n(Vector3 new_n)
 void PVVA::Result(double dis)
 {
 	CalPlane(dis);
-	/*
-	ofstream outfilex1("Ex2_M.txt");
-	ofstream outfilex2("Ey2_M.txt");
-	ofstream outfilex3("Ez2_M.txt");
+	
+	ofstream outfilex1("Ex_M.txt");
+	ofstream outfilex2("Ey_M.txt");
+	ofstream outfilex3("Ez_M.txt");
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < M; j++)
@@ -220,7 +225,7 @@ void PVVA::Result(double dis)
 	}
 	outfilex1.close();
 	outfilex2.close();
-	outfilex3.close();*/
+	outfilex3.close();
 }
 
 void PVVA::CalAmplitude()
@@ -262,12 +267,20 @@ void PVVA::CalAmplitude()
 				+ Ey_R[i][j].real() * Ey_R[i][j].real() + Ey_R[i][j].imag() * Ey_R[i][j].imag()
 				+ Ez_R[i][j].real() * Ez_R[i][j].real() + Ez_R[i][j].imag() * Ez_R[i][j].imag()), 0.5);
 
-			PostSquare = tempcos2 * CalSquare(tempA2, tempB2, tempC2, tempD2);
+			//PostSquare = tempcos2 * 
+			double SquareTest1 = CalSquare(tempA2, tempB2, tempC2, tempD2);
+			double SquareTest2 = CalSquare(tempB2, tempC2, tempD2, tempA2);
+			if (abs(SquareTest1 - SquareTest2) < 0.00000001)
+				PostSquare = tempcos2 * SquareTest1;
+			else
+			{
+				PostSquare = PreSquare;
+			}
 			if (PostSquare == 0)
 				PostSquare = 1;
 			if (TAE == 0)
 				TAE = 1;
-			tempratio = pow(abs(PreSquare / PostSquare), 0.5) * LAE / TAE;
+			tempratio = pow(fabs(PreSquare / PostSquare), 0.5) * LAE / TAE;
 
 			Ex_R[i][j] = Ex_R[i][j] * tempratio;
 			Ey_R[i][j] = Ey_R[i][j] * tempratio;
@@ -613,19 +626,21 @@ void PVVA::InterVal()
 		{
 			Plane[i][j] = translateMatrix * rotatMatrix * Plane[i][j];
 		}
-	/*
-	ofstream outfile1("Ex_M.txt");
-	ofstream outfile2("Ey_M.txt");
+	
+	ofstream outfile1("Exy.txt");
+	//ofstream outfile2("Ey_M.txt");
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < M; j++)
 		{
-			outfile1 << Ex_In[i][j].real() << " " << Ex_In[i][j].imag() << "\n";
-			outfile2 << Ey_In[i][j].real() << " " << Ey_In[i][j].imag() << "\n";
+			outfile1 << abs(Ex_In[i][j]) << " " << arg(Ex_In[i][j]) / Pi *180 << " "
+				<< abs(Ey_In[i][j]) << " " << arg(Ey_In[i][j]) / Pi * 180 << endl;
+			//outfile1 << Ex_In[i][j].real() << " " << Ex_In[i][j].imag() << "\n";
+			//outfile2 << Ey_In[i][j].real() << " " << Ey_In[i][j].imag() << "\n";
 		}
 	}
 	outfile1.close();
-	outfile2.close();*/
+	//outfile2.close();
 }
 
 void PVVA::CalReflectExyz(const Vector3 & n, const complex<double>& Ex,
@@ -663,11 +678,47 @@ double PVVA::CalSquare(const Vector3 & A, const Vector3 & B, const Vector3 & C, 
 double PVVA::CalSquare(const Vector3 & A, const Vector3 & B,
 	const Vector3 & C) const
 {
-	Vector3 AB = B - A;
-	Vector3 AC = C - A;
-	Vector3 tempS1 = AB.Cross(AC);
-	double tempS = tempS1.Length();
-	return tempS / 2;
+	double AB = (B - A).Length();
+	double AC = (C - A).Length();
+	double BC = (B - C).Length();
+	double p1 = (AB + AC + BC) / 2;
+	
+	return sqrt(p1*(p1 - AB)*(p1 - BC)*(p1 - AC));
+}
+
+bool PVVA::get_line_intersection(
+	const Vector2 & A, const Vector2 & B, 
+	const Vector2 & C, const Vector2 & D, Vector2 & O)
+{
+	double s10_x = B.x - A.x;
+	double s10_y = B.y - A.y;
+	double s32_x = D.x - C.x;
+	double s32_y = D.y - C.y;
+
+	double denom = s10_x * s32_y - s32_x * s10_y;
+	if (abs(denom) < 0.000001)//平行或共线
+		return 0; // Collinear
+	bool denomPositive = denom > 0.0;
+
+	double s02_x = A.x - C.x;
+	double s02_y = A.y - C.y;
+	double s_numer = s10_x * s02_y - s10_y * s02_x;
+	if ((s_numer < 0.0) == denomPositive)
+		//参数是大于等于0且小于等于1的，分子分母必须同号且分子小于等于分母
+		return false; // No collision
+
+	double t_numer = s32_x * s02_y - s32_y * s02_x;
+	if ((t_numer < 0.0) == denomPositive)
+		return false; // No collision
+
+	if (((s_numer > denom) == denomPositive) || ((t_numer > denom) == denomPositive))
+		return false; // No collision
+				  // Collision detected
+	double t = t_numer / denom;
+	
+	O.set(A.x + (t * s10_x), A.y + (t * s10_y));
+
+	return true;
 }
 
 void PVVA::AllocateMemory()
@@ -935,7 +986,7 @@ void PVVA::Reflect()
 			Reflight = RayTracing::reflectLight(n_Plane[i][j], n_light);   // 反射光线
 			Rn_Plane[i][j] = Reflight;
 
-			if (dir_t > 0.00001)  // 平面在反射面的前面
+			if (dir_t > 0.0000000001)  // 平面在反射面的前面
 			{
 				plane_t = IntersectPlane(InterPoint, Reflight,
 					Org_Source, R_Source, R_Plane[i][j]);
@@ -946,13 +997,12 @@ void PVVA::Reflect()
 					tempphase = -(d1 + d2) / lamda * 2 * Pi;
 				else
 					tempphase = -(d1 - d2) / lamda * 2 * Pi;
-				//tempphase = -(d1 + d2) / lamda * 2 * Pi;
 				tempejphase = complex <double>(cos(tempphase), sin(tempphase));
 				Ex_R[i][j] = ComMul(Ex_R[i][j], tempejphase);  // 只做相位变换
 				Ey_R[i][j] = ComMul(Ey_R[i][j], tempejphase);
 				Ez_R[i][j] = ComMul(Ez_R[i][j], tempejphase);
 			}
-			else if (dir_t < -0.00001)   // 平面在反射面的后面
+			else if (dir_t < -0.0000000001)   // 平面在反射面的后面
 			{
 				plane_t = IntersectPlane(InterPoint, Reflight,
 					Org_Source, R_Source, R_Plane[i][j]);
@@ -981,7 +1031,7 @@ void PVVA::Reflect()
 	//源的传播方向改变
 	n_Source = R_Source;
 	updateSource_n(n_Source);
-	/*
+	
 	ofstream outfile1("Ex_R.txt");
 	ofstream outfile2("Ey_R.txt");
 	for (int i = 0; i < N; i++)
@@ -993,7 +1043,7 @@ void PVVA::Reflect()
 		}
 	}
 	outfile1.close();
-	outfile2.close();*/
+	outfile2.close();/**/
 }
 
 complex<double> PVVA::ConjugateMul(const complex<double> &A, const complex<double> &B) const

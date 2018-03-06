@@ -27,6 +27,7 @@
 #include "Qt/include/ParaboloidWidget.h"
 #include "Qt/include/RestrictionWidget.h"
 #include "Qt/include/GaussianWidget.h"
+#include "Qt/include/ApertureFieldWidget.h"
 #include "Qt/include/CalculationWidget.h"
 #include "Qt/include/ParabolicCylinderWidget.h"
 #include "Qt/include/PlaneMirrorWidget.h"
@@ -90,6 +91,9 @@ private slots:
 
 	void on_restriction();
 	void toReceiveRestriction(int);
+
+	void toApertureField(int);
+	void createApertureField();
 
 	void createGaussian();
 	void toReceiveGaussian(int);
@@ -160,6 +164,7 @@ private:
 	QAction * isShowBoxAction;
 
 	QAction * GaussianAction;     //高斯场源
+	QAction * ApertureFieldAction;     //任意场源
 	QAction * PVVAAction;     //高斯场源
 
 	// 右键
@@ -210,7 +215,7 @@ private:
 	Restriction * tempRestriction;
 
 	// 窗口指针
-	//ParaboloidWidget * paraboloidWidget;
+	ApertureFieldWidget * apertureFieldWidget;
 	RestrictionWidget * restrictionWidget;
 	GaussianWidget * gaussianWidget;
 	//ParabolicCylinderWidget * parabolicCylinderWidget;

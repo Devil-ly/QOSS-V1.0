@@ -109,6 +109,10 @@ namespace calculation
 		double CalSquare(const Vector3 &A, const Vector3 &B, const Vector3 &C, const Vector3 &D) const;
 		double CalSquare(const Vector3 &A, const Vector3 &B, const Vector3 &C) const;
 		
+		// 判断两线段是否有交点 有则求出交点
+		bool get_line_intersection(const Vector2 &A, const Vector2 &B,
+			const Vector2 &C, const Vector2 &D, Vector2 &O);
+
 		// 插值用的——判断点是否在三角形内部
 		bool InterVal_PointinTriangle(const Vector2 &A, const Vector2 &B,
 			const Vector2 &C, const Vector2 &P);

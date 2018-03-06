@@ -260,6 +260,18 @@
     <ClCompile Include="Qt\src\PlaneMirrorWidget.cpp">
       <Filter>Source Files\Qt</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ApertureFieldWidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ApertureFieldWidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Qt\src\ApertureFieldWidget.cpp">
+      <Filter>Source Files\Qt</Filter>
+    </ClCompile>
+    <ClCompile Include="VTK\src\ApertureField.cpp">
+      <Filter>Source Files\VTK</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwindow.h">
@@ -305,6 +317,9 @@
       <Filter>Header Files\Qt</Filter>
     </CustomBuild>
     <CustomBuild Include="Qt\include\PlaneMirrorWidget.h">
+      <Filter>Header Files\Qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Qt\include\ApertureFieldWidget.h">
       <Filter>Header Files\Qt</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -410,6 +425,9 @@
     </ClInclude>
     <ClInclude Include="util\Vector2.h">
       <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="VTK\include\ApertureField.h">
+      <Filter>Header Files\VTK</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

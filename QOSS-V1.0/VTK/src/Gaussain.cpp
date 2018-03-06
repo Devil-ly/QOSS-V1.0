@@ -13,6 +13,13 @@ Gaussain::Gaussain(const GraphTrans & _graphTrans,
 
 	graphTrans = _graphTrans;
 	setData(parameter);
+
+	N_width = int(data[0] / data[5]) + 1;
+	M_depth = int(data[1] / data[5]) + 1;
+
+	setDs(data[5]);
+	CreateGaussianGaussain();
+
 	updateData();
 
 }
@@ -81,11 +88,7 @@ void Gaussain::updateData()
 {
 	//updateVarible();
 
-	N_width = int(data[0] / data[5]) + 1;
-	M_depth = int(data[1] / data[5]) + 1;
 
-	setDs(data[5]);
-	CreateGaussianGaussain();
 	if (is3D)
 		calActor3D();
 	else

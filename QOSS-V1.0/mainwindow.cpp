@@ -203,6 +203,13 @@ void mainWindow::createActions()
 	GaussianAction->setStatusTip(tr("Create a Gaussian source"));
 	connect(GaussianAction, SIGNAL(triggered()), this, SLOT(createGaussian()));
 
+	//任意场
+	ApertureFieldAction = new QAction(QIcon(tr("Qt/images/ApertureField.png")), 
+		tr("Gaussian"), this);
+	ApertureFieldAction->setStatusTip(tr("Create a ApertureField source"));
+	connect(ApertureFieldAction, SIGNAL(triggered()), 
+		this, SLOT(createApertureField()));
+
 	// 
 	PVVAAction = new QAction(QIcon(tr("Qt/images/PVVA.png")), tr("Fast calculation"),
 		this);
@@ -247,6 +254,7 @@ void mainWindow::createToolBars()
 	fileTool->addWidget(viewComboBox);
 	fileTool->addSeparator();
 	fileTool->addAction(GaussianAction);
+	fileTool->addAction(ApertureFieldAction);
 	fileTool->addAction(PVVAAction);
 }
 
@@ -764,6 +772,82 @@ void mainWindow::toReceiveRestriction(int index)
 	updateVtk();
 }
 
+void mainWindow::createApertureField()
+{
+	if (isExistenceOpenWin)
+	{
+		// 已经有窗口打开了
+		QMessageBox::warning(NULL, "Warning",
+			"A window has been opened. Please close and continue!");
+
+		return;
+	}
+	tempMirror = MirrorFactory::getMirror(PLANEMIRROR, GraphTrans());
+	tempMirror->setSelected(true);
+	renderer->AddActor(tempMirror->getActor());
+	apertureFieldWidget = new ApertureFieldWidget;
+	apertureFieldWidget->setMirror(tempMirror);
+	apertureFieldWidget->setWindowFlags(Qt::WindowStaysOnTopHint); // 子窗口保持置顶
+	apertureFieldWidget->show();
+
+	connect(apertureFieldWidget, SIGNAL(sendData(int)),
+		this, SLOT(toApertureField(int)));
+
+	isExistenceOpenWin = true;
+}
+
+void mainWindow::toApertureField(int caseIndex)
+{
+	if (1 == caseIndex)
+	{
+		if (nullptr != myData->getSourceField()) // 如果已有源了 则会覆盖以前的源
+		{
+			// 判断是否保留原来的限制条件
+			switch (QMessageBox::question(this, tr("Question"),
+				tr("Whether or not to cover the original field?"),
+				QMessageBox::Ok | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Ok))
+			{
+			case QMessageBox::Ok:
+				renderer->RemoveActor(myData->getSourceField()->getActor());
+				renderer->RemoveActor(myData->getSourceField()->getActor3D());
+				soucreFieldTreeItem->removeChild(soucreFieldTreeItem->child(0));
+				break;
+			case QMessageBox::No:
+				toApertureField(0);
+				break;
+			case QMessageBox::Cancel:
+				return;
+			default:
+				break;
+			}
+		}
+		Field * temPtr;
+		if (!apertureFieldWidget->getField(temPtr))
+		{
+			return;
+		}
+		renderer->AddActor(temPtr->getActor());
+
+		soucreFieldTreeItem->addChild(temPtr->getTree());
+		myData->setSourceField(temPtr);
+		toApertureField(0);
+
+		isExistenceOpenWin = false;
+	}
+	else if (0 == caseIndex)// 点击取消
+	{
+		renderer->RemoveActor(tempMirror->getActor());
+
+		delete tempMirror;
+		tempMirror = nullptr;
+		delete apertureFieldWidget;
+		apertureFieldWidget = nullptr;
+		isExistenceOpenWin = false;
+	}
+
+	updateVtk();
+}
+
 void mainWindow::createGaussian()
 {
 	if (isExistenceOpenWin)
@@ -786,7 +870,6 @@ void mainWindow::createGaussian()
 		this, SLOT(toReceiveGaussian(int)));
 
 	isExistenceOpenWin = true;
-
 }
 
 void mainWindow::toReceiveGaussian(int caseIndex)
@@ -824,6 +907,7 @@ void mainWindow::toReceiveGaussian(int caseIndex)
 		soucreFieldTreeItem->addChild(temPtr->getTree());
 		myData->setSourceField(temPtr);
 		toReceiveGaussian(0);
+		isExistenceOpenWin = false;
 	}
 	else if (0 == caseIndex)// 点击取消
 	{
