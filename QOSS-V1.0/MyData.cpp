@@ -84,8 +84,8 @@ void MyData::createDefaultMirror()
 		mirror2Position.updateRotate(Vector3(0, 1, 0), -164.94);
 		mirror2Position.updateTranslate(Vector3(0, 0, 0));
 		mirror2Position.updateRotate(Vector3(0, 1, 0), 0);
-		mirrors[1] = MirrorFactory::getMirror(PARABOLOID, mirror2Position);
-		//mirrors[1] = MirrorFactory::getMirror(PLANEMIRROR, GraphTrans());
+		//mirrors[1] = MirrorFactory::getMirror(PARABOLOID, mirror2Position);
+		mirrors[1] = MirrorFactory::getMirror(PLANEMIRROR, GraphTrans());
 		GraphTrans mirror3Position;
 		mirror3Position.updateTranslate(Vector3(0.034, 0, 0.605));
 		mirror3Position.updateRotate(Vector3(0, 1, 0), -17.23-180);
@@ -160,7 +160,7 @@ Field* MyData::calculateByPVVA(double dis, int N)
 	// 设置单位
 	pvva.setUnit(1);
 	// 设置频率
-	pvva.setFre(4.4e10);
+	pvva.setFre(1e10);
 	// 读入源并分配内存
 	pvva.setSource(getSourceField());
 	//int N = 2;

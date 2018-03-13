@@ -191,9 +191,9 @@ void PVVA::getPlane(Vector3 **& _org, Vector3 **& _n) const
 		}
 }
 
-void PVVA::updateSource_n(Vector3 new_n)
+void PVVA::updateSource_n(const Vector3& new_n)
 {
-	new_n.Normalization();
+	//new_n.Normalization();
 	if (new_n.x != 0 || new_n.y != 0 || new_n.z != 1)
 	{
 		Vector3 rotate_axis = Vector3(0, 0, 1).Cross(new_n); // 旋转轴
@@ -627,20 +627,20 @@ void PVVA::InterVal()
 			Plane[i][j] = translateMatrix * rotatMatrix * Plane[i][j];
 		}
 	
-	ofstream outfile1("Exy.txt");
-	//ofstream outfile2("Ey_M.txt");
-	for (int i = 0; i < N; i++)
+	ofstream outfile1("Ex_C.txt");
+	ofstream outfile2("Ey_C.txt");
+	for (int j = 0; j < M; j++)
 	{
-		for (int j = 0; j < M; j++)
+		for (int i = 0; i < N; i++)
 		{
-			outfile1 << abs(Ex_In[i][j]) << " " << arg(Ex_In[i][j]) / Pi *180 << " "
-				<< abs(Ey_In[i][j]) << " " << arg(Ey_In[i][j]) / Pi * 180 << endl;
-			//outfile1 << Ex_In[i][j].real() << " " << Ex_In[i][j].imag() << "\n";
-			//outfile2 << Ey_In[i][j].real() << " " << Ey_In[i][j].imag() << "\n";
+			//outfile1 << abs(Ex_In[i][j]) << " " << arg(Ex_In[i][j]) / Pi *180 << " "
+			//	<< abs(Ey_In[i][j]) << " " << arg(Ey_In[i][j]) / Pi * 180 << endl;
+			outfile1 << Ex_In[i][j].real() << " " << Ex_In[i][j].imag() << "\n";
+			outfile2 << Ey_In[i][j].real() << " " << Ey_In[i][j].imag() << "\n";
 		}
 	}
 	outfile1.close();
-	//outfile2.close();
+	outfile2.close();
 }
 
 void PVVA::CalReflectExyz(const Vector3 & n, const complex<double>& Ex,
@@ -889,6 +889,18 @@ void PVVA::CalPlane(double dis)
 	//cout << "Calculating plane wave propagation " << endl;
 	//theta = Pi / 12;
 	//double theta1 = Pi / 6;
+	double sum = 0;
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < M; j++)
+		{
+			sum += Ey_In[i][j].real() * Ey_In[i][j].real() +
+				Ey_In[i][j].imag() * Ey_In[i][j].imag();
+		}
+	}
+	cout << Ey_In[100][100] << endl;
+	cout << "sum0" << sum << endl;
+
 	FFTDI cal(f, dis, N, M);
 	cal.Setds(ds);
 	cal.SetInput(Ex_In, Ey_In);
@@ -906,6 +918,17 @@ void PVVA::CalPlane(double dis)
 	SourceGraphTrans.updateTranslate(Org_Source);
 	//n_Source.set(0, 0, -1);
 
+	sum = 0;
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < M; j++)
+		{
+			sum += Ey1[i][j].real() * Ey1[i][j].real() +
+				Ey1[i][j].imag() * Ey1[i][j].imag();
+		}
+	}
+	cout << Ey1[100][100] << endl;
+	cout << "sum1" <<sum << endl;
 	/*
 	ofstream outfilex1("Ex1.txt");
 	ofstream outfilex2("Ey1.txt");
@@ -946,9 +969,11 @@ void PVVA::Reflect()
 	Vector3 n_light_Plane;  // 相对于平面的法向量
 
 	// 绝对坐标系转换到源的坐标系（只求旋转）
-	Vector3D RotateAsixSou(SourceGraphTrans.getRotate_x(), SourceGraphTrans.getRotate_y(),
+	Vector3D RotateAsixSou(SourceGraphTrans.getRotate_x(), 
+		SourceGraphTrans.getRotate_y(),
 		SourceGraphTrans.getRotate_z());
-	Matrix4D rotatMatrixSou = Matrix4D::getRotateMatrix(-SourceGraphTrans.getRotate_theta(), RotateAsixSou);
+	Matrix4D rotatMatrixSou = Matrix4D::getRotateMatrix(
+		-SourceGraphTrans.getRotate_theta(), RotateAsixSou);
 
 	Vector3 tempa, tempb;
 
@@ -974,16 +999,18 @@ void PVVA::Reflect()
 				n_Plane[i][j], n_light,
 				InterPoint, isInter, dir_t);
 			if (!isInter)
-				break;
+				continue;
 			n_light.Normalization();
 
 			// 将反射面法向量转化到源坐标系上(先转换到绝对坐标系)
 			n_light_Plane = rotatMatrixSou * n_light;
 			n_light_Plane.Normalization();  // 单位化
+			// 只做极化变换
 			CalReflectExyz(n_light_Plane, Ex1[i][j], Ey1[i][j],
-				Ez1[i][j], Ex_R[i][j], Ey_R[i][j], Ez_R[i][j]); // 只做极化变换
+				Ez1[i][j], Ex_R[i][j], Ey_R[i][j], Ez_R[i][j]);
 
-			Reflight = RayTracing::reflectLight(n_Plane[i][j], n_light);   // 反射光线
+			// 反射光线
+			Reflight = RayTracing::reflectLight(n_Plane[i][j], n_light);   
 			Rn_Plane[i][j] = Reflight;
 
 			if (dir_t > 0.0000000001)  // 平面在反射面的前面
@@ -1022,16 +1049,77 @@ void PVVA::Reflect()
 			{
 				R_Plane[i][j] = InterPoint;
 			}
-			
 		}
 	} // endloop
 
+	double sum = 0;
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < M; j++)
+		{
+			sum += Ey_R[i][j].real() * Ey_R[i][j].real() +
+				Ey_R[i][j].imag() * Ey_R[i][j].imag();
+		}
+	}
+	cout << Ey_R[100][100] << endl;
+	cout << "sum2" << sum << endl;
+
 	CalAmplitude();  // 只做幅度变换
+
+	Matrix4D rotatMatrixSou1 = Matrix4D::getRotateMatrix(
+		SourceGraphTrans.getRotate_theta(), RotateAsixSou);
 
 	//源的传播方向改变
 	n_Source = R_Source;
+	n_Source.Normalization();
 	updateSource_n(n_Source);
-	
+
+	Vector3D RotateAsixSou2(SourceGraphTrans.getRotate_x(),
+		SourceGraphTrans.getRotate_y(),
+		SourceGraphTrans.getRotate_z());
+	Matrix4D rotatMatrixSou2 = Matrix4D::getRotateMatrix(
+		-SourceGraphTrans.getRotate_theta(), RotateAsixSou2);
+	rotatMatrixSou1 = rotatMatrixSou2 * rotatMatrixSou1;
+
+	sum = 0;
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < M; j++)
+		{
+			sum += Ey_R[i][j].real() * Ey_R[i][j].real() +
+				Ey_R[i][j].imag() * Ey_R[i][j].imag();
+		}
+	}
+	cout << Ey_R[100][100] << endl;
+	cout << "sum3" << sum << endl;
+
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < M; j++)
+		{
+			Vector3 tempReal(Ex_R[i][j].real(), Ey_R[i][j].real(), Ez_R[i][j].real());
+			Vector3 tempImag(Ex_R[i][j].imag(), Ey_R[i][j].imag(), Ez_R[i][j].imag());
+			tempReal = rotatMatrixSou1 * tempReal;
+			tempImag = rotatMatrixSou1 * tempImag;
+			Ex_R[i][j] = complex<double>(tempReal.x, tempImag.x);
+			Ey_R[i][j] = complex<double>(tempReal.y, tempImag.y);
+			Ez_R[i][j] = complex<double>(tempReal.z, tempImag.z);
+		}
+	}
+
+	sum = 0;
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < M; j++)
+		{
+			sum += Ey_R[i][j].real() * Ey_R[i][j].real() +
+				Ey_R[i][j].imag() * Ey_R[i][j].imag();
+		}
+	}
+	cout << Ey_R[100][100] << endl;
+	cout << "sum4" << sum << endl;
+
+	/*
 	ofstream outfile1("Ex_R.txt");
 	ofstream outfile2("Ey_R.txt");
 	for (int i = 0; i < N; i++)
@@ -1043,7 +1131,7 @@ void PVVA::Reflect()
 		}
 	}
 	outfile1.close();
-	outfile2.close();/**/
+	outfile2.close();*//**/
 }
 
 complex<double> PVVA::ConjugateMul(const complex<double> &A, const complex<double> &B) const

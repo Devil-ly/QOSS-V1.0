@@ -72,6 +72,7 @@ void ApertureField::readData()
 					a1*sin(p1 / 180 * Pi));
 				Ey[i][j] = complex<double>(a2*cos(p2 / 180 * Pi),
 					a2*sin(p2 / 180 * Pi));
+				//Ex[i][j] = complex<double>(0, 0);
 			}
 			else
 			{
@@ -84,6 +85,7 @@ void ApertureField::readData()
 		}
 	}
 	file.close();
+
 }
 
 QTreeWidgetItem * ApertureField::getTree()

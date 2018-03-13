@@ -292,8 +292,10 @@ void FFTDI::Calh0()
 		{
 			double x, y, z; //待修改
 			x = (i - N + 1) * ds;
+			//x = (i - N + 1) * ds;
 			y = (j - N + 1) * ds;
 			z = z0;
+			//z = z0 ;
 
 			//中间变量
 			//double k1, k2; //系数

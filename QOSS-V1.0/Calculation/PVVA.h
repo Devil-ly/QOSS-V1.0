@@ -79,7 +79,7 @@ namespace calculation
 
 		void AllocateMemory();  //分配内存
 
-		void updateSource_n(Vector3 new_n); // 更新源的法向量以及旋转信息
+		void updateSource_n(const Vector3& new_n); // 更新源的法向量以及旋转信息
 
 
 		//复数的共轭相乘 A * B(共轭)
