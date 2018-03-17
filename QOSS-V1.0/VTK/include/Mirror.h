@@ -14,7 +14,7 @@
 #include <vtkProperty.h>
 #include <QTreeWidgetItem>
 #include <QString>
-
+#include <vtkAxesActor.h>
 #include <vector>
 #include <../util/Vector3.h>
 
@@ -28,6 +28,7 @@ enum MirrorsType
 	PARABOLICCYLINDER,
 	PARABOLOID,
 	ELLIPSOID,
+	STLMIRROR
 };
 
 class actor;
@@ -48,9 +49,6 @@ public:
 	virtual void calPolyData(double ds = 0) = 0;
 
 	virtual void updateData() = 0;
-
-	// 输出入射光线计算交点和法线
-	virtual void calcReflectedRay(const Vector3&, Vector3&, Vector3&) = 0;
 
 	void setSelected(bool);
 
@@ -77,15 +75,21 @@ public:
 	void switchIsShow();
 	bool getIsShow() const { return isShow; }
 
-protected:
+	vtkSmartPointer<vtkAxesActor> getActorAxes() const;
+	void calcActorAxes();
 
-	
+	// 输出STL 格式文件
+	void saveSTL();
+
+protected:
 
 	MirrorsType type;
 
 	//保存每个模型的显示和剖分数据
 	vtkSmartPointer<vtkActor> actor;
 	vtkSmartPointer<vtkPolyData> polyData;
+
+	vtkSmartPointer<vtkAxesActor> actorAxes;
 
 	bool isTransparent; // 是否透明
 	bool isShow; // 是否显示

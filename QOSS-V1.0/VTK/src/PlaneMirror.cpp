@@ -65,6 +65,7 @@ void PlaneMirror::calPolyData(double ds)
 void PlaneMirror::updateData()
 {
 	calPolyData();
+	calcActorAxes();
 	calActor();
 }
 
@@ -81,6 +82,16 @@ QTreeWidgetItem * PlaneMirror::getTree()
 	tree->setData(0, Qt::UserRole, QVariant(1));
 	tree->setData(1, Qt::UserRole, QVariant(PLANEMIRROR));
 
+	QTreeWidgetItem * tree1 = new QTreeWidgetItem;
+	tree1->setText(0, "PlaneMirror");
+	tree1->setText(0, QString("Width: ") + QString::number(data[0]));
+
+	QTreeWidgetItem * tree2 = new QTreeWidgetItem;
+	tree2->setText(0, "PlaneMirror");
+	tree2->setText(0, QString("Depth: ") + QString::number(data[1]));
+
+	tree->addChild(tree1);
+	tree->addChild(tree2);
 	tree->addChild(getTransformTree());
 	return tree;
 }

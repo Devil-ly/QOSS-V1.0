@@ -272,6 +272,36 @@
     <ClCompile Include="VTK\src\ApertureField.cpp">
       <Filter>Source Files\VTK</Filter>
     </ClCompile>
+    <ClCompile Include="VTK\src\STLMirror.cpp">
+      <Filter>Source Files\VTK</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_STLMirrorWidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_STLMirrorWidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Qt\src\STLMirrorWidget.cpp">
+      <Filter>Source Files\Qt</Filter>
+    </ClCompile>
+    <ClCompile Include="Qt\src\FDTDProgressDialog.cpp">
+      <Filter>Source Files\Qt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_FDTDProgressDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_FDTDProgressDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_CalculateFDTDThread.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_CalculateFDTDThread.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Qt\src\CalculateFDTDThread.cpp">
+      <Filter>Source Files\Qt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwindow.h">
@@ -320,6 +350,15 @@
       <Filter>Header Files\Qt</Filter>
     </CustomBuild>
     <CustomBuild Include="Qt\include\ApertureFieldWidget.h">
+      <Filter>Header Files\Qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Qt\include\STLMirrorWidget.h">
+      <Filter>Header Files\Qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Qt\include\FDTDProgressDialog.h">
+      <Filter>Header Files\Qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Qt\include\CalculateFDTDThread.h">
       <Filter>Header Files\Qt</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -428,6 +467,12 @@
     </ClInclude>
     <ClInclude Include="VTK\include\ApertureField.h">
       <Filter>Header Files\VTK</Filter>
+    </ClInclude>
+    <ClInclude Include="VTK\include\STLMirror.h">
+      <Filter>Header Files\VTK</Filter>
+    </ClInclude>
+    <ClInclude Include="Calculation\FDTDRadiator.h">
+      <Filter>Header Files\Calculation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

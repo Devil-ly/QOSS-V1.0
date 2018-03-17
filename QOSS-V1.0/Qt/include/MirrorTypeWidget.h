@@ -32,6 +32,8 @@ namespace  userInterface {
 		void on_ellipsoidBtn();
 		void on_paraboloidBtn();
 		void on_parabolicCylinderBtn();
+
+		void on_STLBtn();
 	private:
 
 		QTabWidget * tabWidget;
@@ -41,6 +43,9 @@ namespace  userInterface {
 		QPushButton *ellipsoidBtn;
 		QPushButton *paraboloidBtn;
 		QPushButton *parabolicCylinderBtn;
+
+		//page3
+		QPushButton *STLBtn;
 	};
 }
 

@@ -4,6 +4,11 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 
+#include <vtkCaptionActor2D.h>
+#include <vtkTextProperty.h>
+
+#include <vtkSTLWriter.h>
+
 Mirror::Mirror()
 {
 	property = vtkSmartPointer<vtkProperty>::New();
@@ -11,6 +16,7 @@ Mirror::Mirror()
 	property->SetColor(180.0 / 255.0, 180.0 / 255.0, 180.0 / 255.0);
 	//property->SetColor(1, 1, 0);
 	actor = vtkSmartPointer<vtkActor>::New();
+	actorAxes = vtkSmartPointer<vtkAxesActor>::New();
 	isTransparent = false;
 	isShow = true;
 }
@@ -157,5 +163,45 @@ void Mirror::switchIsShow()
 	{
 		property->SetOpacity(0);
 	}
+}
+
+vtkSmartPointer<vtkAxesActor> Mirror::getActorAxes() const
+{
+	return actorAxes;
+}
+
+void Mirror::calcActorAxes()
+{
+	actorAxes->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(1, 0, 0);//修改X字体颜色为红色  
+	actorAxes->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0, 2, 0);//修改Y字体颜色为绿色  
+	actorAxes->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0, 0, 3);//修改Z字体颜色为蓝色  
+	actorAxes->SetXAxisLabelText("U");
+	actorAxes->SetYAxisLabelText("V");
+	actorAxes->SetZAxisLabelText("N");
+	actorAxes->SetConeRadius(0.1);
+	actorAxes->SetConeResolution(20);
+	actorAxes->SetTotalLength(0.5, 0.5, 0.5);
+
+	vtkSmartPointer<vtkTransform> transform = 
+		vtkSmartPointer<vtkTransform>::New();
+
+	// 用户自定义平移旋转 (先移动后旋转)
+	transform->Translate(graphTrans.getTrans_x(),
+		graphTrans.getTrans_y(), graphTrans.getTrans_z());
+	transform->RotateWXYZ(graphTrans.getRotate_theta(), 
+		graphTrans.getRotate_x(), graphTrans.getRotate_y(),
+		graphTrans.getRotate_z());
+
+	actorAxes->SetUserTransform(transform);
+}
+
+void Mirror::saveSTL()
+{
+	vtkSmartPointer<vtkSTLWriter> writer =
+		vtkSmartPointer<vtkSTLWriter>::New();
+	calPolyData(0.01);
+	writer->SetInputData(polyData);
+	writer->SetFileName("test.stl");
+	writer->Update();
 }
 

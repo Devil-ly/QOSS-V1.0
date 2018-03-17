@@ -74,7 +74,7 @@ public:
 	void setSourceField(Field*);
 	Field* getSourceField() const; 
 
-	Field* calculateByPVVA(double dis = 0.5, int N = 2);
+	Field* calculateByPVVA(double fre, double dis = 0.5, int N = 2);
 	Field* getFieldByNum(int) const;
 
 private:

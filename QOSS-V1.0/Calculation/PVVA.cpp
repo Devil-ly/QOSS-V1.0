@@ -210,7 +210,7 @@ void PVVA::updateSource_n(const Vector3& new_n)
 void PVVA::Result(double dis)
 {
 	CalPlane(dis);
-	
+	/*
 	ofstream outfilex1("Ex_M.txt");
 	ofstream outfilex2("Ey_M.txt");
 	ofstream outfilex3("Ez_M.txt");
@@ -225,7 +225,7 @@ void PVVA::Result(double dis)
 	}
 	outfilex1.close();
 	outfilex2.close();
-	outfilex3.close();
+	outfilex3.close();*/
 }
 
 void PVVA::CalAmplitude()
@@ -626,7 +626,7 @@ void PVVA::InterVal()
 		{
 			Plane[i][j] = translateMatrix * rotatMatrix * Plane[i][j];
 		}
-	
+	/*
 	ofstream outfile1("Ex_C.txt");
 	ofstream outfile2("Ey_C.txt");
 	for (int j = 0; j < M; j++)
@@ -640,7 +640,7 @@ void PVVA::InterVal()
 		}
 	}
 	outfile1.close();
-	outfile2.close();
+	outfile2.close();*/
 }
 
 void PVVA::CalReflectExyz(const Vector3 & n, const complex<double>& Ex,
@@ -889,17 +889,6 @@ void PVVA::CalPlane(double dis)
 	//cout << "Calculating plane wave propagation " << endl;
 	//theta = Pi / 12;
 	//double theta1 = Pi / 6;
-	double sum = 0;
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = 0; j < M; j++)
-		{
-			sum += Ey_In[i][j].real() * Ey_In[i][j].real() +
-				Ey_In[i][j].imag() * Ey_In[i][j].imag();
-		}
-	}
-	cout << Ey_In[100][100] << endl;
-	cout << "sum0" << sum << endl;
 
 	FFTDI cal(f, dis, N, M);
 	cal.Setds(ds);
@@ -918,17 +907,6 @@ void PVVA::CalPlane(double dis)
 	SourceGraphTrans.updateTranslate(Org_Source);
 	//n_Source.set(0, 0, -1);
 
-	sum = 0;
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = 0; j < M; j++)
-		{
-			sum += Ey1[i][j].real() * Ey1[i][j].real() +
-				Ey1[i][j].imag() * Ey1[i][j].imag();
-		}
-	}
-	cout << Ey1[100][100] << endl;
-	cout << "sum1" <<sum << endl;
 	/*
 	ofstream outfilex1("Ex1.txt");
 	ofstream outfilex2("Ey1.txt");
@@ -1052,18 +1030,6 @@ void PVVA::Reflect()
 		}
 	} // endloop
 
-	double sum = 0;
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = 0; j < M; j++)
-		{
-			sum += Ey_R[i][j].real() * Ey_R[i][j].real() +
-				Ey_R[i][j].imag() * Ey_R[i][j].imag();
-		}
-	}
-	cout << Ey_R[100][100] << endl;
-	cout << "sum2" << sum << endl;
-
 	CalAmplitude();  // 只做幅度变换
 
 	Matrix4D rotatMatrixSou1 = Matrix4D::getRotateMatrix(
@@ -1081,17 +1047,6 @@ void PVVA::Reflect()
 		-SourceGraphTrans.getRotate_theta(), RotateAsixSou2);
 	rotatMatrixSou1 = rotatMatrixSou2 * rotatMatrixSou1;
 
-	sum = 0;
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = 0; j < M; j++)
-		{
-			sum += Ey_R[i][j].real() * Ey_R[i][j].real() +
-				Ey_R[i][j].imag() * Ey_R[i][j].imag();
-		}
-	}
-	cout << Ey_R[100][100] << endl;
-	cout << "sum3" << sum << endl;
 
 	for (int i = 0; i < N; i++)
 	{
@@ -1106,18 +1061,6 @@ void PVVA::Reflect()
 			Ez_R[i][j] = complex<double>(tempReal.z, tempImag.z);
 		}
 	}
-
-	sum = 0;
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = 0; j < M; j++)
-		{
-			sum += Ey_R[i][j].real() * Ey_R[i][j].real() +
-				Ey_R[i][j].imag() * Ey_R[i][j].imag();
-		}
-	}
-	cout << Ey_R[100][100] << endl;
-	cout << "sum4" << sum << endl;
 
 	/*
 	ofstream outfile1("Ex_R.txt");

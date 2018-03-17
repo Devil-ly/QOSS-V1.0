@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="FDTDRadiator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ApertureRadiation.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Constant_Val.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FDTD.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GEMS_Memory.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Global_Vars.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HuygensPropagate.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Mathematical_Functions.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Radiator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceModeGenerationT.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix4D.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Position3D.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3D.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3f.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="FDTDRadiator.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ApertureRadiation.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FDTD.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Mathematical_Functions.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceModeGenerationT.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Radiator.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix4D.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Position3D.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector3D.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

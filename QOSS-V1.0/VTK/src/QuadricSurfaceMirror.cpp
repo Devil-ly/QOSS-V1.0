@@ -72,12 +72,14 @@ void QuadricSurfaceMirror::calPolyData(double ds)
 	TransFilter->SetTransform(transform); //use vtkTransform (or maybe vtkLinearTransform)
 	TransFilter->Update();
 	polyData = TransFilter->GetOutput();
+
+	calcRestriction();
 }
 
 void QuadricSurfaceMirror::updateData()
 {
 	calPolyData();
-	calcRestriction();
+	calcActorAxes();
 	calActor();
 }
 

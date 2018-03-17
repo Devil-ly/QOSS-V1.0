@@ -2,6 +2,7 @@
 #include <Qt/include/PreDialog.h>
 #include "Qt/include/ModelWizard.h"
 #include "Qt/include/MirrorTypeWidget.h"
+#include "Qt/include/CalculateFDTDThread.h"
 
 #include "VTK/include/Mirror.h"
 #include "VTK/include/Restriction.h"
@@ -22,6 +23,8 @@
 #include <QApplication>
 
 #include <QMessageBox>
+#include <thread>
+
 
 
 using namespace userInterface;
@@ -75,6 +78,7 @@ mainWindow::mainWindow(QWidget *parent)
 	axes->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(1, 0, 0);//修改X字体颜色为红色  
 	axes->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0, 2, 0);//修改Y字体颜色为绿色  
 	axes->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0, 0, 3);//修改Z字体颜色为蓝色  
+
 	axes->SetConeRadius(0.3);
 	axes->SetConeResolution(20);
 	//axes->SetTotalLength(10, 10, 10); //修改坐标尺寸
@@ -151,6 +155,8 @@ void mainWindow::init()
 	isExistenceOpenWin = false;
 	isNew = true;
 	fieldNum = 1;
+	FDTDprogressDialog = nullptr;
+	radiatorField = nullptr;
 }
 
 void mainWindow::createActions()
@@ -211,10 +217,18 @@ void mainWindow::createActions()
 		this, SLOT(createApertureField()));
 
 	// 
-	PVVAAction = new QAction(QIcon(tr("Qt/images/PVVA.png")), tr("Fast calculation"),
-		this);
+	PVVAAction = new QAction(QIcon(tr("Qt/images/PVVA.png")), tr("Fast calculation"), this);
 	PVVAAction->setStatusTip(tr("Fast calculation by PVVA"));
 	connect(PVVAAction, SIGNAL(triggered()), this, SLOT(on_PVVA()));
+
+	FDTDAction = new QAction(QIcon(tr("Qt/images/PVVA.png")), tr("FDTD calculation"), this);
+	FDTDAction->setStatusTip(tr("calculate Radiator by FDTD"));
+	connect(FDTDAction, SIGNAL(triggered()), this, SLOT(on_FDTD()));
+
+	loadFDTDAction = new QAction(QIcon(tr("Qt/images/PVVA.png")), tr("load FDTD"), this);
+	loadFDTDAction->setStatusTip(tr("load FDTD"));
+	loadFDTDAction->setEnabled(false);
+	connect(loadFDTDAction, SIGNAL(triggered()), this, SLOT(loadFDTDField()));
 }
 
 void mainWindow::createMenus()
@@ -256,6 +270,7 @@ void mainWindow::createToolBars()
 	fileTool->addAction(GaussianAction);
 	fileTool->addAction(ApertureFieldAction);
 	fileTool->addAction(PVVAAction);
+	fileTool->addAction(FDTDAction);
 }
 
 void mainWindow::createStatusBar()
@@ -418,10 +433,15 @@ void mainWindow::createRightMenu()
 	isTransparentAction->setChecked(false);
 	connect(isTransparentAction, SIGNAL(triggered()), this, SLOT(on_isTransparentMirror()));
 
+	saveSTLction = new QAction(tr("Save STL"), this);
+	saveSTLction->setStatusTip(tr("Save STL"));
+	connect(saveSTLction, SIGNAL(triggered()), this, SLOT(on_saveSTL()));
+
 	R_Tree_MirrorTypeMenu->addAction(modifyingMirrorAction);
 	R_Tree_MirrorTypeMenu->addAction(restrictionAction);
 	R_Tree_MirrorTypeMenu->addAction(isShowMirrorAction);
 	R_Tree_MirrorTypeMenu->addAction(isTransparentAction);
+	R_Tree_MirrorTypeMenu->addAction(saveSTLction);
 
 	R_Tree_MirrorParMenu = new QMenu(this);
 	modifyParametersAction = new QAction(tr("Modifying parameters"), this);
@@ -443,6 +463,7 @@ void mainWindow::createRightMenu()
 
 	R_Tree_RestrictionMenu->addAction(modifyingRestrictionAction);
 	R_Tree_RestrictionMenu->addAction(delRestrictionAction);
+
 }
 
 void mainWindow::createDetails()
@@ -667,20 +688,24 @@ void mainWindow::on_modifyParameters()
 		tempMirror = MirrorFactory::cloneMirror(myData->getMirrorByNum(index));
 		tempMirror->setSelected(true);
 		renderer->AddActor(tempMirror->getActor());
+		renderer->AddActor(tempMirror->getActorAxes());
 		on_createParaboloid();
 		break;
 	case PARABOLICCYLINDER:
 		tempMirror = MirrorFactory::cloneMirror(myData->getMirrorByNum(index));
 		tempMirror->setSelected(true);
 		renderer->AddActor(tempMirror->getActor());
+		renderer->AddActor(tempMirror->getActorAxes());
 		on_createParabolicCylinder();
 		break;
 	case PLANEMIRROR:
 		tempMirror = MirrorFactory::cloneMirror(myData->getMirrorByNum(index));
 		tempMirror->setSelected(true);
 		renderer->AddActor(tempMirror->getActor());
+		renderer->AddActor(tempMirror->getActorAxes());
 		on_createPlaneMirror();
 		break;
+
 	default:
 		break;
 	}
@@ -987,6 +1012,33 @@ void mainWindow::on_createPlaneMirror()
 	isExistenceOpenWin = true;
 }
 
+void mainWindow::on_createSTLMirror()
+{
+	if (isExistenceOpenWin)
+	{
+		// 已经有窗口打开了
+		QMessageBox::warning(NULL, "Warning",
+			"A window has been opened. Please close and continue!");
+
+		return;
+	}
+	tempWidget = new STLMirrorWidget();
+	tempWidget->setWindowFlags(Qt::WindowStaysOnTopHint); // 子窗口保持置顶
+
+	connect(tempWidget, SIGNAL(sendData(int)),
+		this, SLOT(toReceiveMirror(int)));
+
+	dynamic_cast<STLMirrorWidget*>(tempWidget)->setMirror(tempMirror);
+	tempWidget->show();
+	isExistenceOpenWin = true;
+}
+
+void mainWindow::on_saveSTL()
+{
+	int index = rightSelectItem->data(1, Qt::UserRole).toInt();
+	myData->getMirrorByNum(index)->saveSTL();
+}
+
 void mainWindow::toReceiveMirror(int caseIndex)
 {
 	if (1 == caseIndex) // 点击确认
@@ -1040,6 +1092,12 @@ void mainWindow::toReceiveMirror(int caseIndex)
 			Qt::UserRole, QVariant(index1));
 		mirrorTreeWidgetItem[index1]->setExpanded(true);
 
+		renderer->RemoveActor(tempMirror->getActorAxes());
+		if (tempMirror->getMirrorsType() == STLMIRROR)
+		{
+			renderer->AddActor(tempMirror->getActor());
+		}
+
 		tempMirror = nullptr;
 		delete tempWidget;
 		tempWidget = nullptr;
@@ -1050,9 +1108,11 @@ void mainWindow::toReceiveMirror(int caseIndex)
 	else if (0 == caseIndex)// 点击取消
 	{
 		renderer->RemoveActor(tempMirror->getActor());
+		renderer->RemoveActor(tempMirror->getActorAxes());
 		int index1 = rightSelectItem->data(2, Qt::UserRole).toInt();
 
 		renderer->AddActor(myData->getMirrorByNum(index1)->getActor());
+		
 		delete tempMirror;
 		tempMirror = nullptr;
 		delete tempWidget;
@@ -1073,13 +1133,29 @@ void mainWindow::toReceiveMirrorType(int caseInd)
 		tempMirror = MirrorFactory::getMirror(PARABOLOID,GraphTrans());
 		tempMirror->setSelected(true);
 		renderer->AddActor(tempMirror->getActor());
+		renderer->AddActor(tempMirror->getActorAxes());
 		on_createParaboloid();
 		break;
 	case PARABOLICCYLINDER:
 		tempMirror = MirrorFactory::getMirror(PARABOLICCYLINDER, GraphTrans());
 		tempMirror->setSelected(true);
 		renderer->AddActor(tempMirror->getActor());
+		renderer->AddActor(tempMirror->getActorAxes());
 		on_createParabolicCylinder();
+		break;
+	case PLANEMIRROR:
+		tempMirror = MirrorFactory::getMirror(PLANEMIRROR, GraphTrans());
+		tempMirror->setSelected(true);
+		renderer->AddActor(tempMirror->getActor());
+		renderer->AddActor(tempMirror->getActorAxes());
+		on_createPlaneMirror();
+		break;
+	case STLMIRROR:
+		tempMirror = MirrorFactory::getMirror(STLMIRROR, GraphTrans());
+		tempMirror->setSelected(true);
+		//renderer->AddActor(tempMirror->getActor());
+		renderer->AddActor(tempMirror->getActorAxes());
+		on_createSTLMirror();
 		break;
 	default:
 		break;
@@ -1094,8 +1170,9 @@ void mainWindow::on_PVVA()
 		return;
 	}
 	double dis = calculationDialog.getDistance();
+	double fre = calculationDialog.getFre();
 	int numMirror = calculationDialog.getMirrorNum();
-	Field * temPtr = myData->calculateByPVVA(dis, numMirror);
+	Field * temPtr = myData->calculateByPVVA(fre, dis, numMirror);
 	renderer->AddActor(temPtr->getActor());
 
 	QTreeWidgetItem * tree = new QTreeWidgetItem(QStringList
@@ -1106,6 +1183,99 @@ void mainWindow::on_PVVA()
 	fieldNum++;
 	updateVtk();
 	//myData->
+}
+
+void mainWindow::on_FDTD()
+{
+	if (FDTDprogressDialog)
+	{
+		FDTDprogressDialog->show();
+		return;
+	}
+	if (radiatorField)
+	{
+		switch (QMessageBox::question(this, tr("Question"),
+			tr("An unloaded source has already existed and will be covered after calculation.Whether to continue ?"),
+			QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes))
+		{
+		case QMessageBox::Yes: // 加载源
+			delete radiatorField;
+			radiatorField = nullptr;
+			break;
+		case QMessageBox::No: //  不加载源
+			return;
+		default:
+			break;
+		}
+	}
+	FDTDprogressDialog = new FDTDProgressDialog();
+	FDTDprogressDialog->show();
+	FDTDradiator = new FDTDRadiator;
+	radiatorField = new Field;
+	CalculateFDTDThread *calThr = new CalculateFDTDThread(FDTDradiator, radiatorField);
+	connect(FDTDprogressDialog, SIGNAL(sendStop()), this, SLOT(toReceiveFDTDStop()));
+	connect(FDTDprogressDialog, SIGNAL(sendStop()), calThr, SLOT(killFDTD()));
+
+	connect(calThr, SIGNAL(sendMainValue(int)), FDTDprogressDialog, SLOT(setMainValue(int)));
+	connect(calThr, SIGNAL(sendSlaverValue(int)), FDTDprogressDialog, SLOT(setSlaverValue(int)));
+	connect(calThr, SIGNAL(finished()), calThr, SLOT(deleteLater()));
+	connect(calThr, SIGNAL(finished()), this, SLOT(toReceiveFDTD()));
+
+	calThr->start();
+}
+
+void mainWindow::toReceiveFDTD()
+{
+	switch (QMessageBox::question(this, tr("Question"),
+		tr("The radiator has been calculated, and whether the latest source is loaded now?"),
+		QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes))
+	{
+	case QMessageBox::Yes: // 加载源
+		loadFDTDField();
+		break;
+	case QMessageBox::No: //  不加载源
+		loadFDTDAction->setEnabled(true);
+		break;
+	default:
+		break;
+	}
+	delete FDTDprogressDialog;
+	FDTDprogressDialog = nullptr;
+}
+
+void mainWindow::loadFDTDField()
+{
+	if (nullptr != myData->getSourceField()) // 如果已有源了 则会覆盖以前的源
+	{
+		// 判断是否保留原来的限制条件
+		switch (QMessageBox::question(this, tr("Question"),
+			tr("Whether or not to cover the original field?"),
+			QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes))
+		{
+		case QMessageBox::Yes:
+			renderer->RemoveActor(myData->getSourceField()->getActor());
+			renderer->RemoveActor(myData->getSourceField()->getActor3D());
+			soucreFieldTreeItem->removeChild(soucreFieldTreeItem->child(0));
+			break;
+		case QMessageBox::No:
+			return;
+		default:
+			break;
+		}
+	}
+	radiatorField->updateData();
+	renderer->AddActor(radiatorField->getActor());
+
+	soucreFieldTreeItem->addChild(radiatorField->getTree());
+	myData->setSourceField(radiatorField);
+	radiatorField = nullptr;
+	loadFDTDAction->setEnabled(false);
+}
+
+void mainWindow::toReceiveFDTDStop()
+{
+	delete FDTDprogressDialog;
+	FDTDprogressDialog = nullptr;
 }
 
 void mainWindow::on_treeWidget_ContextMenuRequested(QPoint pos)

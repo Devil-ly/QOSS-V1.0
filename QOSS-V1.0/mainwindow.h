@@ -31,8 +31,11 @@
 #include "Qt/include/CalculationWidget.h"
 #include "Qt/include/ParabolicCylinderWidget.h"
 #include "Qt/include/PlaneMirrorWidget.h"
-
+#include "Qt/include/STLMirrorWidget.h"
 #include "Qt/include/GraphTransWidget.h"
+#include "Qt/include/FDTDProgressDialog.h"
+
+#include <Calculation/FDTDRadiator.h>
 
 using namespace userInterface;
 class mainWindow : public QMainWindow
@@ -101,12 +104,19 @@ private slots:
 	void on_createParaboloid();
 	void on_createParabolicCylinder();
 	void on_createPlaneMirror();
+	void on_createSTLMirror();
+
+	void on_saveSTL();
 
 	//void toReceiveParabolicCylinder(int);
 	void toReceiveMirror(int);
 	void toReceiveMirrorType(int);
 
 	void on_PVVA();
+	void on_FDTD();
+	void toReceiveFDTD();
+	void loadFDTDField(); //加载FDTD计算好的场
+	void toReceiveFDTDStop();
 
 
 	// ------------------- 右键函数 ----------------------------------
@@ -163,9 +173,10 @@ private:
 
 	QAction * isShowBoxAction;
 
-	QAction * GaussianAction;     //高斯场源
-	QAction * ApertureFieldAction;     //任意场源
-	QAction * PVVAAction;     //高斯场源
+	QAction * GaussianAction;     // 高斯场源
+	QAction * ApertureFieldAction;     // 任意场源
+	QAction * PVVAAction;     // 计算pVVA
+	QAction * FDTDAction;     // 计算FDTDAction
 
 	// 右键
 	QAction * modifyingMirrorAction;
@@ -176,6 +187,9 @@ private:
 	QAction * modifyParametersAction;
 	QAction * isShowMirrorAction;
 	QAction * isTransparentAction;
+	QAction * saveSTLction;     // 保存模型
+
+	QAction * loadFDTDAction; // 加载FDTD计算的源
 
 	//------------- TreeWidgetItem------------------- 
 	QTreeWidgetItem * definitionsTreeItem;
@@ -221,6 +235,9 @@ private:
 	//ParabolicCylinderWidget * parabolicCylinderWidget;
 
 	GraphTransWidget * tempWidget;
+	FDTDProgressDialog * FDTDprogressDialog;
+	FDTDRadiator *FDTDradiator;
+	Field *radiatorField; //保存辐射器计算后的场
 
 	bool isExistenceOpenWin;
 	bool isNew;

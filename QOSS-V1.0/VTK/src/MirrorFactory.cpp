@@ -4,6 +4,7 @@
 #include "../include/ParabolicCylinder.h"
 #include "../include/Paraboloid.h"
 #include "../include/Ellipsoid.h"
+#include "../include/STLMirror.h"
 
 Mirror * MirrorFactory::getMirror(MirrorsType type, const GraphTrans & graphTrans, 
 	const std::vector<double>& parameter)
@@ -25,6 +26,9 @@ Mirror * MirrorFactory::getMirror(MirrorsType type, const GraphTrans & graphTran
 		break;
 	case ELLIPSOID:
 		res = new Ellipsoid(graphTrans, parameter);
+		break;
+	case STLMIRROR:
+		res = new STLMirror(graphTrans, parameter);
 		break;
 	default:
 		break;
@@ -51,6 +55,9 @@ Mirror * MirrorFactory::getMirror(MirrorsType type, const GraphTrans & graphTran
 		break;
 	case ELLIPSOID:
 		res = new Ellipsoid(graphTrans);
+		break;
+	case STLMIRROR:
+		res = new STLMirror(graphTrans);
 		break;
 	default:
 		break;

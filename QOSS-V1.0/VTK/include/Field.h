@@ -42,6 +42,7 @@ public:
 
 	void setField(complex<double> ** _Ex, complex<double> ** _Ey, complex<double> ** _Ez,
 		complex<double> ** _Hx, complex<double> ** _Hy, complex<double> ** _Hz);
+	void setField(const vector<vector<complex<double>>>& _Ex, const vector<vector<complex<double>>>& _Ey);
 
 	const vector<vector<complex<double>>>& getEx() const;
 	const vector<vector<complex<double>>>& getEy() const;
@@ -75,6 +76,8 @@ public:
 	void setIsShow(bool);
 
 	virtual QTreeWidgetItem* getTree(); 
+
+	void setIsSource(bool);
 
 protected:
 	// ≥°∑÷¡ø

@@ -26,6 +26,7 @@ void calculation::RayTracing::calcNormalOfLine_Mirror(const Vector3 & startPiont
 	switch (mirror->getMirrorsType())
 	{
 	case PLANEMIRROR:
+	case STLMIRROR:
 		calcNormalOfLine_MirrorByPolyData(startPiont, direction, normal,
 			intersection, isIntersect, t);
 		break;
@@ -62,6 +63,7 @@ void calculation::RayTracing::calcReflect(const Vector3 & startPiont, const Vect
 	switch (mirror->getMirrorsType())
 	{
 	case PLANEMIRROR:
+	case STLMIRROR:
 		calcReflectByPolyData(startPiont, direction, reflex, intersection, isIntersect);
 		break;
 	case QUADRICSURFACE:

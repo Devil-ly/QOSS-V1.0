@@ -169,7 +169,7 @@ void CalculationWidget::resultComboboxChange(int Num)
 
 double CalculationWidget::getFre()
 {
-	return freLineEdit->text().toDouble();
+	return freLineEdit->text().toDouble() * 1e9;
 }
 
 double CalculationWidget::getDistance()

@@ -154,13 +154,13 @@ Field * MyData::getSourceField() const
 	return nullptr;
 }
 
-Field* MyData::calculateByPVVA(double dis, int N)
+Field* MyData::calculateByPVVA(double fre, double dis, int N)
 {
 	PVVA pvva;
 	// 设置单位
 	pvva.setUnit(1);
 	// 设置频率
-	pvva.setFre(1e10);
+	pvva.setFre(fre);
 	// 读入源并分配内存
 	pvva.setSource(getSourceField());
 	//int N = 2;

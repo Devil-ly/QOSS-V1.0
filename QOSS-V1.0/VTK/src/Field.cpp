@@ -27,77 +27,7 @@ Field::Field()
 	actor3D = vtkSmartPointer<vtkActor>::New();
 	actor = vtkSmartPointer<vtkImageActor>::New();
 }
-/*
-Field::Field(const Field & _field)
-	:content(_field.content), N_width(_field.N_width),
-	M_depth(_field.M_depth), ds(_field.ds), isSource(_field.isSource),
-	actor(_field.actor), actor3D(_field.actor3D), isPhs(_field.isPhs),
-	isLinear(_field.isLinear),is3D(_field.is3D)
-{
 
-	allocateMemory();
-	data.resize(_field.data.size());
-	for (int i = 0; i < data.size(); i++)
-		data[i] = _field.data[i];
-	for (int i = 0; i < N_width; i++)
-		for (int j = 0; j < M_depth; j++)
-		{
-			Ex[i][j] = _field.Ex[i][j];
-			Ey[i][j] = _field.Ey[i][j];
-			//drawData[i][j] = _field.drawData[i][j];
-			if (!isSource)
-			{
-				Ez[i][j] = _field.Ez[i][j];
-				Hx[i][j] = _field.Hx[i][j];
-				Hy[i][j] = _field.Hy[i][j];
-				Hz[i][j] = _field.Hz[i][j];
-			}
-		}
-}
-
-Field & Field::operator=(const Field & _field)
-{
-	if (&_field == this)
-		return *this;
-
-	freeMemory();
-	
-	content = _field.content;
-	N_width = _field.N_width;
-	M_depth = _field.M_depth;
-	ds = _field.ds;
-	isSource = _field.isSource;
-	actor = _field.actor;
-	actor3D = _field.actor3D;
-	isPhs = _field.isPhs;
-	isLinear = _field.isLinear;
-	is3D = _field.is3D;
-	allocateMemory();
-	data.clear();
-	data.resize(_field.data.size());
-	for (int i = 0; i < data.size(); i++)
-		data[i] = _field.data[i];
-	for (int i = 0; i < N_width; i++)
-		for (int j = 0; j < M_depth; j++)
-		{
-			Ex[i][j] = _field.Ex[i][j];
-			Ey[i][j] = _field.Ey[i][j];
-			if (!isSource)
-			{
-				Ez[i][j] = _field.Ez[i][j];
-				Hx[i][j] = _field.Hx[i][j];
-				Hy[i][j] = _field.Hy[i][j];
-				Hz[i][j] = _field.Hz[i][j];
-			}
-		}
-
-	varible.clear();
-	for (auto x : _field.varible)
-		varible.push_back(x);
-
-	return *this;
-}
-*/
 Field::~Field()
 {
 	freeMemory();
@@ -183,6 +113,17 @@ void Field::setField(complex<double>** _Ex, complex<double>** _Ey,
 			Hx[i][j] = _Hx[i][j];
 			Hy[i][j] = _Hy[i][j];
 			Hz[i][j] = _Hz[i][j];
+		}
+}
+
+void Field::setField(const vector<vector<complex<double>>>& _Ex, const vector<vector<complex<double>>>& _Ey)
+{
+	allocateMemory();
+	for (int i = 0; i < N_width; i++)
+		for (int j = 0; j < M_depth; j++)
+		{
+			Ex[i][j] = _Ex[i][j];
+			Ey[i][j] = _Ey[i][j];
 		}
 }
 
@@ -599,4 +540,9 @@ void Field::setIsShow(bool ok)
 QTreeWidgetItem * Field::getTree()
 {
 	return nullptr;
+}
+
+void Field::setIsSource(bool isOK)
+{
+	isSource = isOK;
 }

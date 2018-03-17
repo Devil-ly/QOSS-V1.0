@@ -32,7 +32,14 @@ MirrorTypeWidget::MirrorTypeWidget(QWidget *parent)
 	//baseWidget->setLayout(customLayout);
 
 	//page3
+	STLBtn = new QPushButton(tr("STL Import"));
+	connect(STLBtn, SIGNAL(clicked()), this, SLOT(on_STLBtn()));
+
+	QVBoxLayout * baseLayout3 = new QVBoxLayout;
+	baseLayout3->addWidget(STLBtn);
+
 	QWidget * importWidget = new QWidget;
+	importWidget->setLayout(baseLayout3);
 
 	tabWidget = new QTabWidget;
 	tabWidget->addTab(baseWidget, tr("Base"));
@@ -65,6 +72,13 @@ void userInterface::MirrorTypeWidget::on_paraboloidBtn()
 void userInterface::MirrorTypeWidget::on_parabolicCylinderBtn()
 {
 	emit sendMirrorType(PARABOLICCYLINDER);
+	accept();
+	close();
+}
+
+void userInterface::MirrorTypeWidget::on_STLBtn()
+{
+	emit sendMirrorType(STLMIRROR);
 	accept();
 	close();
 }
