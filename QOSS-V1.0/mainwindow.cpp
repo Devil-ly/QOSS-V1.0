@@ -3,6 +3,7 @@
 #include "Qt/include/ModelWizard.h"
 #include "Qt/include/MirrorTypeWidget.h"
 #include "Qt/include/CalculateFDTDThread.h"
+#include "Qt/include/PhsCorrectionDialog.h"
 
 #include "VTK/include/Mirror.h"
 #include "VTK/include/Restriction.h"
@@ -24,8 +25,6 @@
 
 #include <QMessageBox>
 #include <thread>
-
-
 
 using namespace userInterface;
 
@@ -221,14 +220,19 @@ void mainWindow::createActions()
 	PVVAAction->setStatusTip(tr("Fast calculation by PVVA"));
 	connect(PVVAAction, SIGNAL(triggered()), this, SLOT(on_PVVA()));
 
-	FDTDAction = new QAction(QIcon(tr("Qt/images/PVVA.png")), tr("FDTD calculation"), this);
+	FDTDAction = new QAction(QIcon(tr("Qt/images/FDTD.png")), tr("FDTD calculation"), this);
 	FDTDAction->setStatusTip(tr("calculate Radiator by FDTD"));
 	connect(FDTDAction, SIGNAL(triggered()), this, SLOT(on_FDTD()));
 
-	loadFDTDAction = new QAction(QIcon(tr("Qt/images/PVVA.png")), tr("load FDTD"), this);
+	loadFDTDAction = new QAction(QIcon(tr("Qt/images/loadFDTD.png")), tr("load FDTD"), this);
 	loadFDTDAction->setStatusTip(tr("load FDTD"));
 	loadFDTDAction->setEnabled(false);
 	connect(loadFDTDAction, SIGNAL(triggered()), this, SLOT(loadFDTDField()));
+
+	PhaseAction = new QAction(QIcon(tr("Qt/images/Phase.png")), tr("Phase Correction"), this);
+	PhaseAction->setStatusTip(tr("Phase Correction"));
+	//PhaseAction->setEnabled(false);
+	connect(PhaseAction, SIGNAL(triggered()), this, SLOT(on_Phase()));
 }
 
 void mainWindow::createMenus()
@@ -269,8 +273,11 @@ void mainWindow::createToolBars()
 	fileTool->addSeparator();
 	fileTool->addAction(GaussianAction);
 	fileTool->addAction(ApertureFieldAction);
-	fileTool->addAction(PVVAAction);
 	fileTool->addAction(FDTDAction);
+	fileTool->addAction(loadFDTDAction);
+	fileTool->addSeparator();
+	fileTool->addAction(PVVAAction);
+	fileTool->addAction(PhaseAction);
 }
 
 void mainWindow::createStatusBar()
@@ -1274,8 +1281,36 @@ void mainWindow::loadFDTDField()
 
 void mainWindow::toReceiveFDTDStop()
 {
+	delete radiatorField;
+	radiatorField = nullptr;
 	delete FDTDprogressDialog;
 	FDTDprogressDialog = nullptr;
+}
+
+void mainWindow::on_Phase()
+{
+	PhsCorrectionDialog dialog;
+	MirrorsType tempType = myData->getMirrorByNum(myData->getNumOfMirrors)->getMirrorsType();
+	switch (tempType)
+	{
+	case PLANEMIRROR:
+		break;
+	case QUADRICSURFACE:
+	case PARABOLICCYLINDER:
+	case PARABOLOID:
+	case ELLIPSOID:
+		if (dialog.exec() != QDialog::Accepted)
+		{
+			return;
+		}
+		break;
+	case STLMIRROR:
+		break;
+	default:
+		break;
+	}
+
+	
 }
 
 void mainWindow::on_treeWidget_ContextMenuRequested(QPoint pos)

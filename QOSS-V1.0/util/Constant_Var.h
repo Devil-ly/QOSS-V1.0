@@ -12,4 +12,5 @@ const double Eta0			= 376.733341 ;
 const double Eta0_Inv		= 0.002654397 ;
 const double Sig_PEC		= 1.0e20 ;
 const double SmallNumber	= 0.00001;
+const double Universal_Constant_e = 2.71828;//自然常数e by XD 20180311
 

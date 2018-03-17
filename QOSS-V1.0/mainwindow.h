@@ -118,6 +118,7 @@ private slots:
 	void loadFDTDField(); //加载FDTD计算好的场
 	void toReceiveFDTDStop();
 
+	void on_Phase();
 
 	// ------------------- 右键函数 ----------------------------------
 	void on_treeWidget_ContextMenuRequested(QPoint pos);// 右键菜单
@@ -177,6 +178,7 @@ private:
 	QAction * ApertureFieldAction;     // 任意场源
 	QAction * PVVAAction;     // 计算pVVA
 	QAction * FDTDAction;     // 计算FDTDAction
+	QAction * PhaseAction;    // 相位修正
 
 	// 右键
 	QAction * modifyingMirrorAction;

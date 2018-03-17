@@ -138,10 +138,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Calculation\BeamPropagation.cpp" />
     <ClCompile Include="Calculation\FFT.cpp" />
     <ClCompile Include="Calculation\FFTDI.cpp" />
+    <ClCompile Include="Calculation\Gaussian_Beam_Circular.cpp" />
+    <ClCompile Include="Calculation\Gaussian_Beam_Elliptical.cpp" />
     <ClCompile Include="Calculation\Mathematical_Functions.cpp" />
     <ClCompile Include="Calculation\Matrix4D.cpp" />
+    <ClCompile Include="Calculation\PhaseCorrection.cpp" />
+    <ClCompile Include="Calculation\PhaseUnwrap.cpp" />
     <ClCompile Include="Calculation\Position3D.cpp" />
     <ClCompile Include="Calculation\PVVA.cpp" />
     <ClCompile Include="Calculation\RayTracing.cpp" />
@@ -307,6 +312,7 @@
     <ClCompile Include="Qt\src\ModelWizard.cpp" />
     <ClCompile Include="Qt\src\ParabolicCylinderWidget.cpp" />
     <ClCompile Include="Qt\src\ParaboloidWidget.cpp" />
+    <ClCompile Include="Qt\src\PhsCorrectionDialog.cpp" />
     <ClCompile Include="Qt\src\PlaneMirrorWidget.cpp" />
     <ClCompile Include="Qt\src\PreDialog.cpp" />
     <ClCompile Include="Qt\src\QPaint2DMirror.cpp" />
@@ -373,16 +379,23 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Calculation\BeamPropagation.h" />
     <ClInclude Include="Calculation\FDTDRadiator.h" />
     <ClInclude Include="Calculation\FFT.h" />
     <ClInclude Include="Calculation\FFTDI.h" />
     <ClInclude Include="Calculation\fftw3.h" />
+    <ClInclude Include="Calculation\Gaussian_Beam_Circular.h" />
+    <ClInclude Include="Calculation\Gaussian_Beam_Elliptical.h" />
     <ClInclude Include="Calculation\Mathematical_Functions.h" />
     <ClInclude Include="Calculation\Matrix4D.h" />
+    <ClInclude Include="Calculation\PhaseCorrection.h" />
+    <ClInclude Include="Calculation\PhaseUnwrap.h" />
     <ClInclude Include="Calculation\Position3D.h" />
     <ClInclude Include="Calculation\PVVA.h" />
     <ClInclude Include="Calculation\RayTracing.h" />
     <ClInclude Include="Calculation\SourceModeGeneration.h" />
+    <ClInclude Include="Calculation\TraceLight.h" />
+    <ClInclude Include="Calculation\Vector3D.h" />
     <ClInclude Include="GeneratedFiles\ui_mainwindow.h" />
     <ClInclude Include="MirrorPosition.h" />
     <ClInclude Include="MyData.h" />
@@ -440,6 +453,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets" "-IC:\Program Privacy\openNI\nite2\Include" "-IC:\Program Privacy\OpenNI\Include"</Command>
     </CustomBuild>
+    <ClInclude Include="VTK\include\PhsCorMirror.h" />
     <ClInclude Include="VTK\include\STLMirror.h" />
     <CustomBuild Include="Qt\include\RestrictionWidget.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

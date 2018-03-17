@@ -23,6 +23,8 @@ FDTDProgressDialog::FDTDProgressDialog(QWidget *parent)
 	closeBtn = new QPushButton(tr("Close"));
 	connect(closeBtn, SIGNAL(clicked()), this, SLOT(on_close()));
 	stopBtn = new QPushButton(tr("Stop"));
+	connect(stopBtn, SIGNAL(clicked()), this, SLOT(on_stop()));
+
 	QHBoxLayout *hlayout = new QHBoxLayout;
 	hlayout->addSpacing(300);
 	hlayout->addWidget(closeBtn);

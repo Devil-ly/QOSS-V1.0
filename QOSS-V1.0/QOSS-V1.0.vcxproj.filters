@@ -302,6 +302,24 @@
     <ClCompile Include="Qt\src\CalculateFDTDThread.cpp">
       <Filter>Source Files\Qt</Filter>
     </ClCompile>
+    <ClCompile Include="Calculation\BeamPropagation.cpp">
+      <Filter>Source Files\Calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="Calculation\Gaussian_Beam_Circular.cpp">
+      <Filter>Source Files\Calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="Calculation\Gaussian_Beam_Elliptical.cpp">
+      <Filter>Source Files\Calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="Calculation\PhaseCorrection.cpp">
+      <Filter>Source Files\Calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="Calculation\PhaseUnwrap.cpp">
+      <Filter>Source Files\Calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="Qt\src\PhsCorrectionDialog.cpp">
+      <Filter>Source Files\Qt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwindow.h">
@@ -473,6 +491,30 @@
     </ClInclude>
     <ClInclude Include="Calculation\FDTDRadiator.h">
       <Filter>Header Files\Calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="Calculation\BeamPropagation.h">
+      <Filter>Header Files\Calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="Calculation\Gaussian_Beam_Circular.h">
+      <Filter>Header Files\Calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="Calculation\Gaussian_Beam_Elliptical.h">
+      <Filter>Header Files\Calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="Calculation\PhaseUnwrap.h">
+      <Filter>Header Files\Calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="Calculation\PhaseCorrection.h">
+      <Filter>Header Files\Calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="Calculation\TraceLight.h">
+      <Filter>Header Files\Calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="Calculation\Vector3D.h">
+      <Filter>Header Files\Calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="VTK\include\PhsCorMirror.h">
+      <Filter>Header Files\VTK</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
