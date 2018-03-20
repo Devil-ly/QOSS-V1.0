@@ -80,13 +80,13 @@ void MyData::createDefaultMirror()
 			radiator->getFirstMirrorHeight(temp));
 
 		GraphTrans mirror2Position;
-		mirror2Position.updateTranslate(Vector3(-0.0396, 0, 0.5229));
+		mirror2Position.updateTranslate(Vector3(-0.0396, 0, 0.5029));
 		mirror2Position.updateRotate(Vector3(0, 1, 0), -164.94);
 		mirrors[1] = MirrorFactory::getMirror(PARABOLOID, mirror2Position);
 
 		//mirrors[1] = MirrorFactory::getMirror(PLANEMIRROR, GraphTrans());
 		GraphTrans mirror3Position;
-		mirror3Position.updateTranslate(Vector3(0.02, 0, 0.5193));
+		mirror3Position.updateTranslate(Vector3(0.02, 0, 0.4993));
 		mirror3Position.updateRotate(Vector3(0, 1, 0), -17.23-180);
 		//mirrors[2] = MirrorFactory::getMirror(ELLIPSOID, position[2]);
 		mirrors[2] = MirrorFactory::getMirror(ELLIPSOID, mirror3Position);

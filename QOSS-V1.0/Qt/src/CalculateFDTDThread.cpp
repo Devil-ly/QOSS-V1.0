@@ -13,7 +13,7 @@ void CalculateFDTDThread::run()
 	//设置出射口面 -默认(单位m)
 
 	// 暂时写死 以后有第一个反射镜来的到以下参数
-	Position3D AperturePosition;	AperturePosition.setX(0.02);			AperturePosition.setY(0);	AperturePosition.setZ(0.3024);
+	Position3D AperturePosition;	AperturePosition.setX(0.02);			AperturePosition.setY(0);	AperturePosition.setZ(0.2824);
 	Vector3D UDirection;			UDirection.setX(cos(15.06 * 3.1415926 / 180));	UDirection.setY(0);	UDirection.setZ(-sin(15.06 * 3.1415926 / 180));	UDirection.normalize();
 	Vector3D VDirection;			VDirection.setX(0);						VDirection.setY(1.0);		VDirection.setZ(0.0);					VDirection.normalize();
 	Vector3D ApertureDirection;		ApertureDirection = ApertureDirection.crossProduct(UDirection, VDirection);
