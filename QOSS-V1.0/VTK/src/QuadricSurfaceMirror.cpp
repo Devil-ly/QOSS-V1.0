@@ -46,7 +46,7 @@ void QuadricSurfaceMirror::calPolyData(double ds)
 	//二次函数采样分辨率
 	vtkSmartPointer<vtkSampleFunction>sample = vtkSmartPointer<vtkSampleFunction>::New();
 	if (ds == 0)
-		sample->SetSampleDimensions(40, 40, 20);
+		sample->SetSampleDimensions(80, 80, 40);
 	else
 		sample->SetSampleDimensions(int(radius / ds) * 2,
 			int(radius / ds) * 2, int(-temp / ds) * 2); // 采样点和ds有关
@@ -83,10 +83,6 @@ void QuadricSurfaceMirror::updateData()
 	calActor();
 }
 
-void QuadricSurfaceMirror::calcReflectedRay(const Vector3 &, Vector3 &, Vector3 &)
-{
-}
-
 QTreeWidgetItem * QuadricSurfaceMirror::getTree()
 {
 	QTreeWidgetItem * tree = new QTreeWidgetItem;
@@ -103,6 +99,12 @@ QTreeWidgetItem * QuadricSurfaceMirror::getTree()
 
 	tree->addChild(getTransformTree());
 	return tree;
+}
+
+double QuadricSurfaceMirror::calcZ(double x, double y)
+{
+	return -(data[0] * x*x + data[1] * y*y + data[3] * x*y + data[6] * x + data[7] * y + data[9])
+		/ (data[4] * y + data[5] * x + data[8]);
 }
 
 void QuadricSurfaceMirror::calcRestriction()

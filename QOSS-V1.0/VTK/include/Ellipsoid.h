@@ -20,6 +20,15 @@ public:
 	void setParameter(double a, double b, double c, double theta);
 
 	virtual QTreeWidgetItem* getTree();
+
+	void setA(double a);
+	double getA() const { return a; }
+
+	void setB(double b);
+	double getB() const { return b; }
+
+	void setC(double c);
+	double getC() const { return c; }
 private:
 	double a;
 	double b;

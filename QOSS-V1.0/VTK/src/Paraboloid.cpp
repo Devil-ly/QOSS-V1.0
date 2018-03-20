@@ -7,7 +7,7 @@ Paraboloid::Paraboloid(const GraphTrans & _graphTrans)
 	data.resize(16);
 	for (auto & x : data)
 		x = 0;
-	setParameter(0.05, 0.25);
+	setParameter(0.0401, 0.25);
 	//setParameter(0.1, 0.5);
 	updateData();
 }

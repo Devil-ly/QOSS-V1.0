@@ -11,13 +11,15 @@ void CalculateFDTDThread::run()
 
 	//SourceCenter and Aperture Parameters;
 	//设置出射口面 -默认(单位m)
-	Position3D AperturePosition;	AperturePosition.setX(0.04);			AperturePosition.setY(0);	AperturePosition.setZ(0.35 - 0.0205);
-	Vector3D UDirection;			UDirection.setX(cos(15 * 3.1415926 / 180));	UDirection.setY(0);			UDirection.setZ(-sin(15 * 3.1415926 / 180));	UDirection.normalize();
+
+	// 暂时写死 以后有第一个反射镜来的到以下参数
+	Position3D AperturePosition;	AperturePosition.setX(0.02);			AperturePosition.setY(0);	AperturePosition.setZ(0.3024);
+	Vector3D UDirection;			UDirection.setX(cos(15.06 * 3.1415926 / 180));	UDirection.setY(0);	UDirection.setZ(-sin(15.06 * 3.1415926 / 180));	UDirection.normalize();
 	Vector3D VDirection;			VDirection.setX(0);						VDirection.setY(1.0);		VDirection.setZ(0.0);					VDirection.normalize();
 	Vector3D ApertureDirection;		ApertureDirection = ApertureDirection.crossProduct(UDirection, VDirection);
-	int Nu;	int Nv;	Nu = 121; Nv = 121;
-	double Lu;	Lu = 2.998e8 / 44e9 * 60;	//100 lambda
-	double Lv;	Lv = 2.998e8 / 44e9 * 60;	//100 lambda
+	int Nu;	int Nv;	Nu = 101; Nv = 101;
+	double Lu;	Lu = 0.1;	//100 lambda
+	double Lv;	Lv = 0.1;	//100 lambda
 
 											//设置出射口面的位置	口径中心		 口面指向矢量       U方向矢量  V方向矢量 采样点个数 长度
 	FDTDradiator->SetUpAperturePlane(AperturePosition, ApertureDirection, UDirection, VDirection, Nu, Nv, Lu, Lv);
@@ -34,9 +36,12 @@ void CalculateFDTDThread::run()
 	}
 	FDTDradiator->run();
 
-	double ds = 0.001; // 改
+	GraphTrans graphTrans;
+	graphTrans.setGraphTransPar(AperturePosition.X(), AperturePosition.Y(), AperturePosition.Z(),
+		0, 1, 1, 15.06);
+	double ds = Lu / (Nu - 1); 
 	field->setNM(Nu, Nu);
-	field->setPlane(GraphTrans(), ds); // 改
+	field->setPlane(graphTrans, ds); 
 	field->setField(Eu, Ev);
 	field->setShowPara(1, 1, 0);
 	//field->updateData();

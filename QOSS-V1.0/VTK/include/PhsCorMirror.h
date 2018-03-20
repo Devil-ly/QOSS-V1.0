@@ -4,24 +4,19 @@
 *   version 1.0
 */
 
-#ifndef STLMirror_H  
-#define STLMirror_H
+#ifndef PhsCorMirror_H  
+#define PhsCorMirror_H
 
 #include "Mirror.h"
 #include <vector>
 #include <string>
 
-class STLMirror : public Mirror
+class PhsCorMirror : public Mirror
 {
 public:
-	STLMirror(); // 给继承用
+	PhsCorMirror(); 
 
-				 // 构造默认的平面镜 没有传入参数
-	STLMirror(const GraphTrans & _graphTrans);
-	// 构造平面镜 传入参数
-	STLMirror(const GraphTrans & _graphTrans,
-		const std::vector<double> parameter);
-	virtual ~STLMirror();
+	virtual ~PhsCorMirror();
 
 	virtual void calPolyData(double ds = 0);
 
@@ -29,16 +24,15 @@ public:
 
 	virtual QTreeWidgetItem* getTree();
 
-	void setNameFile(const std::string & file);
-
-	void readData();
+	void sampling(double ds, double length, const Vector3& central, Mirror* mirror);
 
 private:
-	std::string fileName;
-	vtkSmartPointer<vtkPolyData> polyDataSTL;
+
+	vector<vector<Vector3>> lattice;
+
 
 };
 
 
 
-#endif // STLMirror_H
+#endif // PhsCorMirror_H

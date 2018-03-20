@@ -160,7 +160,7 @@ void ApertureRadiation::Propagation5FaceBox(vector<vector<complex<float>>>& _Eu,
 	ShiftFace = (SizeXOY)*4;
 	ShiftEx = 0;
 	ShiftEy = 0;//Empty
-	ShiftEz = SizeXOZ;	/
+	ShiftEz = SizeXOZ;	
 	ShiftHx = SizeXOZ * 2;
 	ShiftHy = 0;//Empty
 	ShiftHz = SizeXOZ * 3;

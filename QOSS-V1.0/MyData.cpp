@@ -1,12 +1,12 @@
 #include "MyData.h"
 #include "VTK/include/Mirror.h"
+#include "VTK/include/PhsCorMirror.h"
 #include "VTK/include/ParabolicCylinder.h"
 #include "VTK/include/MirrorFactory.h"
 #include "VTK/include/RadiatorFactory.h"
-#include "../VTK/include/LightShow.h"
+#include "VTK/include/LightShow.h"
 #include "util/Definition.h"
 #include "../Calculation/PVVA.h"
-
 
 using namespace calculation;
 
@@ -76,20 +76,25 @@ void MyData::createDefaultMirror()
 		double temp = abs(position[0].getTrans_x());
 		mirrors[0] = MirrorFactory::getMirror(PARABOLICCYLINDER, mirror1Position);
 
-		dynamic_cast<ParabolicCylinder*>(mirrors[0])->setParameter(temp, temp * 2, 0,
+		dynamic_cast<ParabolicCylinder*>(mirrors[0])->setParameter(temp, temp * 2.5, 0,
 			radiator->getFirstMirrorHeight(temp));
 
 		GraphTrans mirror2Position;
-		mirror2Position.updateTranslate(Vector3(-0.07, 0, 0.619));
+		mirror2Position.updateTranslate(Vector3(-0.0396, 0, 0.5229));
 		mirror2Position.updateRotate(Vector3(0, 1, 0), -164.94);
 		mirrors[1] = MirrorFactory::getMirror(PARABOLOID, mirror2Position);
+
 		//mirrors[1] = MirrorFactory::getMirror(PLANEMIRROR, GraphTrans());
 		GraphTrans mirror3Position;
-		mirror3Position.updateTranslate(Vector3(0.034, 0, 0.605));
+		mirror3Position.updateTranslate(Vector3(0.02, 0, 0.5193));
 		mirror3Position.updateRotate(Vector3(0, 1, 0), -17.23-180);
 		//mirrors[2] = MirrorFactory::getMirror(ELLIPSOID, position[2]);
 		mirrors[2] = MirrorFactory::getMirror(ELLIPSOID, mirror3Position);
-
+		//Mirror * test1 = MirrorFactory::getMirror(PARABOLOID, GraphTrans());
+		//PhsCorMirror  *test2 = new PhsCorMirror;
+		//test2->sampling(0.005, 0.5, Vector3(0, 0.5, 0), test1);
+		//test2->updateData();
+		//mirrors[2] = test2;
 	}	
 }
 
@@ -185,3 +190,4 @@ Field * MyData::getFieldByNum(int index) const
 	}
 	return nullptr;
 }
+

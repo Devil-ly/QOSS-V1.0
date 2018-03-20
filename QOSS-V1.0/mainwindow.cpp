@@ -712,7 +712,13 @@ void mainWindow::on_modifyParameters()
 		renderer->AddActor(tempMirror->getActorAxes());
 		on_createPlaneMirror();
 		break;
-
+	case ELLIPSOID:
+		tempMirror = MirrorFactory::cloneMirror(myData->getMirrorByNum(index));
+		tempMirror->setSelected(true);
+		renderer->AddActor(tempMirror->getActor());
+		renderer->AddActor(tempMirror->getActorAxes());
+		on_createEllipsoid();
+		break;
 	default:
 		break;
 	}
@@ -998,6 +1004,27 @@ void mainWindow::on_createParabolicCylinder()
 	isExistenceOpenWin = true;
 }
 
+void mainWindow::on_createEllipsoid()
+{
+	if (isExistenceOpenWin)
+	{
+		// 已经有窗口打开了
+		QMessageBox::warning(NULL, "Warning",
+			"A window has been opened. Please close and continue!");
+
+		return;
+	}
+	tempWidget = new EllipsoidWidget();
+	tempWidget->setWindowFlags(Qt::WindowStaysOnTopHint); // 子窗口保持置顶
+
+	connect(tempWidget, SIGNAL(sendData(int)),
+		this, SLOT(toReceiveMirror(int)));
+
+	dynamic_cast<EllipsoidWidget*>(tempWidget)->setMirror(tempMirror);
+	tempWidget->show();
+	isExistenceOpenWin = true;
+}
+
 void mainWindow::on_createPlaneMirror()
 {
 	if (isExistenceOpenWin)
@@ -1171,6 +1198,21 @@ void mainWindow::toReceiveMirrorType(int caseInd)
 
 void mainWindow::on_PVVA()
 {
+	if (!myData->getSourceField()) // 如果没有设置源 不能计算
+	{
+		switch (QMessageBox::question(this, tr("Question"),
+			tr("The source that can be used is not generated. Whether or not the source is generated now?"),
+			QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes))
+		{
+		case QMessageBox::Yes:
+			on_FDTD();
+			return;
+		case QMessageBox::No:
+			return;
+		default:
+			break;
+		}
+	}
 	CalculationWidget calculationDialog;
 	if (calculationDialog.exec() != QDialog::Accepted)
 	{
@@ -1289,12 +1331,27 @@ void mainWindow::toReceiveFDTDStop()
 
 void mainWindow::on_Phase()
 {
+	if (!myData->getSourceField()) // 如果没有设置源 不能计算
+	{
+		switch (QMessageBox::question(this, tr("Question"),
+			tr("The source that can be used is not generated. Whether or not the source is generated now?"),
+			QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes))
+		{
+		case QMessageBox::Yes:
+			on_FDTD();
+			return;
+		case QMessageBox::No:
+			return;
+		default:
+			break;
+		}
+	}
 	PhsCorrectionDialog dialog;
-	MirrorsType tempType = myData->getMirrorByNum(myData->getNumOfMirrors)->getMirrorsType();
+	MirrorsType tempType = myData->getMirrorByNum(myData->getNumOfMirrors() - 1)->getMirrorsType();
 	switch (tempType)
 	{
 	case PLANEMIRROR:
-		break;
+		return;
 	case QUADRICSURFACE:
 	case PARABOLICCYLINDER:
 	case PARABOLOID:
@@ -1305,12 +1362,10 @@ void mainWindow::on_Phase()
 		}
 		break;
 	case STLMIRROR:
-		break;
+		return;
 	default:
 		break;
 	}
-
-	
 }
 
 void mainWindow::on_treeWidget_ContextMenuRequested(QPoint pos)

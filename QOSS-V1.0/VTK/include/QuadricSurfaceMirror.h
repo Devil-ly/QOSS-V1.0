@@ -27,10 +27,10 @@ public:
 
 	virtual void updateData();
 
-	// 输出入射光线计算反射光线和交点
-	virtual void calcReflectedRay(const Vector3&, Vector3&, Vector3&);
-
 	virtual QTreeWidgetItem* getTree();
+
+	// 输出x,y 得到Z 若z有多个值时 只返回正值
+	double calcZ(double x, double y);
 
 private:
 

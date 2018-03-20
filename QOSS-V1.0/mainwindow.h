@@ -34,6 +34,7 @@
 #include "Qt/include/STLMirrorWidget.h"
 #include "Qt/include/GraphTransWidget.h"
 #include "Qt/include/FDTDProgressDialog.h"
+#include "Qt/include/EllipsoidWidget.h"
 
 #include <Calculation/FDTDRadiator.h>
 
@@ -43,8 +44,7 @@ class mainWindow : public QMainWindow
 	Q_OBJECT
 	enum QVariantType
 	{	
-		FIELD = 10,
-		
+		FIELD = 10,		
 	};
 
 public:
@@ -65,7 +65,6 @@ private:
 	void createDetails(); //zuojian
 
 	void createProject();
-
 	// 
 	void isNeedSave();
 
@@ -103,6 +102,7 @@ private slots:
 
 	void on_createParaboloid();
 	void on_createParabolicCylinder();
+	void on_createEllipsoid();
 	void on_createPlaneMirror();
 	void on_createSTLMirror();
 

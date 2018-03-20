@@ -191,6 +191,33 @@ void PVVA::getPlane(Vector3 **& _org, Vector3 **& _n) const
 		}
 }
 
+void PVVA::getExEyVirtualSurface(vector<vector<complex<double>>>& Ex, 
+	vector<vector<complex<double>>>& Ey)
+{
+	Ex.resize(N);
+	Ey.resize(N);
+	for (int i = 0; i < N; i++)
+	{
+		Ex[i].resize(M);
+		Ey[i].resize(M);
+	}
+	for (int i = 0; i < N; i++)
+		for (int j = 0; j < M; j++)
+		{
+			Ex[i][j] = Ex_In[i][j];
+			Ey[i][j] = Ey_In[i][j];
+		}
+}
+
+void PVVA::getVirtualSurfaceInterPoint(Mirror * tempMirror, Vector3 &interPoint, Vector3 &normal)
+{
+	RayTracing rayTracing(tempMirror);
+	bool isInter;
+	double dir_t;
+	rayTracing.calcNormalOfLine_Mirror(Org_Source,
+		n_Source, normal, interPoint, isInter, dir_t);
+}
+
 void PVVA::updateSource_n(const Vector3& new_n)
 {
 	//new_n.Normalization();

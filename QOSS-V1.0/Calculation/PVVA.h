@@ -73,6 +73,12 @@ namespace calculation
 
 		void getPlane(Vector3 ** &_org, Vector3 ** &_n) const; // 得到平面点和点的方向
 
+		// 给相位修正用
+		void getExEyVirtualSurface(vector <vector <complex<double>>> &Ex, 
+			vector <vector <complex<double>>> &Ey);
+
+		void getVirtualSurfaceInterPoint(Mirror * tempMirror, Vector3 &interPoint, Vector3 &normal);
+
 	private:
 
 		void Poynting(); //计算面的坡应廷矢量
