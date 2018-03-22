@@ -33,8 +33,9 @@
 #include "Qt/include/PlaneMirrorWidget.h"
 #include "Qt/include/STLMirrorWidget.h"
 #include "Qt/include/GraphTransWidget.h"
-#include "Qt/include/FDTDProgressDialog.h"
 #include "Qt/include/EllipsoidWidget.h"
+#include "Qt/include/PhsCorProgressDialog.h"
+#include "Qt/include/FDTDProgressDialog.h"
 
 #include <Calculation/FDTDRadiator.h>
 
@@ -81,6 +82,9 @@ private slots:
 	// 菜单响应函数
 	void openFile();
 	void newFile();
+	void viewInitFile();
+	void setView(int);
+
 	void on_isShowBox();
 	void on_isTransparentMirror();
 	void on_isShowMirror();
@@ -118,7 +122,8 @@ private slots:
 	void loadFDTDField(); //加载FDTD计算好的场
 	void toReceiveFDTDStop();
 
-	void on_Phase();
+	void on_PhaseCor();
+	void toReceivePhaseCor(Mirror*);
 
 	// ------------------- 右键函数 ----------------------------------
 	void on_treeWidget_ContextMenuRequested(QPoint pos);// 右键菜单
@@ -238,6 +243,7 @@ private:
 
 	GraphTransWidget * tempWidget;
 	FDTDProgressDialog * FDTDprogressDialog;
+	PhsCorProgressDialog * phsCorprogressDialog;
 	FDTDRadiator *FDTDradiator;
 	Field *radiatorField; //保存辐射器计算后的场
 

@@ -4,6 +4,7 @@
 #include "Qt/include/MirrorTypeWidget.h"
 #include "Qt/include/CalculateFDTDThread.h"
 #include "Qt/include/PhsCorrectionDialog.h"
+#include "Qt/include/CalculatePhsCorThread.h"
 
 #include "VTK/include/Mirror.h"
 #include "VTK/include/Restriction.h"
@@ -69,7 +70,6 @@ mainWindow::mainWindow(QWidget *parent)
 		myData->getDefaultLightShow()->getActors();
 	for (auto& x : tempActors)
 		renderer->AddActor(x);
-
 	
 	double axesScale = myData->getLimitBox()->getMaxSize();
 	// 初始化vtk窗口
@@ -232,7 +232,7 @@ void mainWindow::createActions()
 	PhaseAction = new QAction(QIcon(tr("Qt/images/Phase.png")), tr("Phase Correction"), this);
 	PhaseAction->setStatusTip(tr("Phase Correction"));
 	//PhaseAction->setEnabled(false);
-	connect(PhaseAction, SIGNAL(triggered()), this, SLOT(on_Phase()));
+	connect(PhaseAction, SIGNAL(triggered()), this, SLOT(on_PhaseCor()));
 }
 
 void mainWindow::createMenus()
@@ -612,6 +612,64 @@ void mainWindow::newFile()
 		return;
 	}
 
+}
+
+void mainWindow::viewInitFile()
+{
+	double axesScale = myData->getLimitBox()->getMaxSize();
+	vtkCamera *aCamera = vtkCamera::New();
+
+	aCamera->SetViewUp(0, 0, 1);//设视角位置 
+	aCamera->SetPosition(0, -3 * axesScale, 0);//设观察对象位
+	
+	aCamera->SetFocalPoint(0, 0, 0);//设焦点 
+	aCamera->ComputeViewPlaneNormal();//自动
+	renderer->SetActiveCamera(aCamera);
+	renderer->ResetCamera();
+	updateVtk();
+	viewComboBox->setCurrentIndex(0);
+}
+
+void mainWindow::setView(int index)
+{
+	double axesScale = myData->getLimitBox()->getMaxSize();
+	vtkCamera *aCamera = vtkCamera::New();
+
+	switch (index)
+	{
+	case 0: // xz
+		aCamera->SetViewUp(0, 0, 1);//设视角位置 
+		aCamera->SetPosition(0, -3 * axesScale, 0);//设观察对象位
+		break;
+	case 1: // yz
+		aCamera->SetViewUp(0, 1, 0);//设视角位置
+		aCamera->SetPosition(-3 * axesScale, 0, 0);//设观察对象位
+		break;
+	case 2: // xy
+		aCamera->SetViewUp(1, 0, 0);//设视角位置 
+		aCamera->SetPosition(0, 0, -3 * axesScale);//设观察对象位
+		break;
+	case 3: // -yz
+		aCamera->SetViewUp(0, 0, 1);//设视角位置
+		aCamera->SetPosition(-3 * axesScale, 0, 0);//设观察对象位
+		break;
+	case 4:// -xz
+		aCamera->SetViewUp(0, 0, 1);//设视角位置 
+		aCamera->SetPosition(0, 3 * axesScale, 0);//设观察对象位
+		break;
+	case 5:// -xy
+		aCamera->SetViewUp(0, 1, 0);//设视角位置 
+		aCamera->SetPosition(0, 0, -3 * axesScale);//设观察对象位
+		break;
+	default:
+		break;
+	}
+
+	aCamera->SetFocalPoint(0, 0, 0);//设焦点 
+	aCamera->ComputeViewPlaneNormal();//自动
+	renderer->SetActiveCamera(aCamera);
+	renderer->ResetCamera();
+	updateVtk();
 }
 
 void mainWindow::on_isShowBox()
@@ -1184,6 +1242,13 @@ void mainWindow::toReceiveMirrorType(int caseInd)
 		renderer->AddActor(tempMirror->getActorAxes());
 		on_createPlaneMirror();
 		break;
+	case ELLIPSOID:
+		tempMirror = MirrorFactory::getMirror(ELLIPSOID, GraphTrans());
+		tempMirror->setSelected(true);
+		renderer->AddActor(tempMirror->getActor());
+		renderer->AddActor(tempMirror->getActorAxes());
+		on_createEllipsoid();
+		break;
 	case STLMIRROR:
 		tempMirror = MirrorFactory::getMirror(STLMIRROR, GraphTrans());
 		tempMirror->setSelected(true);
@@ -1329,7 +1394,7 @@ void mainWindow::toReceiveFDTDStop()
 	FDTDprogressDialog = nullptr;
 }
 
-void mainWindow::on_Phase()
+void mainWindow::on_PhaseCor()
 {
 	if (!myData->getSourceField()) // 如果没有设置源 不能计算
 	{
@@ -1346,26 +1411,103 @@ void mainWindow::on_Phase()
 			break;
 		}
 	}
-	PhsCorrectionDialog dialog;
 	MirrorsType tempType = myData->getMirrorByNum(myData->getNumOfMirrors() - 1)->getMirrorsType();
+	bool isNeedMesh = false;
 	switch (tempType)
 	{
-	case PLANEMIRROR:
-		return;
 	case QUADRICSURFACE:
 	case PARABOLICCYLINDER:
 	case PARABOLOID:
 	case ELLIPSOID:
-		if (dialog.exec() != QDialog::Accepted)
-		{
-			return;
-		}
+		isNeedMesh = true;
 		break;
-	case STLMIRROR:
-		return;
+	case PHSCORMIRROR:
+		isNeedMesh = false;
+		break;
 	default:
-		break;
+		QMessageBox::warning(NULL, "Warning",
+			"Unsupported mirror type!");
+		return;
 	}
+	if (myData->getPhsCorField())
+	{
+		if (myData->getIsNeedCalcPhsCorFlag()) // 如果模型或源被修改过
+		{
+			switch (QMessageBox::question(this, tr("Question"),
+				tr("The model has changed and whether the computing field is updated?"),
+				QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes))
+			{
+			case QMessageBox::Yes:
+				myData->calcPhsCorField();
+				break;
+			case QMessageBox::No:
+				break;
+			default:
+				break;
+			}
+		}
+	}
+	else
+	{
+		myData->calcPhsCorField();
+	}
+
+	PhsCorrectionDialog dialog;
+	dialog.setIsNeedMesh(isNeedMesh);
+	if (dialog.exec() != QDialog::Accepted)
+	{
+		return;
+	}
+	
+	CalculatePhsCorThread *calThr = new CalculatePhsCorThread();
+	if (isNeedMesh)
+	{
+		int dsIndex;
+		double length;
+		dialog.getData(dsIndex, length);
+		calThr->setDs_Length(dsIndex, length);
+	}
+
+	//connect(FDTDprogressDialog, SIGNAL(sendStop()), this, SLOT(toReceiveFDTDStop()));
+	//connect(FDTDprogressDialog, SIGNAL(sendStop()), calThr, SLOT(killFDTD()));
+
+	//connect(calThr, SIGNAL(sendMainValue(int)), FDTDprogressDialog, SLOT(setMainValue(int)));
+	//connect(calThr, SIGNAL(sendSlaverValue(int)), FDTDprogressDialog, SLOT(setSlaverValue(int)));
+	phsCorprogressDialog = new PhsCorProgressDialog();
+	phsCorprogressDialog->show();
+
+	connect(calThr, SIGNAL(error(int)), phsCorprogressDialog, SLOT(ReceiveError(int)));
+	connect(calThr, SIGNAL(sendMainValue(int)), phsCorprogressDialog, SLOT(setMainValue(int)));
+	
+	connect(calThr, SIGNAL(finished()), calThr, SLOT(deleteLater()));
+	connect(calThr, SIGNAL(sendMirror(Mirror*)), this, SLOT(toReceivePhaseCor(Mirror*)));
+
+	calThr->start();
+}
+
+void mainWindow::toReceivePhaseCor(Mirror * mirror)
+{
+	int index1 = myData->getNumOfMirrors() - 1;
+	renderer->RemoveActor(myData->getMirrorByNum(index1)->getActor());
+	QTreeWidgetItem *childMirror = new QTreeWidgetItem;
+	childMirror->setText(0, tr("Mirror") + QString::number(index1 + 1));
+	childMirror->setData(0, Qt::UserRole, QVariant(0));
+	childMirror->setData(1, Qt::UserRole, QVariant(index1));
+	childMirror->setData(2, Qt::UserRole, QVariant(index1));
+
+	geometryTreeItem->removeChild(mirrorTreeWidgetItem[index1]);
+	geometryTreeItem->insertChild(index1, childMirror);
+	delete mirrorTreeWidgetItem[index1];
+	mirrorTreeWidgetItem[index1] = childMirror;
+
+	myData->setMirror(index1, mirror);
+	mirrorTreeWidgetItem[index1]->insertChild(0, mirror->getTree());
+	mirrorTreeWidgetItem[index1]->child(0)->setData(2,
+		Qt::UserRole, QVariant(index1));
+	mirrorTreeWidgetItem[index1]->setExpanded(true);
+	renderer->AddActor(mirror->getActor());
+	updateLight();
+	updateVtk();
 }
 
 void mainWindow::on_treeWidget_ContextMenuRequested(QPoint pos)

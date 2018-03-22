@@ -82,8 +82,8 @@ void GraphTransWidget::addRotateWidget(QWidget * RotateWidget, QString filename)
 	zRotateLineEidt = new QLineEdit;
 	
 
-	xRotateLineEidt->setText(tr("1.0"));
-	yRotateLineEidt->setText(tr("0.0"));
+	xRotateLineEidt->setText(tr("0.0"));
+	yRotateLineEidt->setText(tr("1.0"));
 	zRotateLineEidt->setText(tr("0.0"));
 
 	QGridLayout * layout6 = new QGridLayout;

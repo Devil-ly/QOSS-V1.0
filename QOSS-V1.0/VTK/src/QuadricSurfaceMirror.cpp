@@ -103,8 +103,33 @@ QTreeWidgetItem * QuadricSurfaceMirror::getTree()
 
 double QuadricSurfaceMirror::calcZ(double x, double y)
 {
-	return -(data[0] * x*x + data[1] * y*y + data[3] * x*y + data[6] * x + data[7] * y + data[9])
-		/ (data[4] * y + data[5] * x + data[8]);
+	double res = 0;
+	if (abs(data[2]) < 0.000000001)
+	{
+		double temp = data[4] * y + data[5] * x + data[8];
+		if (abs(temp) > 0.000000001) // 被除数不等于0
+		{
+			res = -(data[0] * x*x + data[1] * y*y + data[3] * x*y + data[6] * x + data[7] * y + data[9])
+				/ temp;
+		}	
+	}
+	else
+	{
+		double A = data[2];
+		double C = data[0] * x*x + data[1] * y*y + data[3] * x*y + data[6] * x + data[7] * y + data[9];
+		double B = data[4] * y + data[5] * x + data[8];
+
+		double temp = B * B - 4 * A * C;
+		if (temp >= 0)
+			temp = sqrt(temp);
+		double res1 = (-B + temp) / 2 / A;
+		double res2 = (-B - temp) / 2 / A;
+		if (res2 < res1)
+			return res2;
+		else
+			return res1;
+	}
+	return res;
 }
 
 void QuadricSurfaceMirror::calcRestriction()

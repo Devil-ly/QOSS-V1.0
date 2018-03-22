@@ -77,9 +77,15 @@ public:
 	Field* calculateByPVVA(double fre, double dis = 0.5, int N = 2);
 	Field* getFieldByNum(int) const;
 
+	shared_ptr<Field> getPhsCorField() const { return phsCorField; }
+	void calcPhsCorField();
+
+	bool getIsNeedCalcPhsCorFlag() const { return isNeedCalcPhsCorFlag; }
+
 private:
 	static MyData * _myData;
 	bool isModifiedFlag;  // 标志该类数据是否被修改
+	bool isNeedCalcPhsCorFlag;  // 标志相位修正输入是否被修改
 
 	int numOfMirrors;
 	double frequency;
@@ -99,6 +105,9 @@ private:
 	// 保存计算结果的场 第0个为源，只能拥有一个源
 	std::map<int, Field*> fieldMap;
 	int fieldNum;
+
+	shared_ptr<Field> phsCorField; //保存用于相位修正的输入场
+
 
 };
 

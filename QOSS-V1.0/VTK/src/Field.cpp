@@ -127,6 +127,18 @@ void Field::setField(const vector<vector<complex<double>>>& _Ex, const vector<ve
 		}
 }
 
+void Field::setField(complex<double>** _Ex, complex<double>** _Ey)
+{
+	isSource = true;
+	allocateMemory();
+	for (int i = 0; i < N_width; i++)
+		for (int j = 0; j < M_depth; j++)
+		{
+			Ex[i][j] = _Ex[i][j];
+			Ey[i][j] = _Ey[i][j];
+		}
+}
+
 const vector<vector<complex<double>>>& Field::getEx() const
 {
 	return Ex;

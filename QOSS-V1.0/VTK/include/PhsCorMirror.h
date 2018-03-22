@@ -26,6 +26,13 @@ public:
 
 	void sampling(double ds, double length, const Vector3& central, Mirror* mirror);
 
+	bool sampling(double ds, double length, const Vector3& central,
+		const Vector3& direction, const GraphTrans& graphTrans, Mirror* mirror);
+
+	const vector<vector<Vector3>> & getLattice() const { return lattice; }
+
+	void setLattice(const vector<vector<Vector3>> &);
+
 private:
 
 	vector<vector<Vector3>> lattice;

@@ -27,6 +27,7 @@ void calculation::RayTracing::calcNormalOfLine_Mirror(const Vector3 & startPiont
 	{
 	case PLANEMIRROR:
 	case STLMIRROR:
+	case PHSCORMIRROR:
 		calcNormalOfLine_MirrorByPolyData(startPiont, direction, normal,
 			intersection, isIntersect, t);
 		break;
@@ -64,6 +65,7 @@ void calculation::RayTracing::calcReflect(const Vector3 & startPiont, const Vect
 	{
 	case PLANEMIRROR:
 	case STLMIRROR:
+	case PHSCORMIRROR:
 		calcReflectByPolyData(startPiont, direction, reflex, intersection, isIntersect);
 		break;
 	case QUADRICSURFACE:
@@ -625,11 +627,14 @@ bool calculation::RayTracing::isInRestriction(const Vector3 & intersectionGlobal
 
 Vector3 calculation::RayTracing::reflectLight(const Vector3 & a, const Vector3 & n)
 {
+	Vector3 tempN = n;
+	if (a.Dot(n) > 0)
+		tempN = Vector3(0, 0, 0) - n;
 	//先单位化
 	double absa = pow(a.Dot(a), 0.5);
-	double absn = pow(n.Dot(n), 0.5);
+	double absn = pow(tempN.Dot(tempN), 0.5);
 	Vector3 tempa = a * (1 / absa);
-	Vector3 tempn = n * (1 / absn);
+	Vector3 tempn = tempN * (1 / absn);
 	double I = 2 * tempn.Dot(tempa);
 	if (I < 0)
 		I = -I;

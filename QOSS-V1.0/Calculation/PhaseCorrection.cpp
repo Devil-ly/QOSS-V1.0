@@ -29,9 +29,9 @@ calculation::PhaseCorrection::~PhaseCorrection()
 
 //基本参数设置
 void calculation::PhaseCorrection::Set(double _Frequency, double _Target_W0, int _N_Mirror, int _N_InField,
-	vector<vector<Vector3>>& _Initial_Mirror, 
-	vector <vector <complex<double>>> &_InField_EX,
-	vector <vector <complex<double>>> &_InField_EY,  double _InField_ds)
+	const vector<vector<Vector3>>& _Initial_Mirror,
+	const vector <vector <complex<double>>> &_InField_EX,
+	const vector <vector <complex<double>>> &_InField_EY,  double _InField_ds)
 {
 	Frequency = _Frequency;
 	Lamda = C_Speed / Frequency;

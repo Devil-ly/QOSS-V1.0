@@ -13,6 +13,7 @@ using namespace calculation;
 MyData::MyData()
 {
 	isModifiedFlag = false;
+	isNeedCalcPhsCorFlag = false;
 	source = NULL;
 	mirrors.resize(MAX_NUM_OF_MIRROS);
 	fieldNum = 1;
@@ -52,8 +53,11 @@ void MyData::setMirror(int index, Mirror * _mirror)
 			mirrors[index] = nullptr;
 		}
 		mirrors[index] = _mirror;
-	}
-		
+		if (index < numOfMirrors - 1)
+		{
+			isNeedCalcPhsCorFlag = true;
+		}
+	}		
 }
 
 Mirror * MyData::getMirror(int index) const
@@ -146,6 +150,7 @@ void MyData::setSourceField(Field *ptr)
 		delete fieldMap[0];
 	}
 	fieldMap[0] = ptr;
+	isNeedCalcPhsCorFlag = true;
 }
 
 Field * MyData::getSourceField() const
@@ -189,5 +194,31 @@ Field * MyData::getFieldByNum(int index) const
 		return fieldMap.at(index);
 	}
 	return nullptr;
+}
+
+void MyData::calcPhsCorField()
+{
+	PVVA pvva;
+	// 设置单位
+	pvva.setUnit(1);
+	// 设置频率
+	double fre = 1e10;
+	pvva.setFre(fre);
+	// 读入源并分配内存
+	pvva.setSource(getSourceField());
+	//int N = 2;
+	for (int i = 1; i <= getNumOfMirrors() - 2; ++i)
+	{
+		pvva.setMirror(getMirrorByNum(i));
+		pvva.CalZ0Theta();
+		pvva.Reflect();
+		pvva.InterVal();
+	}
+	if (!phsCorField)
+	{
+		phsCorField = make_shared<Field>();
+	}
+	
+	pvva.getVirtualSurface(phsCorField);
 }
 

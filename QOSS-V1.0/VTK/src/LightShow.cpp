@@ -100,8 +100,7 @@ void LightShow::calRayActor()
 			p1->GetPointIds()->SetId(1, cout++);
 
 			pLineCell->InsertNextCell(p1);
-		}
-	
+		}	
 	
 	vtkSmartPointer<vtkPolyData>pointsData = vtkSmartPointer<vtkPolyData>::New();
 	pointsData->SetPoints(points); //获得网格模型中的几何数据：点集  

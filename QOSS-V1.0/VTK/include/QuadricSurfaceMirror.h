@@ -29,7 +29,7 @@ public:
 
 	virtual QTreeWidgetItem* getTree();
 
-	// 输出x,y 得到Z 若z有多个值时 只返回正值
+	// 输出x,y 得到Z 若z有多个值时 只返回负值
 	double calcZ(double x, double y);
 
 private:

@@ -4,6 +4,7 @@
 #include "../VTK/include/Field.h"
 #include <QThread>
 
+class Mirror;
 namespace  userInterface {
 	class CalculatePhsCorThread : public QThread
 	{
@@ -13,14 +14,18 @@ namespace  userInterface {
 		CalculatePhsCorThread() { isNeedMesh = false; };
 		//~CalculatePhsCorThread();
 
-		void setDs_Length(double ds, double length);
+		void setDs_Length(int dsIndex, double length);
 
 	signals:
 		void sendMainValue(int);
 	signals:
 		void sendSlaverValue(int);
+	signals:
+		void sendMirror(Mirror*);
+	signals:
+		void error(int);
 
-		public slots:
+	public slots:
 
 		void killPhsCor();
 
@@ -33,6 +38,7 @@ namespace  userInterface {
 
 		double ds;
 		double length;
+		int dsIndex; // 用户选择的剖分精度 0粗 1标准 2细
 	};
 
 }

@@ -1,4 +1,4 @@
-#include "BeamPropagation.h"
+#include "Gaussian_Beam_Circular.h"
 
 //返回传播z长度后的高斯波束W值
 double Gauss_Omega_Circular(double frequency0, double w0, double z0)

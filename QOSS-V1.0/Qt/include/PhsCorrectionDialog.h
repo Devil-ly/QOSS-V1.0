@@ -16,6 +16,9 @@ namespace  userInterface {
 		PhsCorrectionDialog(QWidget *parent = 0);
 		~PhsCorrectionDialog();
 
+		void getData(int & dsIndex, double & length);
+
+		void setIsNeedMesh(bool isNeedMesh);
 	public slots:
 
 		void on_OK();
@@ -27,6 +30,8 @@ namespace  userInterface {
 		QLineEdit * lengthLineEdit;
 		QLabel * dsLabel;
 		QComboBox *dsComboBox;
+		QLabel * gaussLabel;
+		QLineEdit * gaussLineEdit;
 		QPushButton *cancelBtn;
 		QPushButton *OKBtn;
 	

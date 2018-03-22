@@ -6,6 +6,7 @@
 #include <vtkPoints.h>
 #include <vtkPointData.h>
 #include <vtkDelaunay2D.h>
+#include <../Calculation/RayTracing.h>
 
 PhsCorMirror::PhsCorMirror()
 {
@@ -94,5 +95,53 @@ void PhsCorMirror::sampling(double ds, double length,
 			Vector3 tempVec(x + i*ds, y + j*ds, z);
 			tempVec = Matrix * tempVec;
 			lattice[i][j] = tempVec;
+		}
+}
+
+bool PhsCorMirror::sampling(double ds, double length, const Vector3& central,
+	const Vector3& direction, const GraphTrans& graphTrans, Mirror* mirror)
+{
+	Vector3D RotateAsix(graphTrans.getRotate_x(),
+		graphTrans.getRotate_y(),
+		graphTrans.getRotate_z());
+	Matrix4D rotatMatrix = Matrix4D::getRotateMatrix(
+		graphTrans.getRotate_theta(), RotateAsix);
+	Matrix4D translateMatrix = Matrix4D::getTranslateMatrix(
+		graphTrans.getTrans_x(),
+		graphTrans.getTrans_y(), 
+		graphTrans.getTrans_z());
+
+	calculation::RayTracing rayTracing(mirror);
+
+	int N = ceil(length / ds) + 1;
+	lattice.resize(N);
+	for (int i = 0; i < N; i++)
+		lattice[i].resize(N);
+	for (int i = 0; i < N; i++)
+		for (int j = 0; j < N; j++)
+		{
+			Vector3 tempVec(i * ds - length / 2, j * ds - length / 2, 0);
+			tempVec = translateMatrix * rotatMatrix * tempVec;
+			bool isInter = false;
+			double t;
+			rayTracing.calcNormalOfLine_Mirror(tempVec, direction, Vector3(), tempVec, isInter, t);
+			if (!isInter)
+				return false;
+
+			lattice[i][j] = tempVec;
+		}
+	return true;
+}
+
+void PhsCorMirror::setLattice(const vector<vector<Vector3>> & temp)
+{
+	int N = temp.size();
+	lattice.resize(N);
+	for (int i = 0; i < N; i++)
+		lattice[i].resize(N);
+	for (int i = 0; i < N; i++)
+		for (int j = 0; j < N; j++)
+		{
+			lattice[i][j] = temp[i][j];
 		}
 }

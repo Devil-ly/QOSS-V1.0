@@ -44,9 +44,9 @@ namespace calculation//还是在Calculation命名空间中
 
 		//参数设置（先运行）
 		void Set(double _Frequency, double _Target_W0, int _N_Mirror, int _N_InField,
-			vector <vector <Vector3>> &_Initial_Mirror,
-			vector <vector <complex<double>>> &_InField_EX,
-			vector <vector <complex<double>>> &_InField_EY,
+			const vector <vector <Vector3>> &_Initial_Mirror,
+			const vector <vector <complex<double>>> &_InField_EX,
+			const vector <vector <complex<double>>> &_InField_EY,
 			double _InField_ds);
 
 		//基本坐标系参数设置（在此之前要先运行Set函数）

@@ -18,11 +18,16 @@ PhsCorrectionDialog::PhsCorrectionDialog(QWidget *parent)
 	dsComboBox->addItem(tr("Fine"));
 	dsComboBox->setCurrentIndex(1);
 
+	gaussLabel = new QLabel(tr("Gaussain:"));
+	gaussLineEdit = new QLineEdit(tr("0.5"));
+
 	QGridLayout *gridLayout = new QGridLayout;
 	gridLayout->addWidget(lengthLabel, 0, 0);
 	gridLayout->addWidget(lengthLineEdit, 0, 1);
 	gridLayout->addWidget(dsLabel, 1, 0);
 	gridLayout->addWidget(dsComboBox, 1, 1);
+	gridLayout->addWidget(gaussLabel, 2, 0);
+	gridLayout->addWidget(gaussLineEdit, 2, 1);
 
 	OKBtn = new QPushButton(tr("OK"));
 	connect(OKBtn, SIGNAL(clicked()), this, SLOT(on_OK()));
@@ -43,6 +48,30 @@ PhsCorrectionDialog::PhsCorrectionDialog(QWidget *parent)
 
 PhsCorrectionDialog::~PhsCorrectionDialog()
 {
+}
+
+void PhsCorrectionDialog::getData(int & dsIndex, double & length)
+{
+	length = lengthLineEdit->text().toDouble();
+	dsIndex = dsComboBox->currentIndex();
+}
+
+void PhsCorrectionDialog::setIsNeedMesh(bool isNeedMesh)
+{
+	if (isNeedMesh)
+	{
+		lengthLabel->setHidden(false);
+		lengthLineEdit->setHidden(false);
+		dsLabel->setHidden(false);
+		dsComboBox->setHidden(false);
+	}
+	else
+	{
+		lengthLabel->setHidden(true);
+		lengthLineEdit->setHidden(true);
+		dsLabel->setHidden(true);
+		dsComboBox->setHidden(true);
+	}
 }
 
 void PhsCorrectionDialog::on_OK()
