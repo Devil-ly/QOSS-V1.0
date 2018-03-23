@@ -116,7 +116,8 @@ void Field::setField(complex<double>** _Ex, complex<double>** _Ey,
 		}
 }
 
-void Field::setField(const vector<vector<complex<double>>>& _Ex, const vector<vector<complex<double>>>& _Ey)
+void Field::setField(const vector<vector<complex<double>>>& _Ex, 
+	const vector<vector<complex<double>>>& _Ey)
 {
 	allocateMemory();
 	for (int i = 0; i < N_width; i++)
@@ -306,7 +307,7 @@ void Field::calActor()
 	img->AllocateScalars(info);
 
 	double *ptr = (double*)img->GetScalarPointer();
-	double max = 0, min = 0;
+	double max = -100000000, min = 0;
 	const vector<vector<complex<double>>> *tempEH = nullptr;
 	switch (content)
 	{
@@ -342,31 +343,49 @@ void Field::calActor()
 			if (isPhs)
 			{
 				if (temp.real() != 0)
-					tempD = atan(temp.imag() / temp.real());
+					tempD = atan2(temp.imag(),temp.real());
 				else
 					tempD = 0;
 			}
 			else
 				tempD = pow((temp.real() * temp.real() +
 					temp.imag() * temp.imag()), 0.5);
-			if (!isLinear)
-				tempD = log(tempD);
-
+			if (!isLinear && !isPhs)
+			{
+				if(tempD = 0)
+					tempD = -40;
+				else
+				{
+					tempD = 20 * log(tempD);
+					if (-40 > tempD)
+						tempD = -40;
+				}
+				if (max < tempD)
+					max = tempD;
+			}
+			else
+			{
+				if (max < tempD)
+					max = tempD;
+				if (min > tempD)
+					min = tempD;
+			}
 			*ptr++ = tempD;
-			if (max < tempD)
-				max = tempD;
-			if (min > tempD)
-				min = tempD;
+			
 		}
 	ptr = (double*)img->GetScalarPointer();
-	if (!isPhs)
-		for (int i = 0; i<N_width * M_depth * 1; i++, ptr++)
-			*ptr = max - *ptr;
-
 	vtkSmartPointer<vtkLookupTable> colorTable =
 		vtkSmartPointer<vtkLookupTable>::New();
-	colorTable->SetRange(min, max);
-
+	if (!isLinear && !isPhs)
+		min = -40;
+	if (!isPhs)
+	{
+		for (int i = 0; i<N_width * M_depth * 1; i++, ptr++)
+			*ptr = max - *ptr;
+		colorTable->SetRange(0, max - min);
+	}
+	else
+		colorTable->SetRange(min, max);
 	colorTable->Build();
 
 	vtkSmartPointer<vtkImageMapToColors> colorMap =

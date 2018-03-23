@@ -248,13 +248,21 @@ void mainWindow::createMenus()
 	//fileMenu->addAction(LightSourceAction);
 
 	viewMenu = this->menuBar()->addMenu(tr("View"));
+	viewMenu->addAction(viewAction);
 
 	viewMenu->addAction(isShowBoxAction);
 
 	eidtMenu = this->menuBar()->addMenu(tr("Edit"));
 	ModelMenu = this->menuBar()->addMenu(tr("Model"));
 	SourceMenu = this->menuBar()->addMenu(tr("Source"));
+	SourceMenu->addAction(GaussianAction);
+	SourceMenu->addAction(ApertureFieldAction);
+	SourceMenu->addAction(FDTDAction);
+	SourceMenu->addAction(loadFDTDAction);
+
 	CalMenu = this->menuBar()->addMenu(tr("simulation"));
+	CalMenu->addAction(PVVAAction);
+	CalMenu->addAction(PhaseAction);
 }
 
 void mainWindow::createToolBars()
