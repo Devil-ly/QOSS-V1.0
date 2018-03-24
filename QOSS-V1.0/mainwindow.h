@@ -229,6 +229,10 @@ private:
 	QRadioButton * linearBtn;
 	QRadioButton * dbBtn;
 
+	QLabel * effLabelVal;
+	QLabel * scaleLabelVal;
+	QLabel * vecLabelVal;
+
 	vector<QTreeWidgetItem*> mirrorTreeWidgetItem;
 
 	MyData * myData;

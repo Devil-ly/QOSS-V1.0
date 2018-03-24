@@ -6,6 +6,8 @@
 #include <vtkPoints.h>
 #include <vtkPointData.h>
 #include <vtkDelaunay2D.h>
+#include <vtkTransform.h>
+#include <vtkTransformPolyDataFilter.h>
 #include <../Calculation/RayTracing.h>
 
 PhsCorMirror::PhsCorMirror()
@@ -37,6 +39,21 @@ void PhsCorMirror::calPolyData(double ds)
 	delaunay->SetInputData(polyData);
 	delaunay->Update();
 	polyData = delaunay->GetOutput();
+
+	// 用户自定义平移旋转 (先移动后旋转)
+	vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+	transform->Translate(graphTrans.getTrans_x(),
+		graphTrans.getTrans_y(), graphTrans.getTrans_z());
+	transform->RotateWXYZ(graphTrans.getRotate_theta(), graphTrans.getRotate_x(),
+		graphTrans.getRotate_y(), graphTrans.getRotate_z());
+
+	vtkSmartPointer<vtkTransformPolyDataFilter> TransFilter =
+		vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+	TransFilter->SetInputData(polyData);
+	TransFilter->SetTransform(transform); //use vtkTransform (or maybe vtkLinearTransform)
+	TransFilter->Update();
+	polyData = TransFilter->GetOutput();
+
 }
 
 void PhsCorMirror::updateData()
@@ -113,6 +130,20 @@ bool PhsCorMirror::sampling(double ds, double length, const Vector3& central,
 
 	calculation::RayTracing rayTracing(mirror);
 
+	this->graphTrans = mirror->getGraphTrans();
+
+	//将的到镜面坐标转到局部坐标系
+	Vector3D RotateAsix1(this->graphTrans.getRotate_x(),
+		this->graphTrans.getRotate_y(),
+		this->graphTrans.getRotate_z());
+	Matrix4D R_rotatMatrix = Matrix4D::getRotateMatrix(
+		- this->graphTrans.getRotate_theta(), RotateAsix1);
+	Matrix4D R_translateMatrix = Matrix4D::getTranslateMatrix(
+		- this->graphTrans.getTrans_x(),
+		- this->graphTrans.getTrans_y(),
+		- this->graphTrans.getTrans_z());
+	Matrix4D R_Matrix = R_rotatMatrix * R_translateMatrix;
+
 	int N = ceil(length / ds) + 1;
 	lattice.resize(N);
 	for (int i = 0; i < N; i++)
@@ -120,7 +151,7 @@ bool PhsCorMirror::sampling(double ds, double length, const Vector3& central,
 	for (int i = 0; i < N; i++)
 		for (int j = 0; j < N; j++)
 		{
-			Vector3 tempVec(i * ds - length / 2, j * ds - length / 2, 0);
+			Vector3 tempVec(i * ds - length / 2.0, j * ds - length / 2.0, 0);
 			tempVec = translateMatrix * rotatMatrix * tempVec;
 			bool isInter = false;
 			double t;
@@ -128,7 +159,7 @@ bool PhsCorMirror::sampling(double ds, double length, const Vector3& central,
 			if (!isInter)
 				return false;
 
-			lattice[i][j] = tempVec;
+			lattice[i][j] = R_Matrix * tempVec;
 		}
 	return true;
 }

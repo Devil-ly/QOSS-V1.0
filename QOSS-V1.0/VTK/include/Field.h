@@ -19,7 +19,7 @@
 #include <vtkImageActor.h>
 #include <vtkActor.h>
 #include "BasicParameters.h"
-
+#include "Calculation/Correlation_Coefficient.h"
 
 
 class Field: public BasicParameters
@@ -80,7 +80,16 @@ public:
 
 	void setIsSource(bool);
 
+	void setEfficiency(double);
+	double getEfficiency() { return efficiency; }
+
+	double getScalarCorrelationCoefficient() const { return scalarCorrelationCoefficient; }
+	double getVectorCorrelationCoefficient() const { return vectorCorrelationCoefficient; }
+
 protected:
+	//计算高斯系数
+	void calcCorrelationCoefficient();
+
 	// 场分量
 	vector<vector<complex<double>>> Ex, Ey, Ez;
 	vector<vector<complex<double>>> Hx, Hy, Hz;
@@ -101,6 +110,9 @@ protected:
 	vtkSmartPointer<vtkActor> actor3D;
 
 	bool isSource;
+	double efficiency;
+	double scalarCorrelationCoefficient;
+	double vectorCorrelationCoefficient;
 	//int Name; // 判断是什么场
 };
 

@@ -5,6 +5,8 @@
 #include "../VTK/include/PhsCorMirror.h"
 //#include ""
 
+#define Test
+
 using namespace userInterface;
 using namespace calculation;
 
@@ -68,7 +70,7 @@ void CalculatePhsCorThread::run()
 	{
 		phsCorMirror = new PhsCorMirror;
 
-		if (!phsCorMirror->sampling(ds, length, reflectposition, n_Source, graphTrans, mirror))  
+		if (!phsCorMirror->sampling(ds, length, reflectposition, n_Source, graphTrans, mirror))
 			//全局坐标采样
 		{
 			// 截取的面过大
@@ -76,9 +78,11 @@ void CalculatePhsCorThread::run()
 			return;
 		}
 		//phsCorMirror->updateData();
-
 	}
+	else
+		phsCorMirror = dynamic_cast<PhsCorMirror*>(mirror);
 	sendMainValue(2);
+#ifndef Test
 	// 场的位置信息
 	Vector3 infieldposition(0, 0, 0), Eu_infield(1, 0, 0), Ev_infield(0, 1, 0), En_infield(0, 0, 1);
 	infieldposition = translateMatrix * rotatMatrixSou * infieldposition;
@@ -110,8 +114,8 @@ void CalculatePhsCorThread::run()
 	double Target_W = 0.025;
 	M.Set(myData->getFrequency(), Target_W, N_mirror0,
 		myData->getPhsCorField()->getEx().size(),
-		phsCorMirror->getLattice(), 
-		myData->getPhsCorField()->getEx(), 
+		phsCorMirror->getLattice(),
+		myData->getPhsCorField()->getEx(),
 		myData->getPhsCorField()->getEy(), ds);
 
 	M.SetCoordinate(infieldposition, Eu_infield, Ev_infield, En_infield,
@@ -119,11 +123,14 @@ void CalculatePhsCorThread::run()
 		reflectposition, reflectnormal);
 
 	mirror1 = M.Single_Correction();
+	
+	phsCorMirror->setLattice(mirror1); // 局部坐标
+	
+#endif // Test
 
 	sendMainValue(3);
-	phsCorMirror->setLattice(mirror1); // 局部坐标
 	phsCorMirror->updateData();
-
+	
 	emit sendMirror(phsCorMirror);
 
 }

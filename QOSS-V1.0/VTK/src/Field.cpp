@@ -1,4 +1,5 @@
 #include "../include/Field.h"
+#include "MyData.h"
 
 #include <vtkImageData.h>
 #include <vtkInformation.h>
@@ -26,6 +27,7 @@ Field::Field()
 	init();
 	actor3D = vtkSmartPointer<vtkActor>::New();
 	actor = vtkSmartPointer<vtkImageActor>::New();
+	efficiency = 1.0;
 }
 
 Field::~Field()
@@ -114,6 +116,7 @@ void Field::setField(complex<double>** _Ex, complex<double>** _Ey,
 			Hy[i][j] = _Hy[i][j];
 			Hz[i][j] = _Hz[i][j];
 		}
+	calcCorrelationCoefficient();
 }
 
 void Field::setField(const vector<vector<complex<double>>>& _Ex, 
@@ -126,6 +129,7 @@ void Field::setField(const vector<vector<complex<double>>>& _Ex,
 			Ex[i][j] = _Ex[i][j];
 			Ey[i][j] = _Ey[i][j];
 		}
+	calcCorrelationCoefficient();
 }
 
 void Field::setField(complex<double>** _Ex, complex<double>** _Ey)
@@ -138,6 +142,7 @@ void Field::setField(complex<double>** _Ex, complex<double>** _Ey)
 			Ex[i][j] = _Ex[i][j];
 			Ey[i][j] = _Ey[i][j];
 		}
+	calcCorrelationCoefficient();
 }
 
 const vector<vector<complex<double>>>& Field::getEx() const
@@ -576,4 +581,17 @@ QTreeWidgetItem * Field::getTree()
 void Field::setIsSource(bool isOK)
 {
 	isSource = isOK;
+}
+
+void Field::setEfficiency(double temp)
+{
+	this->efficiency = temp;
+}
+
+void Field::calcCorrelationCoefficient()
+{
+	double fre = MyData::getInstance()->getFrequency();
+	scalarCorrelationCoefficient = Scalar_Correlation_Coefficient(fre, ds, N_width, Ex, Ey);
+	vectorCorrelationCoefficient = Vector_Correlation_Coefficient(fre, ds, N_width, Ex, Ey);
+
 }

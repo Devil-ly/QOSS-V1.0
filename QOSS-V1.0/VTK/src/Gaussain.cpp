@@ -20,6 +20,7 @@ Gaussain::Gaussain(const GraphTrans & _graphTrans,
 	setDs(data[5]);
 	CreateGaussianGaussain();
 
+	calcCorrelationCoefficient();
 	updateData();
 
 }
@@ -32,47 +33,6 @@ Gaussain::Gaussain(const Gaussain & _Gaussain)
 		data[i] = _Gaussain.data[i];
 }
 
-
-/*Gaussain & Gaussain::operator=(const Gaussain & right)
-{
-	if (this == &right)
-		return *this;
-
-	factor = right.factor;
-	varible.clear();
-	for (auto x : right.varible)
-		varible.push_back(x);
-	data.resize(right.data.size());
-	for (int i = 0; i < data.size(); i++)
-		data[i] = right.data[i];
-
-	content = right.content;
-	N_width = right.N_width;
-	M_depth = right.M_depth;
-	ds = right.ds;
-	isSource = right.isSource;
-	actor = right.actor;
-	actor3D = right.actor3D;
-	isPhs = right.isPhs;
-	isLinear = right.isLinear;
-	is3D = right.is3D;
-	allocateMemory();
-
-	for (int i = 0; i < N_width; i++)
-		for (int j = 0; j < M_depth; j++)
-		{
-			Ex[i][j] = right.Ex[i][j];
-			Ey[i][j] = right.Ey[i][j];
-			if (!isSource)
-			{
-				Ez[i][j] = right.Ez[i][j];
-				Hx[i][j] = right.Hx[i][j];
-				Hy[i][j] = right.Hy[i][j];
-				Hz[i][j] = right.Hz[i][j];
-			}
-		}
-	return *this;
-}*/
 
 Gaussain::~Gaussain()
 {

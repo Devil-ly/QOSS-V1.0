@@ -11,6 +11,7 @@ CalculationWidget::CalculationWidget(QWidget *parent)
 	freLabel = new QLabel(tr("Frequency(GHz)"));
 	freLineEdit = new QLineEdit;
 	freLineEdit->setText(tr("10"));
+	freLineEdit->setEnabled(false);
 
 	calModLabel = new QLabel(tr("Calculation model"));   // 计算模式 解析解优先还是剖分优先
 	calModCombobox = new QComboBox;
@@ -129,6 +130,11 @@ CalculationWidget::CalculationWidget(QWidget *parent)
 CalculationWidget::~CalculationWidget()
 {
 	
+}
+
+void CalculationWidget::setFre(double temp)
+{
+	this->freLineEdit->setText(QString::number(temp / 1e9));
 }
 
 void CalculationWidget::buttonCancel()

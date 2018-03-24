@@ -10,7 +10,7 @@ PhsCorProgressDialog::PhsCorProgressDialog(QWidget *parent)
 	setWindowTitle(tr("Phs Calculation"));
 	txtLabel = new QLabel();
 	mainBar = new QProgressBar();
-	mainBar->setRange(0, 3);
+	mainBar->setRange(0, 4);
 	mainBar->setMinimumWidth(500);
 	slaverBar = new QProgressBar();
 	slaverBar->setRange(0, 100);

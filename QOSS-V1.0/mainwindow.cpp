@@ -559,7 +559,6 @@ void mainWindow::createDetails()
 	powerGroupBtn->addButton(dbBtn, 0);
 	powerGroupBtn->addButton(linearBtn, 1);
 
-
 	QGridLayout * powerLayout = new QGridLayout;
 	powerLayout->addWidget(linearBtn, 0, 0);
 	powerLayout->addWidget(dbBtn, 0, 1);
@@ -572,11 +571,31 @@ void mainWindow::createDetails()
 	powerGroupBox->setTitle(tr("power"));
 	powerGroupBox->setLayout(powerLayout);
 
+	QLabel * effLabel = new QLabel(tr("Energy conversion efficiency:"));
+	effLabelVal = new QLabel(tr(""));
+	QLabel * scaleLabel = new QLabel(tr("Gauss scale coefficient:"));
+	scaleLabelVal = new QLabel(tr(""));
+	QLabel * vecLabel = new QLabel(tr("Gauss vector coefficient:"));
+	vecLabelVal = new QLabel(tr(""));
+
+	QGridLayout * coefficientLayout = new QGridLayout;
+	coefficientLayout->addWidget(effLabel, 0, 0);
+	coefficientLayout->addWidget(effLabelVal, 0, 1);
+	coefficientLayout->addWidget(scaleLabel, 1, 0);
+	coefficientLayout->addWidget(scaleLabelVal, 1, 1);
+	coefficientLayout->addWidget(vecLabel, 2, 0);
+	coefficientLayout->addWidget(vecLabelVal, 2, 1);
+
+	QGroupBox * coefficientGroupBox = new QGroupBox;
+	coefficientGroupBox->setTitle(tr("Coefficient"));
+	coefficientGroupBox->setLayout(coefficientLayout);
+
 	QVBoxLayout * boxLayout = new QVBoxLayout;
 	boxLayout->addWidget(dimensionGroupBox);
 	boxLayout->addWidget(fieldGroupBox);
 	boxLayout->addWidget(pmGroupBox);
 	boxLayout->addWidget(powerGroupBox);
+	boxLayout->addWidget(coefficientGroupBox);
 
 	detailsWidget = new QWidget;
 	detailsWidget->setLayout(boxLayout);
@@ -1287,6 +1306,7 @@ void mainWindow::on_PVVA()
 		}
 	}
 	CalculationWidget calculationDialog;
+	calculationDialog.setFre(myData->getFrequency());
 	if (calculationDialog.exec() != QDialog::Accepted)
 	{
 		return;
@@ -1404,6 +1424,10 @@ void mainWindow::toReceiveFDTDStop()
 
 void mainWindow::on_PhaseCor()
 {
+	if (phsCorprogressDialog)
+	{
+		phsCorprogressDialog->show();
+	}
 	if (!myData->getSourceField()) // 如果没有设置源 不能计算
 	{
 		switch (QMessageBox::question(this, tr("Question"),
@@ -1495,6 +1519,8 @@ void mainWindow::on_PhaseCor()
 
 void mainWindow::toReceivePhaseCor(Mirror * mirror)
 {
+	delete phsCorprogressDialog;
+	phsCorprogressDialog = nullptr;
 	int index1 = myData->getNumOfMirrors() - 1;
 	renderer->RemoveActor(myData->getMirrorByNum(index1)->getActor());
 	QTreeWidgetItem *childMirror = new QTreeWidgetItem;
@@ -1658,6 +1684,8 @@ void mainWindow::showDetails(int index)
 {
 	int content; bool isLinear; bool isPhs;
 	Field *tempField = myData->getFieldByNum(index);
+	if (!tempField)
+		return;
 	tempField->getShowPara(content, isLinear, isPhs);
 
 	switch (tempField->get3D())
@@ -1742,6 +1770,10 @@ void mainWindow::showDetails(int index)
 		HzBtn->setEnabled(true);
 	}
 	
+	effLabelVal->setText(QString::number(tempField->getEfficiency()));
+	scaleLabelVal->setText(QString::number(tempField->getScalarCorrelationCoefficient()));
+	vecLabelVal->setText(QString::number(tempField->getVectorCorrelationCoefficient()));
+
 	detailsDockWidget->show();
 }
 

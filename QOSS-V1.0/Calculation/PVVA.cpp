@@ -218,6 +218,16 @@ void PVVA::updateSource_n(const Vector3& new_n)
 void PVVA::Result(double dis)
 {
 	CalPlane(dis);
+	double sumPower = 0.0;
+	for (int i = 0; i < N; i++)
+		for (int j = 0; j < M; j++)
+		{
+			sumPower += Ex_In[i][j].real() * Ex_In[i][j].real() + Ex_In[i][j].imag() * Ex_In[i][j].imag()
+				+ Ey_In[i][j].real() * Ey_In[i][j].real() + Ey_In[i][j].imag() * Ey_In[i][j].imag();
+
+		}
+	efficiency = sumPower / powerOfSource;
+
 	/*
 	ofstream outfilex1("Ex_M.txt");
 	ofstream outfilex2("Ey_M.txt");
@@ -772,12 +782,14 @@ void PVVA::setSource(const Field* _field)
 	ds = ds * unit_factor;
 
 	AllocateMemory();
-
+	powerOfSource = 0;
 	for(int i = 0; i < N; i++)
 		for (int j = 0; j < M; j++)
 		{
 			Ex_In[i][j] = Ex_temp[i][j];
 			Ey_In[i][j] = Ey_temp[i][j];
+			powerOfSource += Ex_In[i][j].real() * Ex_In[i][j].real() + Ex_In[i][j].imag() * Ex_In[i][j].imag()
+				+ Ey_In[i][j].real() * Ey_In[i][j].real() + Ey_In[i][j].imag() * Ey_In[i][j].imag();
 		}
 
 	Vector3D RotateAsix(SourceGraphTrans.getRotate_x(), SourceGraphTrans.getRotate_y(),

@@ -120,6 +120,7 @@ namespace calculation
 		bool InterVal_PointinTriangle(const Vector2 &A, const Vector2 &B,
 			const Vector2 &C, const Vector2 &P);
 
+		double getEfficiency() const { return efficiency; }
 	private:
 		int N, M; // 计算矩形的长宽 N*M
 		double f; // 频率 默认 10.65e9
@@ -150,6 +151,10 @@ namespace calculation
 		Vector3 **n_Plane;  // 平面传播各点后的法向量
 		Vector3 **R_Plane;  // 反射后的各点的坐标
 		Vector3 **Rn_Plane; // 反射后的各点的法向量
+
+		// 能量转化效率
+		double powerOfSource;
+		double efficiency; 
 	};
 }
 

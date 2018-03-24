@@ -21,7 +21,7 @@ class CalculationWidget : public QDialog
 public:
 	CalculationWidget(QWidget *parent = 0);
 	~CalculationWidget();
-
+	void setFre(double);
 	double getFre();
 	double getDistance();
 	int getMirrorNum();
