@@ -8,6 +8,7 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkDelaunay2D.h>
+#include <omp.h>	//Jin add 20180325
 
 using namespace calculation;
 
@@ -985,71 +986,162 @@ void PVVA::Reflect()
 
 	bool isInter = false;
 
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = 0; j < M; j++)
-		{
-			Ex_R[i][j] = 0;
-			Ey_R[i][j] = 0;
-			Ez_R[i][j] = 0;
-			R_Plane[i][j] = 0;
-			rayTracing.calcNormalOfLine_Mirror(Plane[i][j],
-				n_Plane[i][j], n_light,
-				InterPoint, isInter, dir_t);
-			if (!isInter)
-				continue;
-			n_light.Normalization();
-
-			// 将反射面法向量转化到源坐标系上(先转换到绝对坐标系)
-			n_light_Plane = rotatMatrixSou * n_light;
-			n_light_Plane.Normalization();  // 单位化
-			// 只做极化变换
-			CalReflectExyz(n_light_Plane, Ex1[i][j], Ey1[i][j],
-				Ez1[i][j], Ex_R[i][j], Ey_R[i][j], Ez_R[i][j]);
-
-			// 反射光线
-			Reflight = RayTracing::reflectLight(n_Plane[i][j], n_light);   
-			Rn_Plane[i][j] = Reflight;
-
-			if (dir_t > 0.0000000001)  // 平面在反射面的前面
-			{
-				plane_t = IntersectPlane(InterPoint, Reflight,
-					Org_Source, R_Source, R_Plane[i][j]);
-				d2 = CalDistance(InterPoint, R_Plane[i][j]);
-				d1 = CalDistance(InterPoint, Plane[i][j]);
-
-				if (plane_t > 0.0)  // 虚拟面2在反射面的前面
-					tempphase = -(d1 + d2) / lamda * 2 * Pi;
-				else
-					tempphase = -(d1 - d2) / lamda * 2 * Pi;
-				tempejphase = complex <double>(cos(tempphase), sin(tempphase));
-				Ex_R[i][j] = ComMul(Ex_R[i][j], tempejphase);  // 只做相位变换
-				Ey_R[i][j] = ComMul(Ey_R[i][j], tempejphase);
-				Ez_R[i][j] = ComMul(Ez_R[i][j], tempejphase);
-			}
-			else if (dir_t < -0.0000000001)   // 平面在反射面的后面
-			{
-				plane_t = IntersectPlane(InterPoint, Reflight,
-					Org_Source, R_Source, R_Plane[i][j]);
-				d2 = CalDistance(InterPoint, R_Plane[i][j]);
-				d1 = CalDistance(InterPoint, Plane[i][j]);
-
-				if (plane_t < 0.0)  // 虚拟面2在反射面的后面
-					tempphase = (d1 + d2) / lamda * 2 * Pi;
-				else
-					tempphase = (d1 - d2) / lamda * 2 * Pi;
-				tempejphase = complex <double>(cos(tempphase), sin(tempphase));
-				Ex_R[i][j] = ComMul(Ex_R[i][j], tempejphase); // 只做相位变换
-				Ey_R[i][j] = ComMul(Ey_R[i][j], tempejphase);
-				Ez_R[i][j] = ComMul(Ez_R[i][j], tempejphase);
-			}	
-			else  // 平面与反射面相交
-			{
-				R_Plane[i][j] = InterPoint;
-			}
+	/*
+	int threadNum = 4;
+	vector<int> Ns_omp(threadNum);
+	vector<int> Nn_omp(threadNum);
+	//omp Dividing
+	for (int i = 0; i<threadNum; i++) {
+		Nn_omp[i] = (N) / threadNum;
+		int rr = (N) % threadNum;
+		if (i<rr && rr != 0)  Nn_omp[i] += 1;
+		if (i == 0) {
+			Ns_omp[i] = 0;
 		}
-	} // endloop
+		else {
+			Ns_omp[i] = Ns_omp[i - 1] + Nn_omp[i - 1];
+		}
+		//cout<<Nzs[i]<<" "<<Nzn[i]<<" "<<i<<endl;	
+	}
+	//omp version
+	omp_set_num_threads(threadNum);
+	#pragma omp parallel
+	{
+		int id = omp_get_thread_num();
+		for (int i = Ns_omp[id]; i < Ns_omp[id] + Nn_omp[id]; i++)//光线
+		{
+			for (int j = 0; j < M; j++)//光线
+			{
+				Ex_R[i][j] = 0;
+				Ey_R[i][j] = 0;
+				Ez_R[i][j] = 0;
+				R_Plane[i][j] = 0;
+				rayTracing.calcNormalOfLine_Mirror(Plane[i][j],
+					n_Plane[i][j], n_light,
+					InterPoint, isInter, dir_t);
+				if (!isInter)
+					continue;
+				n_light.Normalization();
 
+				// 将反射面法向量转化到源坐标系上(先转换到绝对坐标系)
+				n_light_Plane = rotatMatrixSou * n_light;
+				n_light_Plane.Normalization();  // 单位化
+												// 只做极化变换
+				CalReflectExyz(n_light_Plane, Ex1[i][j], Ey1[i][j],
+					Ez1[i][j], Ex_R[i][j], Ey_R[i][j], Ez_R[i][j]);
+
+				// 反射光线
+				Reflight = RayTracing::reflectLight(n_Plane[i][j], n_light);
+				Rn_Plane[i][j] = Reflight;
+
+				if (dir_t > 0.0000000001)  // 平面在反射面的前面
+				{
+					plane_t = IntersectPlane(InterPoint, Reflight,
+						Org_Source, R_Source, R_Plane[i][j]);
+					d2 = CalDistance(InterPoint, R_Plane[i][j]);
+					d1 = CalDistance(InterPoint, Plane[i][j]);
+
+					if (plane_t > 0.0)  // 虚拟面2在反射面的前面
+						tempphase = -(d1 + d2) / lamda * 2 * Pi;
+					else
+						tempphase = -(d1 - d2) / lamda * 2 * Pi;
+					tempejphase = complex <double>(cos(tempphase), sin(tempphase));
+					Ex_R[i][j] = ComMul(Ex_R[i][j], tempejphase);  // 只做相位变换
+					Ey_R[i][j] = ComMul(Ey_R[i][j], tempejphase);
+					Ez_R[i][j] = ComMul(Ez_R[i][j], tempejphase);
+				}
+				else if (dir_t < -0.0000000001)   // 平面在反射面的后面
+				{
+					plane_t = IntersectPlane(InterPoint, Reflight,
+						Org_Source, R_Source, R_Plane[i][j]);
+					d2 = CalDistance(InterPoint, R_Plane[i][j]);
+					d1 = CalDistance(InterPoint, Plane[i][j]);
+
+					if (plane_t < 0.0)  // 虚拟面2在反射面的后面
+						tempphase = (d1 + d2) / lamda * 2 * Pi;
+					else
+						tempphase = (d1 - d2) / lamda * 2 * Pi;
+					tempejphase = complex <double>(cos(tempphase), sin(tempphase));
+					Ex_R[i][j] = ComMul(Ex_R[i][j], tempejphase); // 只做相位变换
+					Ey_R[i][j] = ComMul(Ey_R[i][j], tempejphase);
+					Ez_R[i][j] = ComMul(Ez_R[i][j], tempejphase);
+				}
+				else  // 平面与反射面相交
+				{
+					R_Plane[i][j] = InterPoint;
+				}
+			}
+		} // endloop		
+	
+	}//omp
+	*/
+	
+		for (int i = 0; i < N; i++)//光线
+		{
+			for (int j = 0; j < M; j++)//光线
+			{
+				Ex_R[i][j] = 0;
+				Ey_R[i][j] = 0;
+				Ez_R[i][j] = 0;
+				R_Plane[i][j] = 0;
+				rayTracing.calcNormalOfLine_Mirror(Plane[i][j],
+					n_Plane[i][j], n_light,
+					InterPoint, isInter, dir_t);
+				if (!isInter)
+					continue;
+				n_light.Normalization();
+
+				// 将反射面法向量转化到源坐标系上(先转换到绝对坐标系)
+				n_light_Plane = rotatMatrixSou * n_light;
+				n_light_Plane.Normalization();  // 单位化
+												// 只做极化变换
+				CalReflectExyz(n_light_Plane, Ex1[i][j], Ey1[i][j],
+					Ez1[i][j], Ex_R[i][j], Ey_R[i][j], Ez_R[i][j]);
+
+				// 反射光线
+				Reflight = RayTracing::reflectLight(n_Plane[i][j], n_light);
+				Rn_Plane[i][j] = Reflight;
+
+				if (dir_t > 0.0000000001)  // 平面在反射面的前面
+				{
+					plane_t = IntersectPlane(InterPoint, Reflight,
+						Org_Source, R_Source, R_Plane[i][j]);
+					d2 = CalDistance(InterPoint, R_Plane[i][j]);
+					d1 = CalDistance(InterPoint, Plane[i][j]);
+
+					if (plane_t > 0.0)  // 虚拟面2在反射面的前面
+						tempphase = -(d1 + d2) / lamda * 2 * Pi;
+					else
+						tempphase = -(d1 - d2) / lamda * 2 * Pi;
+					tempejphase = complex <double>(cos(tempphase), sin(tempphase));
+					Ex_R[i][j] = ComMul(Ex_R[i][j], tempejphase);  // 只做相位变换
+					Ey_R[i][j] = ComMul(Ey_R[i][j], tempejphase);
+					Ez_R[i][j] = ComMul(Ez_R[i][j], tempejphase);
+				}
+				else if (dir_t < -0.0000000001)   // 平面在反射面的后面
+				{
+					plane_t = IntersectPlane(InterPoint, Reflight,
+						Org_Source, R_Source, R_Plane[i][j]);
+					d2 = CalDistance(InterPoint, R_Plane[i][j]);
+					d1 = CalDistance(InterPoint, Plane[i][j]);
+
+					if (plane_t < 0.0)  // 虚拟面2在反射面的后面
+						tempphase = (d1 + d2) / lamda * 2 * Pi;
+					else
+						tempphase = (d1 - d2) / lamda * 2 * Pi;
+					tempejphase = complex <double>(cos(tempphase), sin(tempphase));
+					Ex_R[i][j] = ComMul(Ex_R[i][j], tempejphase); // 只做相位变换
+					Ey_R[i][j] = ComMul(Ey_R[i][j], tempejphase);
+					Ez_R[i][j] = ComMul(Ez_R[i][j], tempejphase);
+				}
+				else  // 平面与反射面相交
+				{
+					R_Plane[i][j] = InterPoint;
+				}
+			}
+		} // endloop	
+
+		
 	CalAmplitude();  // 只做幅度变换
 
 	Matrix4D rotatMatrixSou1 = Matrix4D::getRotateMatrix(

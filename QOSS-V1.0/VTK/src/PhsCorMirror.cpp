@@ -9,14 +9,16 @@
 #include <vtkTransform.h>
 #include <vtkTransformPolyDataFilter.h>
 #include <../Calculation/RayTracing.h>
-
+using namespace std;
 PhsCorMirror::PhsCorMirror()
+	//:lattice(201,vector<Vector3>(201,Vector3()))
 {
 	type = PHSCORMIRROR;
 }
 
 PhsCorMirror::~PhsCorMirror()
 {
+
 }
 
 void PhsCorMirror::calPolyData(double ds)
@@ -145,9 +147,9 @@ bool PhsCorMirror::sampling(double ds, double length, const Vector3& central,
 	Matrix4D R_Matrix = R_rotatMatrix * R_translateMatrix;
 
 	int N = ceil(length / ds) + 1;
-	lattice.resize(N);
+	this->lattice.resize(N);
 	for (int i = 0; i < N; i++)
-		lattice[i].resize(N);
+		this->lattice[i].resize(N);
 	for (int i = 0; i < N; i++)
 		for (int j = 0; j < N; j++)
 		{

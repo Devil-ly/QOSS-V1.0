@@ -8,7 +8,7 @@
 #include "Position3D.h"	//公用
 #include "Matrix4D.h"	//公用
 #include "Vector3D.h"	//公用
-//注意这里不些引用
+//删去不必要的 -20180321
 
 using namespace std;
 
@@ -21,14 +21,14 @@ public:
 	//This Function Set Up the LowOrder Vlasov Radiator Computation
 	void SetUpLowOrderVlasovRadiator(int _WG_m, int _WG_n, double _Frequency, double _Radius, double _F, int _Ns, int _OmpNum);
 	void SetUpAperturePlane(Position3D _AperturePosition, Vector3D _ApertureDirection, Vector3D _UDirection, Vector3D _VDirection, int _Nu, int _Nv, double _Lu, double _Lv);
-	void WriteApertureDataToFile();
 	void SetInt(int input);
 	void run();
 	void SetpFun(void(*pFun)(int));
 	void SetReturnInt(void(*returnint)(int, void*), void *_user);  // 注册回调函数
 	void SetReturnFloat(void(*returnFloat)(float, void*), void*_user);// 注册回调函数
-	void SetProFieldFileName(const char* _filename);
-	void GetProFieldE(vector<vector<complex<float>>>& _Eu, vector<vector<complex<float>>>& _Ev, int _Nu, int _Nv);
+	void WriteApertureDataToFile(const char* _filename);
+	void GetProFieldE(vector<vector<complex<double>>>& _Eu, vector<vector<complex<double>>>& _Ev, int _Nu, int _Nv);
+	void LoadProFieldE(const char* _filename, vector<vector<complex<double>>>& _Eu, vector<vector<complex<double>>>& _Ev, int _Nu, int _Nv);
 
 private:
 	// 回调函数指针
@@ -97,9 +97,9 @@ public:
 	int Domian_num_pml;
 
 	//描述模型的参数数组
-	int*** EFlag;
-	float *** EpsR;
-	float *** EpsI;
+	///int*** EFlag;
+	///float *** EpsR;
+	///float *** EpsI;
 
 	float cdt;
 	float Requireddt;

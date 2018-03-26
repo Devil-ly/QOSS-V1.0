@@ -1424,10 +1424,11 @@ void mainWindow::toReceiveFDTDStop()
 
 void mainWindow::on_PhaseCor()
 {
-	if (phsCorprogressDialog)
-	{
-		phsCorprogressDialog->show();
-	}
+
+//if (phsCorprogressDialog)
+	//{
+	//	phsCorprogressDialog->show();
+	//}
 	if (!myData->getSourceField()) // 如果没有设置源 不能计算
 	{
 		switch (QMessageBox::question(this, tr("Question"),

@@ -418,6 +418,7 @@ void CFDTD::SetExcPort(int _Nz_exc, int _Nx_exc, int _Ny_exc, int _Px_exc, int _
 	}
 
 	//cout for check
+	/*
 	FILE *ExcField;
 	ExcField = fopen("./ExcField.dat", "wb");
 
@@ -444,6 +445,7 @@ void CFDTD::SetExcPort(int _Nz_exc, int _Nx_exc, int _Ny_exc, int _Px_exc, int _
 		}
 	}
 	fclose(ExcField);
+	*/
 }
 //Setup Model for Update
 void CFDTD::SetupModel(int*** _EpsMap, float*** _Esig) { 
@@ -2218,7 +2220,9 @@ void CFDTD::Output(){
 	FILE *fdtd;
 	if(computed == 0){//checking
 		if(nn%Step2Show == 0){
+			//输出瞬时场分布
 			//cout<<Despath<<" "<<FileoutPath<<endl;
+			/*
 			fstream FieldFile;
 			FieldFile.open("./sizeXOZ.txt", ios::out);
 			FieldFile << Nx << " " << Nz << endl;
@@ -2255,6 +2259,7 @@ void CFDTD::Output(){
 				}
 			}
 			FieldFile.close();
+			*/
 		}
 	}
 	if (timemode == 0) {//靠这个输出 DFT 
@@ -2810,16 +2815,6 @@ void CFDTD::AddSourceE(){//Excitation Port
 			//for (ii = 1; ii <= Nx_cal; ii++) {
 			for(ii = 1; ii<Nx_cal;ii+=AVX_Count){
 				i = ii + num_pml;
-				//Ex
-				//cosphase = Ex_AP_cos[j][i];	sinphase = Ex_AP_sin[j][i];
-				//timevalue = Ex_AP_mag[j][i];
-				//timevalue = timevalue*(cosnt*cosphase - sinnt*sinphase);
-				//Ex[k][j][i] = Ex[k][j][i] + timevalue;
-				//Ey
-				//cosphase = Ey_AP_cos[j][i];	sinphase = Ey_AP_sin[j][i];
-				//timevalue = Ey_AP_mag[j][i];
-				//timevalue = timevalue*(cosnt*cosphase - sinnt*sinphase);
-				//Ey[k][j][i] = Ey[k][j][i] + timevalue;
 
 				//Ex
 				AVX_E = _mm256_loadu_ps(Ex[k][j]+i);
@@ -2874,16 +2869,6 @@ void CFDTD::AddSourceH(){
 			for(ii = 1; ii<Nx_cal; ii+=AVX_Count){
 			//for (ii = 1; ii <= Nx_cal; ii++) {
 				i = ii + num_pml;
-				//Hx
-				//cosphase = Hx_AP_cos[j][i];	sinphase = Hx_AP_sin[j][i];
-				//timevalue = Hx_AP_mag[j][i];
-				//timevalue = timevalue*(cosnt*cosphase - sinnt*sinphase);
-				//Hx[k][j][i] = Hx[k][j][i] + timevalue;
-				//Hy
-				//cosphase = Hy_AP_cos[j][i];	sinphase = Hy_AP_sin[j][i];
-				//timevalue = Hy_AP_mag[j][i];
-				//timevalue = timevalue*(cosnt*cosphase - sinnt*sinphase);
-				//Hy[k][j][i] = Hy[k][j][i] + timevalue;
 
 				//Hx
 				AVX_H = _mm256_loadu_ps(Hx[k][j] + i);

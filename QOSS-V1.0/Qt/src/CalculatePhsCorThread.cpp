@@ -18,7 +18,7 @@ void CalculatePhsCorThread::setDs_Length(int dsIndex, double length)
 	switch (dsIndex)
 	{
 	case 0:
-		ds = length / 150;
+		ds = length / 100;
 		break;
 	case 1:
 		ds = length / 200;
@@ -107,11 +107,12 @@ void CalculatePhsCorThread::run()
 	Ev_mirror = rotatMatrixSou1 * Ev_mirror;
 	En_mirror = rotatMatrixSou1 * En_mirror;
 
-	int N_mirror0 = phsCorMirror->getLattice().size();
+	//int N_mirror0 = phsCorMirror->getLattice().size();
+	int N_mirror0 = 201;
 	vector<vector<Vector3>> mirror1(N_mirror0, vector<Vector3>(N_mirror0, 0));
 
 	PhaseCorrection M;
-	double Target_W = 0.025;
+	double Target_W = 0.016;
 	M.Set(myData->getFrequency(), Target_W, N_mirror0,
 		myData->getPhsCorField()->getEx().size(),
 		phsCorMirror->getLattice(),

@@ -30,14 +30,14 @@ public:
 	//This Function Set Up the LowOrder Vlasov Radiator Computation
 	void SetUpLowOrderVlasovRadiator(int _WG_m, int _WG_n, double _Frequency, double _Radius, double _F, int _Ns, int _OmpNum);
 	void SetUpAperturePlane(Position3D _AperturePosition, Vector3D _ApertureDirection, Vector3D _UDirection, Vector3D _VDirection, int _Nu, int _Nv, double _Lu, double _Lv);
-	void WriteApertureDataToFile();
 	void SetInt(int input);
 	void run();
 	void SetpFun(void(*pFun)(int));
 	void SetReturnInt(void(*returnint)(int, void*), void *_user);  // 注册回调函数
 	void SetReturnFloat(void(*returnFloat)(float, void*), void*_user);// 注册回调函数
-	void SetProFieldFileName(const char* _filename);
-	void GetProFieldE(vector<vector<complex<float>>>& _Eu, vector<vector<complex<float>>>& _Ev, int _Nu, int _Nv);
+	void WriteApertureDataToFile(const char* _filename);
+	void GetProFieldE(vector<vector<complex<double>>>& _Eu, vector<vector<complex<double>>>& _Ev, int _Nu, int _Nv);
+	void LoadProFieldE(const char* _filename, vector<vector<complex<double>>>& _Eu, vector<vector<complex<double>>>& _Ev, int _Nu, int _Nv);
 
 private:
 	// 回调函数指针
@@ -84,7 +84,6 @@ public:
 	vector<vector<complex<float>>> Ev;
 	char* FILENAME;
 
-
 	//圆电模式辐射器结构参量
 	double PHId;
 	double THETAd;
@@ -97,18 +96,11 @@ public:
 	float Lp;
 	float ds;
 
-
-
 	//建立画模型用  全局变量
 	int Domian_Nx;
 	int Domian_Ny;
 	int Domain_Nz;
 	int Domian_num_pml;
-
-	//描述模型的参数数组
-	int*** EFlag;
-	float *** EpsR;
-	float *** EpsI;
 
 	float cdt;
 	float Requireddt;
@@ -116,8 +108,7 @@ public:
 	int N_spa = 10;
 	int OmpNum = 4;
 
-	//fstream logfile;
-
+	//fstream logfile
 
 };
 

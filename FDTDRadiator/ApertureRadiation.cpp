@@ -1,15 +1,14 @@
 #include "ApertureRadiation.h"
 
 
-
 ApertureRadiation::ApertureRadiation()
 {
-
+	this->Freqs = NULL;
 }
 
 ApertureRadiation::~ApertureRadiation()
 {
-	Free_1D(Freqs);	Freqs = NULL;//动态申请的内存，清理掉
+	Free_1D(this->Freqs);	this->Freqs = NULL;//动态申请的内存，清理掉
 }
 
 void ApertureRadiation::SetReturnFloat(void(*returnFloat)(float, void*), void *_user)
@@ -23,42 +22,42 @@ void ApertureRadiation::SetLogfile(fstream* logAdd) {
 }
 
 void ApertureRadiation::SetUpHuygens(Position3D _SourceCenter, int _Nx, int _Ny, int _Nz, float _dx, float _dy, float _dz) {
-	SourceCenter = _SourceCenter;
-	Nx = _Nx;
-	Ny = _Ny;
-	Nz = _Nz;
-	dx = _dx;
-	dy = _dy;
-	dz = _dz;
+	this->SourceCenter = _SourceCenter;
+	this->Nx = _Nx;
+	this->Ny = _Ny;
+	this->Nz = _Nz;
+	this->dx = _dx;
+	this->dy = _dy;
+	this->dz = _dz;
 }
 
 void ApertureRadiation::SetUpFrequency(int _NumFreq, float _CenterFreq, float _Bandwidth){
-	NumFreq = _NumFreq;
-	Freqs = Allocate_1D(Freqs, NumFreq);
+	this->NumFreq = _NumFreq;
+	this->Freqs = Allocate_1D(this->Freqs, NumFreq);
 	if (NumFreq > 1) {//不止一个频点
-		for (int i = 0; i < NumFreq; i++) {
-			Freqs[i] = _Bandwidth*float(i)/(NumFreq - 1) + _CenterFreq - _Bandwidth*0.5;
+		for (int i = 0; i < this->NumFreq; i++) {
+			this->Freqs[i] = _Bandwidth*float(i)/(this->NumFreq - 1) + _CenterFreq - _Bandwidth*float(0.5);
 		}
 	}
 	else { //仅有一个频点
-		Freqs[0] = _CenterFreq;
+		this->Freqs[0] = _CenterFreq;
 	}
 }
 
 //设置
 void ApertureRadiation::SetUpPropagatedAperture(Position3D _ApertureCenter, Vector3D _ApertureDirection, Vector3D _UDirection, Vector3D _VDirection, float _Lu, float _Lv, int _Nu, int _Nv) {
-	ApertureCenter = _ApertureCenter;	//出射口面中心	
-	ApertureDirection = _ApertureDirection;		//出射口面指向
-	UDirection = _UDirection;	//U direction
-	VDirection = _VDirection;	//V Direction
+	this->ApertureCenter = _ApertureCenter;	//出射口面中心	
+	this->ApertureDirection = _ApertureDirection;		//出射口面指向
+	this->UDirection = _UDirection;	//U direction
+	this->VDirection = _VDirection;	//V Direction
 	//Vector3D key;	//只是为了调用crossProduct
 	//VDirection = key.crossProduct(ApertureDirection, UDirection);	//V direction
-	Lu = _Lu;							//出射口面U方向尺寸			
-	Lv = _Lv;							//出射口面V方向尺寸
-	Nu = _Nu;							//出射口面U方向采样点数
-	Nv = _Nv;							//出射口面V方向采样点数
-	du = Lu / (Nu - 1);					//注意： Nu为奇数！
-	dv = Lv / (Nv - 1);					//注意： Nv为奇数！
+	this->Lu = _Lu;							//出射口面U方向尺寸			
+	this->Lv = _Lv;							//出射口面V方向尺寸
+	this->Nu = _Nu;							//出射口面U方向采样点数
+	this->Nv = _Nv;							//出射口面V方向采样点数
+	this->du = this->Lu / (this->Nu - 1);					//注意： Nu为奇数！
+	this->dv = this->Lv / (this->Nv - 1);					//注意： Nv为奇数！
 	//cout << "discrete interval of Aperture: " << du << " " << dv << endl;
 } 
 
@@ -66,25 +65,29 @@ void ApertureRadiation::SetUpPropagatedAperture(Position3D _ApertureCenter, Vect
 void ApertureRadiation::Propagation5FaceBox(vector<vector<complex<float>>>& _Eu, vector<vector<complex<float>>>& _Ev, complex<float>* _HuygensBoxData, int _OmpNum, int _Freqindex) {
 	//出射口面的内存从外部申请！ 这里只是计算
 	//用数组运算的方式进行盒子外推
-	if(returnFloat)
+	if(ApertureRadiation::returnFloat)
 	{
-		returnFloat(0.0, user);
+		ApertureRadiation::returnFloat(0.0, ApertureRadiation::user);
 	}
 
 
 	int i, j, k;
 	int ii, jj;
+	
 	//惠更斯面的位置信息
-	float* px;	px = Allocate_1D(px, Nx);	for (i = 0; i < Nx; i++) { px[i] = (i + 0.5 - Nx / 2.0)*dx + SourceCenter.X(); }
-	float* py;	py = Allocate_1D(py, Ny);	for (j = 0; j < Ny; j++) { py[j] = (j + 0.5 - Ny / 2.0)*dy + SourceCenter.Y(); }
-	float* pz;	pz = Allocate_1D(pz, Nz);	for (k = 0; k < Nz; k++) { pz[k] = (k + 0.5 - Nz / 2.0)*dz + SourceCenter.Z(); }
+	float* px;	px = NULL;	px = Allocate_1D(px, ApertureRadiation::Nx);
+	for (i = 0; i < Nx; i++) { px[i] = (i + 0.5 - ApertureRadiation::Nx / 2.0)*ApertureRadiation::dx + ApertureRadiation::SourceCenter.X(); }
+	float* py;	py = NULL;		py = Allocate_1D(py, ApertureRadiation::Ny);
+	for (j = 0; j < Ny; j++) { py[j] = (j + 0.5 - ApertureRadiation::Ny / 2.0)*ApertureRadiation::dy + ApertureRadiation::SourceCenter.Y(); }
+	float* pz;	pz = NULL; pz = Allocate_1D(pz, ApertureRadiation::Nz);
+	for (k = 0;	k < Nz; k++) { pz[k] = (k + 0.5 - ApertureRadiation::Nz / 2.0)*ApertureRadiation::dz + ApertureRadiation::SourceCenter.Z(); }
 
 	float x_yoz_0, x_yoz_1, y_xoz_0, y_xoz_1, z_xoy_1;//各个面的位置
-	x_yoz_0 = SourceCenter.X() - Nx*dx / 2.0;	//yoz-面的位置 X
-	x_yoz_1 = SourceCenter.X() + Nx*dx / 2.0;	//yoz+面的位置 X
-	y_xoz_0 = SourceCenter.Y() - Ny*dy / 2.0;	//xoz-面的位置 Y
-	y_xoz_1 = SourceCenter.Y() + Ny*dy / 2.0;	//xoz+面的位置 Y
-	z_xoy_1 = SourceCenter.Z() + Nz*dz / 2.0;	//xoy+面的位置 Z
+	x_yoz_0 = ApertureRadiation::SourceCenter.X() - ApertureRadiation::Nx * ApertureRadiation::dx * float(0.5);	//yoz-面的位置 X
+	x_yoz_1 = ApertureRadiation::SourceCenter.X() + ApertureRadiation::Nx * ApertureRadiation::dx * float(0.5);	//yoz+面的位置 X
+	y_xoz_0 = ApertureRadiation::SourceCenter.Y() - ApertureRadiation::Ny * ApertureRadiation::dy * float(0.5);	//xoz-面的位置 Y
+	y_xoz_1 = ApertureRadiation::SourceCenter.Y() + ApertureRadiation::Ny * ApertureRadiation::dy * float(0.5);	//xoz+面的位置 Y
+	z_xoy_1 = ApertureRadiation::SourceCenter.Z() + ApertureRadiation::Nz * ApertureRadiation::dz * float(0.5);	//xoy+面的位置 Z
 	//惠更斯面计算的频率信息
 	float computeFreq;	computeFreq = Freqs[_Freqindex];
 
@@ -96,7 +99,7 @@ void ApertureRadiation::Propagation5FaceBox(vector<vector<complex<float>>>& _Eu,
 	int N1, N2;
 
 	//Eigen::Aligned128;
-	Eigen::setCpuCacheSizes(32768,262144,2621440);
+	//Eigen::setCpuCacheSizes(32768,262144,2621440);
 	
 	//Array更合适
 	ArrayXcf Jx;	ArrayXcf Jy;	ArrayXcf Jz;	//表面电流	切向磁场
@@ -110,9 +113,9 @@ void ApertureRadiation::Propagation5FaceBox(vector<vector<complex<float>>>& _Eu,
 	complex<float> zero(0.0, 0.0);
 	float dsds;
 	//各惠更斯面的尺寸
-	int SizeXOY = Nx*Ny;
-	int SizeXOZ = Nx*Nz;
-	int SizeYOZ = Ny*Nz;
+	int SizeXOY = ApertureRadiation::Nx * ApertureRadiation::Ny;
+	int SizeXOZ = ApertureRadiation::Nx * ApertureRadiation::Nz;
+	int SizeYOZ = ApertureRadiation::Ny * ApertureRadiation::Nz;
 	//惠更斯面的总采样点数
 	int TotalSize = (SizeXOY + SizeXOZ * 2 + SizeYOZ * 2);
 
@@ -129,29 +132,29 @@ void ApertureRadiation::Propagation5FaceBox(vector<vector<complex<float>>>& _Eu,
 	ShiftFreq = _Freqindex*(SizeXOY + SizeXOZ * 2 + SizeYOZ * 2) * 4;	//
 	ShiftFace = 0;
 	ShiftEx = 0;
-	ShiftEy = Nx*Ny * 1;
+	ShiftEy = SizeXOY;
 	ShiftEz = 0;	//Empty
-	ShiftHx = Nx*Ny * 2;
-	ShiftHy = Nx*Ny * 3;
+	ShiftHx = SizeXOY * 2;
+	ShiftHy = SizeXOY * 3;
 	ShiftHz = 0;	//Empty
-	dsds = dx*dy;
+	dsds = ApertureRadiation::dx * ApertureRadiation::dy;
 	//从HuygensBoxData中读取场值
-	for (j = 0; j < Ny; j++) {
-		for (i = 0; i < Nx; i++) {
-			Jx[i + j*Nx] = -nz*_HuygensBoxData[i + j*Nx + ShiftHy + ShiftFace + ShiftFreq] * dsds;		//ny*Hz - nz*Hy		-nz*Hy
-			Jy[i + j*Nx] = nz*_HuygensBoxData[i + j*Nx + ShiftHx + ShiftFace + ShiftFreq] * dsds;		//nz*Hx - nx*Hz		nz*Hx
-			Jz[i + j*Nx] = zero;																		//nx*Hy	- ny*Hx		0
-			Jmx[i + j*Nx] = nz*_HuygensBoxData[i + j*Nx + ShiftEy + ShiftFace + ShiftFreq] * dsds;		//nz*Ey - ny*Ez		nz*Ey
-			Jmy[i + j*Nx] = -nz*_HuygensBoxData[i + j*Nx + ShiftEx + ShiftFace + ShiftFreq] * dsds;		//nx*Ez - nz*Ex		-nz*Ex
-			Jmz[i + j*Nx] = zero;																		//ny*Ex - nx*Ey		0
+	for (j = 0; j < ApertureRadiation::Ny; j++) {
+		for (i = 0; i < ApertureRadiation::Nx; i++) {
+			Jx[i + j*ApertureRadiation::Nx] = _HuygensBoxData[i + j*ApertureRadiation::Nx + ShiftHy + ShiftFace + ShiftFreq] * (-nz * dsds);	//ny*Hz - nz*Hy		-nz*Hy
+			Jy[i + j*ApertureRadiation::Nx] = nz*_HuygensBoxData[i + j*ApertureRadiation::Nx + ShiftHx + ShiftFace + ShiftFreq] * dsds;			//nz*Hx - nx*Hz		nz*Hx
+			Jz[i + j*ApertureRadiation::Nx] = zero;																								//nx*Hy	- ny*Hx		0
+			Jmx[i + j*ApertureRadiation::Nx] = nz*_HuygensBoxData[i + j*ApertureRadiation::Nx + ShiftEy + ShiftFace + ShiftFreq] * dsds;		//nz*Ey - ny*Ez		nz*Ey
+			Jmy[i + j*ApertureRadiation::Nx] = -nz*_HuygensBoxData[i + j*ApertureRadiation::Nx + ShiftEx + ShiftFace + ShiftFreq] * dsds;		//nx*Ez - nz*Ex		-nz*Ex
+			Jmz[i + j*ApertureRadiation::Nx] = zero;																							//ny*Ex - nx*Ey		0
 		}
 	} 
 	//设置位置
-	for (j = 0; j < Ny; j++) {
-		for (i = 0; i < Nx; i++) {
-			Px[i + j*Nx] = px[i];
-			Py[i + j*Nx] = py[j];
-			Pz[i + j*Nx] = z_xoy_1;
+	for (j = 0; j < ApertureRadiation::Ny; j++) {
+		for (i = 0; i < ApertureRadiation::Nx; i++) {
+			Px[i + j*ApertureRadiation::Nx] = px[i];
+			Py[i + j*ApertureRadiation::Nx] = py[j];
+			Pz[i + j*ApertureRadiation::Nx] = z_xoy_1;
 		}
 	}
 	//第二个惠更斯面	XOZ_0	
@@ -164,23 +167,23 @@ void ApertureRadiation::Propagation5FaceBox(vector<vector<complex<float>>>& _Eu,
 	ShiftHx = SizeXOZ * 2;
 	ShiftHy = 0;//Empty
 	ShiftHz = SizeXOZ * 3;
-	dsds = dx*dz;
-	for (k = 0; k < Nz; k++) {
-		for (i = 0; i < Nx; i++) {
-			Jx[i + k*Nx + SizeXOY] = ny*_HuygensBoxData[i + k*Nx + ShiftHz + ShiftFace + ShiftFreq] * dsds;		//ny*Hz - nz*Hy		ny*Hz
-			Jy[i + k*Nx + SizeXOY] = zero;																		//nz*Hx - nx*Hz		0
-			Jz[i + k*Nx + SizeXOY] = -ny*_HuygensBoxData[i + k*Nx + ShiftHx + ShiftFace + ShiftFreq] * dsds;	//nx*Hy	- ny*Hx		-ny*Hx
-			Jmx[i + k*Nx + SizeXOY] = -ny*_HuygensBoxData[i + k*Nx + ShiftEz + ShiftFace + ShiftFreq] * dsds;	//nz*Ey - ny*Ez		-ny*Ez
-			Jmy[i + k*Nx + SizeXOY] = zero;																		//nx*Ez - nz*Ex		0
-			Jmz[i + k*Nx + SizeXOY] = ny*_HuygensBoxData[i + k*Nx + ShiftEx + ShiftFace + ShiftFreq] * dsds;	//ny*Ex - nx*Ey		ny*Ex
+	dsds = ApertureRadiation::dx*ApertureRadiation::dz;
+	for (k = 0; k < ApertureRadiation::Nz; k++) {
+		for (i = 0; i < ApertureRadiation::Nx; i++) {
+			Jx[i + k*ApertureRadiation::Nx + SizeXOY] = ny*_HuygensBoxData[i + k*ApertureRadiation::Nx + ShiftHz + ShiftFace + ShiftFreq] * dsds;		//ny*Hz - nz*Hy		ny*Hz
+			Jy[i + k*ApertureRadiation::Nx + SizeXOY] = zero;																		//nz*Hx - nx*Hz		0
+			Jz[i + k*ApertureRadiation::Nx + SizeXOY] = -ny*_HuygensBoxData[i + k*ApertureRadiation::Nx + ShiftHx + ShiftFace + ShiftFreq] * dsds;	//nx*Hy	- ny*Hx		-ny*Hx
+			Jmx[i + k*ApertureRadiation::Nx + SizeXOY] = -ny*_HuygensBoxData[i + k*ApertureRadiation::Nx + ShiftEz + ShiftFace + ShiftFreq] * dsds;	//nz*Ey - ny*Ez		-ny*Ez
+			Jmy[i + k*ApertureRadiation::Nx + SizeXOY] = zero;																		//nx*Ez - nz*Ex		0
+			Jmz[i + k*ApertureRadiation::Nx + SizeXOY] = ny*_HuygensBoxData[i + k*ApertureRadiation::Nx + ShiftEx + ShiftFace + ShiftFreq] * dsds;	//ny*Ex - nx*Ey		ny*Ex
 		}
 	}
 	//设置位置
-	for (k = 0; k < Nz; k++) {
-		for (i = 0; i < Nx; i++) {
-			Px[i + k*Nx + SizeXOY] = px[i];
-			Py[i + k*Nx + SizeXOY] = y_xoz_0;
-			Pz[i + k*Nx + SizeXOY] = pz[k];
+	for (k = 0; k < ApertureRadiation::Nz; k++) {
+		for (i = 0; i < ApertureRadiation::Nx; i++) {
+			Px[i + k*ApertureRadiation::Nx + SizeXOY] = px[i];
+			Py[i + k*ApertureRadiation::Nx + SizeXOY] = y_xoz_0;
+			Pz[i + k*ApertureRadiation::Nx + SizeXOY] = pz[k];
 		}
 	}
 	//第三个惠更斯面	XOZ_1	
@@ -193,24 +196,24 @@ void ApertureRadiation::Propagation5FaceBox(vector<vector<complex<float>>>& _Eu,
 	ShiftHx = SizeXOZ * 2;
 	ShiftHy = 0;//Empty
 	ShiftHz = SizeXOZ * 3;
-	dsds = dx*dz;
+	dsds = ApertureRadiation::dx * ApertureRadiation::dz;
 	//设置表面电磁流
-	for (k = 0; k < Nz; k++) {
-		for (i = 0; i < Nx; i++) {
-			Jx[i + k*Nx + SizeXOY + SizeXOZ] = ny*_HuygensBoxData[i + k*Nx + ShiftHz + ShiftFace + ShiftFreq] * dsds;		//ny*Hz - nz*Hy		ny*Hz
-			Jy[i + k*Nx + SizeXOY + SizeXOZ] = zero;																		//nz*Hx - nx*Hz		0
-			Jz[i + k*Nx + SizeXOY + SizeXOZ] = -ny*_HuygensBoxData[i + k*Nx + ShiftHx + ShiftFace + ShiftFreq] * dsds;		//nx*Hy	- ny*Hx		-ny*Hx
-			Jmx[i + k*Nx + SizeXOY + SizeXOZ] = -ny*_HuygensBoxData[i + k*Nx + ShiftEz + ShiftFace + ShiftFreq] * dsds;		//nz*Ey - ny*Ez		-ny*Ez
-			Jmy[i + k*Nx + SizeXOY + SizeXOZ] = zero;																		//nx*Ez - nz*Ex		0
-			Jmz[i + k*Nx + SizeXOY + SizeXOZ] = ny*_HuygensBoxData[i + k*Nx + ShiftEx + ShiftFace + ShiftFreq] * dsds;		//ny*Ex - nx*Ey		ny*Ex
+	for (k = 0; k < ApertureRadiation::Nz; k++) {
+		for (i = 0; i < ApertureRadiation::Nx; i++) {
+			Jx[i + k*ApertureRadiation::Nx + SizeXOY + SizeXOZ] = ny*_HuygensBoxData[i + k*ApertureRadiation::Nx + ShiftHz + ShiftFace + ShiftFreq] * dsds;		//ny*Hz - nz*Hy		ny*Hz
+			Jy[i + k*ApertureRadiation::Nx + SizeXOY + SizeXOZ] = zero;																		//nz*Hx - nx*Hz		0
+			Jz[i + k*ApertureRadiation::Nx + SizeXOY + SizeXOZ] = -ny*_HuygensBoxData[i + k*ApertureRadiation::Nx + ShiftHx + ShiftFace + ShiftFreq] * dsds;		//nx*Hy	- ny*Hx		-ny*Hx
+			Jmx[i + k*ApertureRadiation::Nx + SizeXOY + SizeXOZ] = -ny*_HuygensBoxData[i + k*ApertureRadiation::Nx + ShiftEz + ShiftFace + ShiftFreq] * dsds;		//nz*Ey - ny*Ez		-ny*Ez
+			Jmy[i + k*ApertureRadiation::Nx + SizeXOY + SizeXOZ] = zero;																		//nx*Ez - nz*Ex		0
+			Jmz[i + k*ApertureRadiation::Nx + SizeXOY + SizeXOZ] = ny*_HuygensBoxData[i + k*ApertureRadiation::Nx + ShiftEx + ShiftFace + ShiftFreq] * dsds;		//ny*Ex - nx*Ey		ny*Ex
 		}
 	}
 	//设置电磁流位置
-	for (k = 0; k < Nz; k++) {
-		for (i = 0; i < Nx; i++) {
-			Px[i + k*Nx + SizeXOY + SizeXOZ] = px[i];
-			Py[i + k*Nx + SizeXOY + SizeXOZ] = y_xoz_1;
-			Pz[i + k*Nx + SizeXOY + SizeXOZ] = pz[k];
+	for (k = 0; k < ApertureRadiation::Nz; k++) {
+		for (i = 0; i < ApertureRadiation::Nx; i++) {
+			Px[i + k*ApertureRadiation::Nx + SizeXOY + SizeXOZ] = px[i];
+			Py[i + k*ApertureRadiation::Nx + SizeXOY + SizeXOZ] = y_xoz_1;
+			Pz[i + k*ApertureRadiation::Nx + SizeXOY + SizeXOZ] = pz[k];
 		}
 	}
 
@@ -224,24 +227,24 @@ void ApertureRadiation::Propagation5FaceBox(vector<vector<complex<float>>>& _Eu,
 	ShiftHx = 0;//Empty
 	ShiftHy = SizeYOZ * 2;
 	ShiftHz = SizeYOZ * 3;
-	dsds = dy*dz;
+	dsds = ApertureRadiation::dy * ApertureRadiation::dz;
 	//设置表面电磁流
-	for (k = 0; k < Nz; k++) {
-		for (j = 0; j < Ny; j++) {
-			Jx[j + k*Ny + SizeXOY + SizeXOZ*2] = zero;																		//ny*Hz - nz*Hy		0
-			Jy[j + k*Ny + SizeXOY + SizeXOZ*2] = -nx*_HuygensBoxData[j + k*Ny + ShiftHz + ShiftFace + ShiftFreq] * dsds;	//nz*Hx - nx*Hz		-nx*Hz
-			Jz[j + k*Ny + SizeXOY + SizeXOZ*2] = nx*_HuygensBoxData[j + k*Ny + ShiftHy + ShiftFace + ShiftFreq] * dsds;		//nx*Hy	- ny*Hx		nx*Hy
-			Jmx[j + k*Ny + SizeXOY + SizeXOZ*2] = zero;																		//nz*Ey - ny*Ez		0
-			Jmy[j + k*Ny + SizeXOY + SizeXOZ*2] = nx*_HuygensBoxData[j + k*Ny + ShiftEz + ShiftFace + ShiftFreq] * dsds;	//nx*Ez - nz*Ex		nx*Ez
-			Jmz[j + k*Ny + SizeXOY + SizeXOZ*2] = -nx*_HuygensBoxData[j + k*Ny + ShiftEy + ShiftFace + ShiftFreq] * dsds;	//ny*Ex - nx*Ey		-nx*Ey
+	for (k = 0; k < ApertureRadiation::Nz; k++) {
+		for (j = 0; j < ApertureRadiation::Ny; j++) {
+			Jx[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2] = zero;																		//ny*Hz - nz*Hy		0
+			Jy[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2] = -nx*_HuygensBoxData[j + k*ApertureRadiation::Ny + ShiftHz + ShiftFace + ShiftFreq] * dsds;	//nz*Hx - nx*Hz		-nx*Hz
+			Jz[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2] = nx*_HuygensBoxData[j + k*ApertureRadiation::Ny + ShiftHy + ShiftFace + ShiftFreq] * dsds;		//nx*Hy	- ny*Hx		nx*Hy
+			Jmx[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2] = zero;																		//nz*Ey - ny*Ez		0
+			Jmy[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2] = nx*_HuygensBoxData[j + k*ApertureRadiation::Ny + ShiftEz + ShiftFace + ShiftFreq] * dsds;	//nx*Ez - nz*Ex		nx*Ez
+			Jmz[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2] = -nx*_HuygensBoxData[j + k*ApertureRadiation::Ny + ShiftEy + ShiftFace + ShiftFreq] * dsds;	//ny*Ex - nx*Ey		-nx*Ey
 		}
 	}
 	//设置位置
-	for (k = 0; k < Nz; k++) {
-		for (j = 0;j < Ny; j++) {
-			Px[j + k*Ny + SizeXOY + SizeXOZ*2] = x_yoz_0;
-			Py[j + k*Ny + SizeXOY + SizeXOZ*2] = py[j];
-			Pz[j + k*Ny + SizeXOY + SizeXOZ*2] = pz[k];
+	for (k = 0; k < ApertureRadiation::Nz; k++) {
+		for (j = 0;j < ApertureRadiation::Ny; j++) {
+			Px[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2] = x_yoz_0;
+			Py[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2] = py[j];
+			Pz[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2] = pz[k];
 		}
 	}
 
@@ -255,24 +258,24 @@ void ApertureRadiation::Propagation5FaceBox(vector<vector<complex<float>>>& _Eu,
 	ShiftHx = 0;//Empty
 	ShiftHy = SizeYOZ * 2;
 	ShiftHz = SizeYOZ * 3;
-	dsds = dy*dz;
+	dsds = ApertureRadiation::dy*ApertureRadiation::dz;
 	//设置表面电磁流
-	for (k = 0; k < Nz; k++) {
-		for (j = 0; j < Ny; j++) {
-			Jx[j + k*Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = zero;																	//ny*Hz - nz*Hy		0
-			Jy[j + k*Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = -nx*_HuygensBoxData[j + k*Ny + ShiftHz + ShiftFace + ShiftFreq] * dsds;	//nz*Hx - nx*Hz		-nx*Hz
-			Jz[j + k*Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = nx*_HuygensBoxData[j + k*Ny + ShiftHy + ShiftFace + ShiftFreq] * dsds;	//nx*Hy	- ny*Hx		nx*Hy
-			Jmx[j + k*Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = zero;																	//nz*Ey - ny*Ez		0
-			Jmy[j + k*Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = nx*_HuygensBoxData[j + k*Ny + ShiftEz + ShiftFace + ShiftFreq] * dsds;	//nx*Ez - nz*Ex		nx*Ez
-			Jmz[j + k*Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = -nx*_HuygensBoxData[j + k*Ny + ShiftEy + ShiftFace + ShiftFreq] * dsds;	//ny*Ex - nx*Ey		-nx*Ey
+	for (k = 0; k < ApertureRadiation::Nz; k++) {
+		for (j = 0; j < ApertureRadiation::Ny; j++) {
+			Jx[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = zero;																	//ny*Hz - nz*Hy		0
+			Jy[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = -nx*_HuygensBoxData[j + k*ApertureRadiation::Ny + ShiftHz + ShiftFace + ShiftFreq] * dsds;	//nz*Hx - nx*Hz		-nx*Hz
+			Jz[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = nx*_HuygensBoxData[j + k*ApertureRadiation::Ny + ShiftHy + ShiftFace + ShiftFreq] * dsds;	//nx*Hy	- ny*Hx		nx*Hy
+			Jmx[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = zero;																	//nz*Ey - ny*Ez		0
+			Jmy[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = nx*_HuygensBoxData[j + k*ApertureRadiation::Ny + ShiftEz + ShiftFace + ShiftFreq] * dsds;	//nx*Ez - nz*Ex		nx*Ez
+			Jmz[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = -nx*_HuygensBoxData[j + k*ApertureRadiation::Ny + ShiftEy + ShiftFace + ShiftFreq] * dsds;	//ny*Ex - nx*Ey		-nx*Ey
 		}
 	}
 	//设置电磁流位置
-	for (k = 0; k < Nz; k++) {
-		for (j = 0; j < Ny; j++) {
-			Px[j + k*Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = x_yoz_1;
-			Py[j + k*Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = py[j];
-			Pz[j + k*Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = pz[k];
+	for (k = 0; k < ApertureRadiation::Nz; k++) {
+		for (j = 0; j < ApertureRadiation::Ny; j++) {
+			Px[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = x_yoz_1;
+			Py[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = py[j];
+			Pz[j + k*ApertureRadiation::Ny + SizeXOY + SizeXOZ*2 + SizeYOZ] = pz[k];
 		}
 	}
 
@@ -282,8 +285,8 @@ void ApertureRadiation::Propagation5FaceBox(vector<vector<complex<float>>>& _Eu,
 	//调试：
 	//TotalSize = SizeXOY;
 
-	int* Size;	Size = Allocate_1D(Size, _OmpNum);
-	int* Start;	Start = Allocate_1D(Start, _OmpNum);
+	int* Size;	Size = NULL;	Size = Allocate_1D(Size, _OmpNum);
+	int* Start;	Start = NULL;	Start = Allocate_1D(Start, _OmpNum);
 	(*Logfile) << "Omp Division for Huygens Propagation: Total Size (number): " << TotalSize << endl;
 	for (int id = 0; id < _OmpNum; id++) {
 		Size[id] = TotalSize / _OmpNum;
@@ -364,12 +367,12 @@ void ApertureRadiation::Propagation5FaceBox(vector<vector<complex<float>>>& _Eu,
 		}
 		//Start Omp Running
 		//遍历场点
-		for (int jj = 0; jj < Nv; jj++) {
-			for (int ii = 0; ii < Nu; ii++) {
+		for (int jj = 0; jj < ApertureRadiation::Nv; jj++) {
+			for (int ii = 0; ii < ApertureRadiation::Nu; ii++) {
 				//观察点的位置
-				Tx = ApertureCenter.X() + (jj - (Nv-1) / 2.0)*dv*VDirection.X() + (ii - (Nu-1) / 2.0)*du*UDirection.X();
-				Ty = ApertureCenter.Y() + (jj - (Nv-1) / 2.0)*dv*VDirection.Y() + (ii - (Nu-1) / 2.0)*du*UDirection.Y();
-				Tz = ApertureCenter.Z() + (jj - (Nv-1) / 2.0)*dv*VDirection.Z() + (ii - (Nu-1) / 2.0)*du*UDirection.Z();
+				Tx = ApertureRadiation::ApertureCenter.X() + (jj - (ApertureRadiation::Nv-1) / 2.0)*ApertureRadiation::dv*ApertureRadiation::VDirection.X() + (ii - (ApertureRadiation::Nu-1) / 2.0)*ApertureRadiation::du*ApertureRadiation::UDirection.X();
+				Ty = ApertureRadiation::ApertureCenter.Y() + (jj - (ApertureRadiation::Nv-1) / 2.0)*ApertureRadiation::dv*ApertureRadiation::VDirection.Y() + (ii - (ApertureRadiation::Nu-1) / 2.0)*ApertureRadiation::du*ApertureRadiation::UDirection.Y();
+				Tz = ApertureRadiation::ApertureCenter.Z() + (jj - (ApertureRadiation::Nv-1) / 2.0)*ApertureRadiation::dv*ApertureRadiation::VDirection.Z() + (ii - (ApertureRadiation::Nu-1) / 2.0)*ApertureRadiation::du*ApertureRadiation::UDirection.Z();
 				//if(id == 0) cout << Tx << " " << Ty << " " << Tz << "    ";
 				//Set R and ExpR
 				//全是 向量的各项直接加减乘除，这样非常简洁
@@ -414,17 +417,17 @@ void ApertureRadiation::Propagation5FaceBox(vector<vector<complex<float>>>& _Eu,
 				TEy = Valy_omp.sum();
 				TEz = Valz_omp.sum();
 
-				Eu_omp(ii+jj*Nu,id) = TEx * UDirection.X() + TEy * UDirection.Y() + TEz * UDirection.Z();
+				Eu_omp(ii+jj*ApertureRadiation::Nu,id) = TEx * ApertureRadiation::UDirection.X() + TEy * ApertureRadiation::UDirection.Y() + TEz * ApertureRadiation::UDirection.Z();
 				//E dot u = Eu
-				Ev_omp(ii+jj*Nu,id) = TEx * VDirection.X() + TEy * VDirection.Y() + TEz * VDirection.Z();
+				Ev_omp(ii+jj*ApertureRadiation::Nu,id) = TEx * ApertureRadiation::VDirection.X() + TEy * ApertureRadiation::VDirection.Y() + TEz * ApertureRadiation::VDirection.Z();
 				//E dot v = Ev
 			}//ii
 			if (id == 0) {
 				//cout << ".";
 				(*Logfile) << ".";
-				if (returnFloat)
+				if (ApertureRadiation::returnFloat)
 				{
-					returnFloat(float(jj*1.0 / Nv*100.0), user);
+					ApertureRadiation::returnFloat(float(jj*1.0 / ApertureRadiation::Nv*100.0), ApertureRadiation::user);
 				}			
 			}
 		}//jj
@@ -440,8 +443,8 @@ void ApertureRadiation::Propagation5FaceBox(vector<vector<complex<float>>>& _Eu,
 	}//omp
 	//cout << "Huygens Propagation Done!" << endl;
 	(*Logfile) << "Huygens Propagation Done!" << endl;
-	for (int v = 0; v < Nv; v++) {
-		for (int u = 0; u < Nu; u++) {
+	for (int v = 0; v < ApertureRadiation::Nv; v++) {
+		for (int u = 0; u < ApertureRadiation::Nu; u++) {
 			for (int id = 0; id < _OmpNum; id++) {
 				_Eu[u][v] = _Eu[u][v] + Eu_omp(u + v*Nu, id);
 				_Ev[u][v] = _Ev[u][v] + Ev_omp(u + v*Nu, id);
