@@ -14,11 +14,16 @@ PhsCorMirror::PhsCorMirror()
 	//:lattice(201,vector<Vector3>(201,Vector3()))
 {
 	type = PHSCORMIRROR;
+	lattice = nullptr;
 }
 
 PhsCorMirror::~PhsCorMirror()
 {
-
+	if (lattice)
+	{
+		delete lattice;
+		lattice = nullptr;
+	}
 }
 
 void PhsCorMirror::calPolyData(double ds)
@@ -27,11 +32,11 @@ void PhsCorMirror::calPolyData(double ds)
 	vtkSmartPointer<vtkPoints> points =
 		vtkSmartPointer<vtkPoints>::New();
 
-	int N = lattice.size();
+	int N = (*lattice).size();
 	for (int i = 0; i < N; ++i)
 		for (int j = 0; j < N; ++j)
 		{
-			points->InsertNextPoint(lattice[i][j].x, lattice[i][j].y, lattice[i][j].z);
+			points->InsertNextPoint((*lattice)[i][j].x, (*lattice)[i][j].y, (*lattice)[i][j].z);
 		}
 	polyData = vtkSmartPointer<vtkPolyData>::New();
 	polyData->SetPoints(points);
@@ -80,9 +85,18 @@ void PhsCorMirror::sampling(double ds, double length,
 {
 	QuadricSurfaceMirror* mirror1 = dynamic_cast<QuadricSurfaceMirror*>(mirror);
 	int N = ceil(length / ds) + 1;
-	lattice.resize(N);
-	for (int i = 0; i < N; i++)
-		lattice[i].resize(N);
+
+	if (lattice)
+	{
+		delete lattice;
+		lattice = nullptr;
+	}
+	lattice = new vector<vector<Vector3>>(N, vector<Vector3>(N, Vector3()));
+
+	//lattice.resize(N);
+	//for (int i = 0; i < N; i++)
+	//	lattice[i].resize(N);
+
 	GraphTrans graphTrans = mirror1->getGraphTrans();
 	// 平移到mirror的局部坐标系
 	Vector3D RotateAsix(graphTrans.getRotate_x(),
@@ -113,7 +127,7 @@ void PhsCorMirror::sampling(double ds, double length,
 			double z = mirror1->calcZ(x + i*ds, y + j*ds);
 			Vector3 tempVec(x + i*ds, y + j*ds, z);
 			tempVec = Matrix * tempVec;
-			lattice[i][j] = tempVec;
+			(*lattice)[i][j] = tempVec;
 		}
 }
 
@@ -147,9 +161,16 @@ bool PhsCorMirror::sampling(double ds, double length, const Vector3& central,
 	Matrix4D R_Matrix = R_rotatMatrix * R_translateMatrix;
 
 	int N = ceil(length / ds) + 1;
-	this->lattice.resize(N);
-	for (int i = 0; i < N; i++)
-		this->lattice[i].resize(N);
+	if (lattice)
+	{
+		delete lattice;
+		lattice = nullptr;
+	}
+	lattice = new vector<vector<Vector3>>(N, vector<Vector3>(N, Vector3()));
+
+	//(*lattice).resize(N);
+	//for (int i = 0; i < N; i++)
+	//	this->lattice[i].resize(N);
 	for (int i = 0; i < N; i++)
 		for (int j = 0; j < N; j++)
 		{
@@ -161,20 +182,33 @@ bool PhsCorMirror::sampling(double ds, double length, const Vector3& central,
 			if (!isInter)
 				return false;
 
-			lattice[i][j] = R_Matrix * tempVec;
+			(*lattice)[i][j] = R_Matrix * tempVec;
 		}
 	return true;
+}
+
+const vector<vector<Vector3>>& PhsCorMirror::getLattice() const
+{
+	if (lattice)
+	{
+		return *lattice;
+	}
+	else
+		return vector<vector<Vector3>>(0, vector<Vector3>(0, Vector3()));
 }
 
 void PhsCorMirror::setLattice(const vector<vector<Vector3>> & temp)
 {
 	int N = temp.size();
-	lattice.resize(N);
-	for (int i = 0; i < N; i++)
-		lattice[i].resize(N);
+	if (lattice)
+	{
+		delete lattice;
+		lattice = nullptr;
+	}
+	lattice = new vector<vector<Vector3>>(N, vector<Vector3>(N, Vector3()));
 	for (int i = 0; i < N; i++)
 		for (int j = 0; j < N; j++)
 		{
-			lattice[i][j] = temp[i][j];
+			(*lattice)[i][j] = temp[i][j];
 		}
 }

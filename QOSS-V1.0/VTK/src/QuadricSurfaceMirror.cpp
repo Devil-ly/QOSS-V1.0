@@ -46,7 +46,7 @@ void QuadricSurfaceMirror::calPolyData(double ds)
 	//二次函数采样分辨率
 	vtkSmartPointer<vtkSampleFunction>sample = vtkSmartPointer<vtkSampleFunction>::New();
 	if (ds == 0)
-		sample->SetSampleDimensions(80, 80, 40);
+		sample->SetSampleDimensions(50, 50, 30);
 	else
 		sample->SetSampleDimensions(int(radius / ds) * 2,
 			int(radius / ds) * 2, int(-temp / ds) * 2); // 采样点和ds有关

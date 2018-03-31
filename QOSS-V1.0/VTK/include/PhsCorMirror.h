@@ -29,13 +29,13 @@ public:
 	bool sampling(double ds, double length, const Vector3& central,
 		const Vector3& direction, const GraphTrans& graphTrans, Mirror* mirror);
 
-	const vector<vector<Vector3>> & getLattice() const { return this->lattice; }
+	const vector<vector<Vector3>> & getLattice() const; 
 
 	void setLattice(const vector<vector<Vector3>> &);
 
-//protected:
+protected:
 
-	vector<vector<Vector3>> lattice;
+	vector<vector<Vector3>> *lattice;
 
 
 };

@@ -3,7 +3,6 @@
 #include "../Calculation/PVVA.h"
 #include "../Calculation/PhaseCorrection.h"
 #include "../VTK/include/PhsCorMirror.h"
-//#include ""
 
 #define Test
 
@@ -66,6 +65,12 @@ void CalculatePhsCorThread::run()
 	}
 	sendMainValue(1);
 	PhsCorMirror  *phsCorMirror;
+
+	//phsCorMirror = new PhsCorMirror;
+	//phsCorMirror->getLattice();
+	//vector<vector<Vector3>> test(2, vector<Vector3>(2, Vector3()));
+	//phsCorMirror->setLattice(test);
+	//cout << phsCorMirror << endl;
 	if (isNeedMesh)
 	{
 		phsCorMirror = new PhsCorMirror;

@@ -204,46 +204,41 @@ namespace  userInterface {
 		QRegExp regx("[0-9]+$");
 		QValidator *mvalidator = new QRegExpValidator(regx, mLineEdit);
 		mLineEdit->setValidator(mvalidator);
-		connect(mLineEdit, SIGNAL(textChanged(QString)),
-			this, SLOT(on_mLineEditChange(QString)));
+		
 
 		nLabel = new QLabel(tr("n:"));
 		nLineEdit = new QLineEdit(tr("1"));
 		nLabel->setBuddy(nLineEdit);
 		QValidator *nvalidator = new QRegExpValidator(regx, nLineEdit);
 		nLineEdit->setValidator(nvalidator);
-		connect(nLineEdit, SIGNAL(textChanged(QString)),
-			this, SLOT(on_nLineEditChange(QString)));
+
 
 		amplitudeLabel = new QLabel(tr("Amplitude:"));
 		amplitudeLineEdit = new QLineEdit(tr("1"));
 		amplitudeLabel->setBuddy(amplitudeLineEdit);
 		QValidator *amplitudevalidator = new QRegExpValidator(regx, amplitudeLineEdit);
 		amplitudeLineEdit->setValidator(amplitudevalidator);
-		connect(amplitudeLineEdit, SIGNAL(textChanged(QString)),
-			this, SLOT(on_amplitudeLineEditChange(QString)));
+
 
 		radiusLabel = new QLabel(tr("Waveguide radius:"));
 		radiusLineEdit = new QLineEdit(tr("0.0016"));
 		radiusLabel->setBuddy(radiusLineEdit);
-		connect(radiusLineEdit, SIGNAL(textChanged(QString)),
-			this, SLOT(on_radiusLineEditChange(QString)));
+
 
 		rotationLabel = new QLabel(tr("Rotation:"));
 		rotationComboBox = new QComboBox();
 		rotationLabel->setBuddy(rotationComboBox);
 		rotationComboBox->addItem(tr("Left"));
 		rotationComboBox->addItem(tr("Right"));
-		connect(rotationComboBox, SIGNAL(activated(int)),
-			this, SLOT(on_rotationComboBoxChange(int)));
+		
 
 		// 注册域  
-		registerField("type", typeComboBox);
-		registerField("rotation", rotationComboBox);
-		registerField("m", mLineEdit);
-		registerField("n", nLineEdit);
-		registerField("radius", radiusLineEdit);
-		registerField("amplitude", amplitudeLineEdit);
+		//registerField("type", typeComboBox);
+		//registerField("rotation", rotationComboBox);
+		//registerField("m", mLineEdit);
+		//registerField("n", nLineEdit);
+		//registerField("radius", radiusLineEdit);
+		//registerField("amplitude", amplitudeLineEdit);
 
 		QGridLayout *layout = new QGridLayout;
 		layout->setColumnMinimumWidth(0, 20);
@@ -298,6 +293,16 @@ namespace  userInterface {
 
 	void SourcePage::initializePage()
 	{
+		disconnect(mLineEdit, SIGNAL(textChanged(QString)),
+			this, SLOT(on_mLineEditChange(QString)));
+		disconnect(rotationComboBox, SIGNAL(activated(int)),
+			this, SLOT(on_rotationComboBoxChange(int)));
+		disconnect(radiusLineEdit, SIGNAL(textChanged(QString)),
+			this, SLOT(on_radiusLineEditChange(QString)));
+		disconnect(amplitudeLineEdit, SIGNAL(textChanged(QString)),
+			this, SLOT(on_amplitudeLineEditChange(QString)));
+		disconnect(nLineEdit, SIGNAL(textChanged(QString)),
+			this, SLOT(on_nLineEditChange(QString)));
 		switch (field("unitBox").toInt())
 		{
 		case 0:  // m
@@ -322,11 +327,18 @@ namespace  userInterface {
 			rotationComboBox->setEnabled(true);
 			mLineEdit->setEnabled(false);
 			mLineEdit->setText(tr("0"));
+			nLineEdit->setText(tr("1"));
+			amplitudeLineEdit->setText(tr("1"));
+			rotationComboBox->setCurrentIndex(0);
 			kind = 1;
 			radiusLabel->setHidden(false);
 			radiusLineEdit->setHidden(false);
 			radiusLineEdit->setText(QString::number(0.016 / unit));
-
+			radius = 0.016 / unit;
+			n = 1;
+			m = 0;
+			amplitude = 1;
+			rotation = 1;
 			MyData::getInstance()->setPattern(0);
 		}
 		else if (field("higherRadioButton").toBool())
@@ -336,12 +348,19 @@ namespace  userInterface {
 			rotationComboBox->setCurrentIndex(1);
 			rotationComboBox->setEnabled(true);
 			mLineEdit->setEnabled(true);
-			mLineEdit->setText(tr("1"));
+			mLineEdit->setText(tr("22"));
+			nLineEdit->setText(tr("6"));
+			amplitudeLineEdit->setText(tr("1"));
 			radiusLabel->setHidden(false);
 			radiusLineEdit->setHidden(false);
 			radiusLineEdit->setText(QString::number(0.064 / unit));
+			rotationComboBox->setCurrentIndex(0);
 			kind = 2;
-
+			rotation = 1;
+			n = 6;
+			m = 22;
+			amplitude = 1;
+			radius = 0.064 / unit;
 			MyData::getInstance()->setPattern(1);
 		}
 		else if (field("waveguideRadioButton").toBool())
@@ -369,7 +388,17 @@ namespace  userInterface {
 		default:
 			break;
 		}
-	
+		connect(mLineEdit, SIGNAL(textChanged(QString)),
+			this, SLOT(on_mLineEditChange(QString)));
+		connect(rotationComboBox, SIGNAL(activated(int)),
+			this, SLOT(on_rotationComboBoxChange(int)));
+		connect(radiusLineEdit, SIGNAL(textChanged(QString)),
+			this, SLOT(on_radiusLineEditChange(QString)));
+		connect(amplitudeLineEdit, SIGNAL(textChanged(QString)),
+			this, SLOT(on_amplitudeLineEditChange(QString)));
+		connect(nLineEdit, SIGNAL(textChanged(QString)),
+			this, SLOT(on_nLineEditChange(QString)));
+		updatePaint();
 	}
 
 	bool SourcePage::validatePage()
@@ -394,11 +423,11 @@ namespace  userInterface {
 		if (!source->FieldCalculation_Circular())
 		{
 			QMessageBox::warning(NULL, "Warning",
-				"A window has been opened. Please close and continue!");
+				"Error of input parameter!");
 			radiusLineEdit->setStyleSheet("background-color:rgba(255,0,0,255)");
 			return;
 		}
-
+		radiusLineEdit->setStyleSheet("background-color:rgba(255,255,255,255)");
 		vector<vector<complex<double>>> Ex, Ey;
 		source->GetEY(Ey);
 		source->GetEX(Ex);

@@ -97,6 +97,8 @@ protected:
 	vtkSmartPointer<vtkProperty> property;
 
 	vector<Restriction*> restrictions;
+
+
 private:
 
 };

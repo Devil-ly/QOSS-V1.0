@@ -1,5 +1,7 @@
 #include "MyData.h"
 #include "VTK/include/Mirror.h"
+#include "VTK/include/STLMirror.h"
+#include "VTK/include/Restriction.h"
 #include "VTK/include/PhsCorMirror.h"
 #include "VTK/include/ParabolicCylinder.h"
 #include "VTK/include/MirrorFactory.h"
@@ -93,6 +95,15 @@ void MyData::createDefaultMirror()
 		mirror3Position.updateTranslate(Vector3(0.02, 0, 0.4993));
 		mirror3Position.updateRotate(Vector3(0, 1, 0), -17.23-180);
 		//mirrors[2] = MirrorFactory::getMirror(ELLIPSOID, position[2]);
+		Restriction * restriction = new Restriction;
+		restriction->setDataByNum(0, 0.075);
+		restriction->setDataByNum(1, 0.5);
+		GraphTrans restrictionPosition;
+		restrictionPosition.updateTranslate(Vector3(-0.02, 0, 0.0786));
+		restrictionPosition.updateRotate(Vector3(0, 1, 0), 15.06);
+		restriction->setGraphTrans(restrictionPosition);
+		mirrors[1]->addRestriction(restriction);
+
 		mirrors[2] = MirrorFactory::getMirror(ELLIPSOID, mirror3Position);
 		//Mirror * test1 = MirrorFactory::getMirror(PARABOLOID, GraphTrans());
 		//PhsCorMirror  *test2 = new PhsCorMirror;
@@ -100,6 +111,23 @@ void MyData::createDefaultMirror()
 		//test2->updateData();
 		//mirrors[2] = test2;
 	}	
+	else if (1 == pattern) // 詢論
+	{
+		STLMirror* temp = new STLMirror;
+		temp->setNameFile("Mirror1.stl");
+		mirrors[0] = temp;
+		temp = new STLMirror;
+		temp->setNameFile("Mirror2.stl");
+		mirrors[1] = temp;
+		temp = new STLMirror;
+		temp->setNameFile("Mirror3.stl");
+		mirrors[2] = temp;
+		temp = new STLMirror;
+		numOfMirrors = 4; // for test
+		temp->setNameFile("TE226DenisovLauncher.stl");
+		mirrors[3] = temp;
+		
+	}
 }
 
 Mirror * MyData::getMirrorByNum(int num) const
@@ -128,9 +156,12 @@ void MyData::setLimitBox(const shared_ptr<LimitBox>&ptr)
 
 void MyData::createDefaultLigthShow()
 {
-	defaultLigthShow = make_shared<LightShow>(mirrors, numOfMirrors);
-	defaultLigthShow->createStartPointByRadiator(radiator);
-	defaultLigthShow->updateData();
+	if (0 == pattern) // 腴論
+	{
+		defaultLigthShow = make_shared<LightShow>(mirrors, numOfMirrors);
+		defaultLigthShow->createStartPointByRadiator(radiator);
+		defaultLigthShow->updateData();
+	}
 }
 
 void MyData::createRadiator()
@@ -138,9 +169,14 @@ void MyData::createRadiator()
 	if (0 == pattern) // 腴論
 	{
 		radiator = RadiatorFactory::getRadiator(LOWORDER, source);
+		radiator->calActorModel();
+		radiator->calActorRay();
 	}
-	radiator->calActorModel();
-	radiator->calActorRay();
+	else if (1 == pattern) // 詢論
+	{
+
+	}
+	
 }
 
 void MyData::setSourceField(Field *ptr)

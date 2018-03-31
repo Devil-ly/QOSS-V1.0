@@ -48,28 +48,42 @@ mainWindow::mainWindow(QWidget *parent)
 	}
 	myData = MyData::getInstance();
 
-	//创建默认辐射器
-	myData->createRadiator();
-	renderer->AddActor(myData->getRadiator()->getActorModel());
-	renderer->AddActor(myData->getRadiator()->getActorRay());
-
-	// 创建默认的镜子
-	myData->createDefaultMirror();
-	//for (int i = 0; i < myData->getNumOfMirrors(); ++i)
-	for (int i = 0; i < 3; ++i)
+	if (0 == myData->getPattern()) // 低阶
 	{
-		renderer->AddActor(myData->getMirrorByNum(i)->getActor());
+		//创建默认辐射器
+		myData->createRadiator();
+		renderer->AddActor(myData->getRadiator()->getActorModel());
+		renderer->AddActor(myData->getRadiator()->getActorRay());
+
+		// 创建默认的镜子
+		myData->createDefaultMirror();
+		//for (int i = 0; i < myData->getNumOfMirrors(); ++i)
+		for (int i = 0; i < 3; ++i)
+		{
+			renderer->AddActor(myData->getMirrorByNum(i)->getActor());
+		}
+
+		// 加入限制盒子
+		renderer->AddActor(myData->getLimitBox()->getActor());
+
+		// 创建默认的光线
+		myData->createDefaultLigthShow();
+		std::list<vtkSmartPointer<vtkActor>> tempActors =
+			myData->getDefaultLightShow()->getActors();
+		for (auto& x : tempActors)
+			renderer->AddActor(x);
+	}
+	else
+	{
+		// 创建默认的镜子
+		myData->createDefaultMirror();
+		//for (int i = 0; i < myData->getNumOfMirrors(); ++i)
+		for (int i = 0; i < 4; ++i)
+		{
+			renderer->AddActor(myData->getMirrorByNum(i)->getActor());
+		}
 	}
 
-	// 加入限制盒子
-	renderer->AddActor(myData->getLimitBox()->getActor());
-
-	// 创建默认的光线
-	myData->createDefaultLigthShow();
-	std::list<vtkSmartPointer<vtkActor>> tempActors = 
-		myData->getDefaultLightShow()->getActors();
-	for (auto& x : tempActors)
-		renderer->AddActor(x);
 	
 	double axesScale = myData->getLimitBox()->getMaxSize();
 	// 初始化vtk窗口
@@ -389,6 +403,10 @@ void mainWindow::createTreeWidgetItem()
 		childMirror->child(0)->setData(2, Qt::UserRole, QVariant(i));
 		mirrorTreeWidgetItem.push_back(childMirror);
 		childMirror->setExpanded(true);
+		if (myData->getMirrorByNum(i)->getRestriction(0))
+		{
+			childMirror->addChild(myData->getMirrorByNum(i)->getRestriction(0)->getTree());
+		}
 	}
 
 	// 盒子的tree
