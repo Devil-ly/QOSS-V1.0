@@ -15,6 +15,8 @@ namespace  userInterface {
 		//~CalculatePhsCorThread();
 
 		void setDs_Length(int dsIndex, double length);
+		void setTarget_W(double);
+
 
 	signals:
 		void sendMainValue(int);
@@ -39,6 +41,8 @@ namespace  userInterface {
 		double ds;
 		double length;
 		int dsIndex; // 用户选择的剖分精度 0粗 1标准 2细
+
+		double target_W; // 目标高斯波束束腰
 	};
 
 }

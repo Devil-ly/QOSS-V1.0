@@ -76,6 +76,9 @@ namespace calculation
 		// 给相位修正用
 		void getVirtualSurface(shared_ptr<Field>_field);
 
+		void SetReturnFloat(void(*returnFloat)(float, void*), void*_user);// 注册回调函数
+
+
 	private:
 
 		void Poynting(); //计算面的坡应廷矢量
@@ -155,6 +158,10 @@ namespace calculation
 		// 能量转化效率
 		double powerOfSource;
 		double efficiency; 
+
+		void(*returnFloat)(float, void*);
+		void *user; // 回调函数的类指针
+
 	};
 }
 

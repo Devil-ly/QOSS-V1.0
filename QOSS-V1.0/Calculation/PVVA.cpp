@@ -71,6 +71,9 @@ void PVVA::Initialization()
 	Ex_R = NULL;
 	Ey_R = NULL;
 	Ez_R = NULL;
+
+	returnFloat = NULL;
+	user = NULL;
 }
 
 void PVVA::setUnit(double factor)
@@ -198,6 +201,12 @@ void PVVA::getVirtualSurface(shared_ptr<Field>_field)
 	_field->setPlane(SourceGraphTrans, ds);
 	_field->setField(Ex1, Ey1);
 	_field->setShowPara(1, 1, 0);
+}
+
+void PVVA::SetReturnFloat(void(*returnFloat)(float, void *), void * _user)
+{
+	this->returnFloat = returnFloat;
+	this->user = _user;
 }
 
 void PVVA::updateSource_n(const Vector3& new_n)
@@ -645,6 +654,10 @@ void PVVA::InterVal()
 		{
 			Plane[i][j] = translateMatrix * rotatMatrix * Plane[i][j];
 		}
+	if (returnFloat) // 如果没有注册则不回调
+	{
+		returnFloat(90, user);
+	}
 	/*
 	ofstream outfile1("Ex_C.txt");
 	ofstream outfile2("Ey_C.txt");
@@ -864,6 +877,10 @@ void PVVA::setFre(double _fre)
 
 void PVVA::setMirror(Mirror * mirror)
 {
+	if (returnFloat) // 如果没有注册则不回调
+	{
+		returnFloat(0, user);
+	}
 	this->mirror = mirror;
 }
 
@@ -879,6 +896,10 @@ void PVVA::getField(Field * _field)
 	_field->setField(Ex1, Ey1, Ez1, Hx1, Hy1, Hz1);
 	_field->setShowPara(1, 1, 0);
 	_field->updateData();
+	if (returnFloat) // 如果没有注册则不回调
+	{
+		returnFloat(100, user);
+	}
 }
 
 void PVVA::CalZ0Theta()
@@ -901,6 +922,12 @@ void PVVA::CalZ0Theta()
 	R_Source = tempReflect;
 	R_Source.Normalization();
 	Poynting();
+
+	if (returnFloat) // 如果没有注册则不回调
+	{
+		returnFloat(10, user);
+	}
+
 	//z0 = 0.525;
 	//cout << "Distance of moving " << z0 << endl;
 }
@@ -1076,73 +1103,82 @@ void PVVA::Reflect()
 	}//omp
 	*/
 	
-		for (int i = 0; i < N; i++)//光线
+	for (int i = 0; i < N; i++)//光线
+	{
+		for (int j = 0; j < M; j++)//光线
 		{
-			for (int j = 0; j < M; j++)//光线
+			Ex_R[i][j] = 0;
+			Ey_R[i][j] = 0;
+			Ez_R[i][j] = 0;
+			R_Plane[i][j] = 0;
+			rayTracing.calcNormalOfLine_Mirror(Plane[i][j],
+				n_Plane[i][j], n_light,
+				InterPoint, isInter, dir_t);
+			if (!isInter)
+				continue;
+			n_light.Normalization();
+
+			// 将反射面法向量转化到源坐标系上(先转换到绝对坐标系)
+			n_light_Plane = rotatMatrixSou * n_light;
+			n_light_Plane.Normalization();  // 单位化
+											// 只做极化变换
+			CalReflectExyz(n_light_Plane, Ex1[i][j], Ey1[i][j],
+				Ez1[i][j], Ex_R[i][j], Ey_R[i][j], Ez_R[i][j]);
+
+			// 反射光线
+			Reflight = RayTracing::reflectLight(n_Plane[i][j], n_light);
+			Rn_Plane[i][j] = Reflight;
+
+			if (dir_t > 0.0000000001)  // 平面在反射面的前面
 			{
-				Ex_R[i][j] = 0;
-				Ey_R[i][j] = 0;
-				Ez_R[i][j] = 0;
-				R_Plane[i][j] = 0;
-				rayTracing.calcNormalOfLine_Mirror(Plane[i][j],
-					n_Plane[i][j], n_light,
-					InterPoint, isInter, dir_t);
-				if (!isInter)
-					continue;
-				n_light.Normalization();
+				plane_t = IntersectPlane(InterPoint, Reflight,
+					Org_Source, R_Source, R_Plane[i][j]);
+				d2 = CalDistance(InterPoint, R_Plane[i][j]);
+				d1 = CalDistance(InterPoint, Plane[i][j]);
 
-				// 将反射面法向量转化到源坐标系上(先转换到绝对坐标系)
-				n_light_Plane = rotatMatrixSou * n_light;
-				n_light_Plane.Normalization();  // 单位化
-												// 只做极化变换
-				CalReflectExyz(n_light_Plane, Ex1[i][j], Ey1[i][j],
-					Ez1[i][j], Ex_R[i][j], Ey_R[i][j], Ez_R[i][j]);
-
-				// 反射光线
-				Reflight = RayTracing::reflectLight(n_Plane[i][j], n_light);
-				Rn_Plane[i][j] = Reflight;
-
-				if (dir_t > 0.0000000001)  // 平面在反射面的前面
-				{
-					plane_t = IntersectPlane(InterPoint, Reflight,
-						Org_Source, R_Source, R_Plane[i][j]);
-					d2 = CalDistance(InterPoint, R_Plane[i][j]);
-					d1 = CalDistance(InterPoint, Plane[i][j]);
-
-					if (plane_t > 0.0)  // 虚拟面2在反射面的前面
-						tempphase = -(d1 + d2) / lamda * 2 * Pi;
-					else
-						tempphase = -(d1 - d2) / lamda * 2 * Pi;
-					tempejphase = complex <double>(cos(tempphase), sin(tempphase));
-					Ex_R[i][j] = ComMul(Ex_R[i][j], tempejphase);  // 只做相位变换
-					Ey_R[i][j] = ComMul(Ey_R[i][j], tempejphase);
-					Ez_R[i][j] = ComMul(Ez_R[i][j], tempejphase);
-				}
-				else if (dir_t < -0.0000000001)   // 平面在反射面的后面
-				{
-					plane_t = IntersectPlane(InterPoint, Reflight,
-						Org_Source, R_Source, R_Plane[i][j]);
-					d2 = CalDistance(InterPoint, R_Plane[i][j]);
-					d1 = CalDistance(InterPoint, Plane[i][j]);
-
-					if (plane_t < 0.0)  // 虚拟面2在反射面的后面
-						tempphase = (d1 + d2) / lamda * 2 * Pi;
-					else
-						tempphase = (d1 - d2) / lamda * 2 * Pi;
-					tempejphase = complex <double>(cos(tempphase), sin(tempphase));
-					Ex_R[i][j] = ComMul(Ex_R[i][j], tempejphase); // 只做相位变换
-					Ey_R[i][j] = ComMul(Ey_R[i][j], tempejphase);
-					Ez_R[i][j] = ComMul(Ez_R[i][j], tempejphase);
-				}
-				else  // 平面与反射面相交
-				{
-					R_Plane[i][j] = InterPoint;
-				}
+				if (plane_t > 0.0)  // 虚拟面2在反射面的前面
+					tempphase = -(d1 + d2) / lamda * 2 * Pi;
+				else
+					tempphase = -(d1 - d2) / lamda * 2 * Pi;
+				tempejphase = complex <double>(cos(tempphase), sin(tempphase));
+				Ex_R[i][j] = ComMul(Ex_R[i][j], tempejphase);  // 只做相位变换
+				Ey_R[i][j] = ComMul(Ey_R[i][j], tempejphase);
+				Ez_R[i][j] = ComMul(Ez_R[i][j], tempejphase);
 			}
-		} // endloop	
+			else if (dir_t < -0.0000000001)   // 平面在反射面的后面
+			{
+				plane_t = IntersectPlane(InterPoint, Reflight,
+					Org_Source, R_Source, R_Plane[i][j]);
+				d2 = CalDistance(InterPoint, R_Plane[i][j]);
+				d1 = CalDistance(InterPoint, Plane[i][j]);
 
-		
+				if (plane_t < 0.0)  // 虚拟面2在反射面的后面
+					tempphase = (d1 + d2) / lamda * 2 * Pi;
+				else
+					tempphase = (d1 - d2) / lamda * 2 * Pi;
+				tempejphase = complex <double>(cos(tempphase), sin(tempphase));
+				Ex_R[i][j] = ComMul(Ex_R[i][j], tempejphase); // 只做相位变换
+				Ey_R[i][j] = ComMul(Ey_R[i][j], tempejphase);
+				Ez_R[i][j] = ComMul(Ez_R[i][j], tempejphase);
+			}
+			else  // 平面与反射面相交
+			{
+				R_Plane[i][j] = InterPoint;
+			}
+		}
+	} // endloop	
+
+	if (returnFloat) // 如果没有注册则不回调
+	{
+		returnFloat(50, user);
+	}
+
 	CalAmplitude();  // 只做幅度变换
+
+	if (returnFloat) // 如果没有注册则不回调
+	{
+		returnFloat(60, user);
+	}
 
 	Matrix4D rotatMatrixSou1 = Matrix4D::getRotateMatrix(
 		SourceGraphTrans.getRotate_theta(), RotateAsixSou);
@@ -1172,6 +1208,11 @@ void PVVA::Reflect()
 			Ey_R[i][j] = complex<double>(tempReal.y, tempImag.y);
 			Ez_R[i][j] = complex<double>(tempReal.z, tempImag.z);
 		}
+	}
+
+	if (returnFloat) // 如果没有注册则不回调
+	{
+		returnFloat(70, user);
 	}
 
 	/*

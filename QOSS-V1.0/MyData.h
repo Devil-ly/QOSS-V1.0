@@ -75,6 +75,7 @@ public:
 	Field* getSourceField() const; 
 
 	Field* calculateByPVVA(double fre, double dis = 0.5, int N = 2);
+	int addField(Field*);
 	Field* getFieldByNum(int) const;
 
 	shared_ptr<Field> getPhsCorField() const { return phsCorField; }

@@ -36,6 +36,7 @@
 #include "Qt/include/EllipsoidWidget.h"
 #include "Qt/include/PhsCorProgressDialog.h"
 #include "Qt/include/FDTDProgressDialog.h"
+#include "Qt/include/PVVAProgressDialog.h"
 
 #include <Calculation/FDTDRadiator.h>
 
@@ -124,6 +125,7 @@ private slots:
 
 	void on_PhaseCor();
 	void toReceivePhaseCor(Mirror*);
+	void toReceivePVVAField(Field*);
 
 	// ------------------- 右键函数 ----------------------------------
 	void on_treeWidget_ContextMenuRequested(QPoint pos);// 右键菜单
@@ -248,6 +250,7 @@ private:
 	GraphTransWidget * tempWidget;
 	FDTDProgressDialog * FDTDprogressDialog;
 	PhsCorProgressDialog * phsCorprogressDialog;
+	PVVAProgressDialog * PVVAprogressDialog;
 	FDTDRadiator *FDTDradiator;
 	Field *radiatorField; //保存辐射器计算后的场
 

@@ -223,6 +223,14 @@ Field* MyData::calculateByPVVA(double fre, double dis, int N)
 	return tempField;
 }
 
+int MyData::addField(Field *tempField)
+{
+	fieldMap[fieldNum] = tempField;
+	int resNum = fieldNum;
+	fieldNum++;
+	return resNum;
+}
+
 Field * MyData::getFieldByNum(int index) const
 {
 	if (fieldMap.find(index) != fieldMap.end()) 

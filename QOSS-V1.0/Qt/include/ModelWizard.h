@@ -20,7 +20,7 @@
 
 #include "..\include\QPaintField.h"
 #include "..\include\QPaint2DMirror.h"
-#include "../Calculation/SourceModeGeneration.h"
+#include "..\Calculation\SourceModeGeneration.h"
 #include "MirrorPosition.h"
 
 namespace  userInterface {

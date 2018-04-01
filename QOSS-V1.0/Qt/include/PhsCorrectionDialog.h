@@ -17,6 +17,7 @@ namespace  userInterface {
 		~PhsCorrectionDialog();
 
 		void getData(int & dsIndex, double & length);
+		void getTarget(double&);
 
 		void setIsNeedMesh(bool isNeedMesh);
 	public slots:

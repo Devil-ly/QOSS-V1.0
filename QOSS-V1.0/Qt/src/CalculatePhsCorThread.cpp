@@ -117,7 +117,7 @@ void CalculatePhsCorThread::run()
 	vector<vector<Vector3>> mirror1(N_mirror0, vector<Vector3>(N_mirror0, 0));
 
 	PhaseCorrection M;
-	double Target_W = 0.016;
+	//double Target_W = 0.016;
 	M.Set(myData->getFrequency(), Target_W, N_mirror0,
 		myData->getPhsCorField()->getEx().size(),
 		phsCorMirror->getLattice(),
@@ -147,3 +147,7 @@ void CalculatePhsCorThread::killPhsCor()
 	deleteLater();
 }
 
+void CalculatePhsCorThread::setTarget_W(double temp)
+{
+	target_W = temp;
+}

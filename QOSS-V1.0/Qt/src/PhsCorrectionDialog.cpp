@@ -10,7 +10,7 @@ PhsCorrectionDialog::PhsCorrectionDialog(QWidget *parent)
 	setWindowTitle(tr("Phase Correction"));
 	
 	lengthLabel = new QLabel(tr("Length:"));
-	lengthLineEdit = new QLineEdit(tr("0.5"));
+	lengthLineEdit = new QLineEdit(tr("0.016"));
 	dsLabel = new QLabel(tr("Accuracy:"));
 	dsComboBox = new QComboBox;
 	dsComboBox->addItem(tr("Crude"));
@@ -19,7 +19,7 @@ PhsCorrectionDialog::PhsCorrectionDialog(QWidget *parent)
 	dsComboBox->setCurrentIndex(1);
 
 	gaussLabel = new QLabel(tr("Gaussain:"));
-	gaussLineEdit = new QLineEdit(tr("0.5"));
+	gaussLineEdit = new QLineEdit(tr("0.016"));
 
 	QGridLayout *gridLayout = new QGridLayout;
 	gridLayout->addWidget(lengthLabel, 0, 0);
@@ -54,6 +54,11 @@ void PhsCorrectionDialog::getData(int & dsIndex, double & length)
 {
 	length = lengthLineEdit->text().toDouble();
 	dsIndex = dsComboBox->currentIndex();
+}
+
+void PhsCorrectionDialog::getTarget(double& temp)
+{
+	temp = gaussLineEdit->text().toDouble();
 }
 
 void PhsCorrectionDialog::setIsNeedMesh(bool isNeedMesh)

@@ -5,6 +5,7 @@
 #include "Qt/include/CalculateFDTDThread.h"
 #include "Qt/include/PhsCorrectionDialog.h"
 #include "Qt/include/CalculatePhsCorThread.h"
+#include "Qt/include/CalculatePVVAThread.h"
 
 #include "VTK/include/Mirror.h"
 #include "VTK/include/Restriction.h"
@@ -170,6 +171,8 @@ void mainWindow::init()
 	fieldNum = 1;
 	FDTDprogressDialog = nullptr;
 	radiatorField = nullptr;
+	PVVAprogressDialog = nullptr;
+	phsCorprogressDialog = nullptr;
 }
 
 void mainWindow::createActions()
@@ -1308,6 +1311,11 @@ void mainWindow::toReceiveMirrorType(int caseInd)
 
 void mainWindow::on_PVVA()
 {
+	if (PVVAprogressDialog)
+	{
+		PVVAprogressDialog->show();
+		return;
+	}
 	if (!myData->getSourceField()) // 如果没有设置源 不能计算
 	{
 		switch (QMessageBox::question(this, tr("Question"),
@@ -1332,16 +1340,22 @@ void mainWindow::on_PVVA()
 	double dis = calculationDialog.getDistance();
 	double fre = calculationDialog.getFre();
 	int numMirror = calculationDialog.getMirrorNum();
-	Field * temPtr = myData->calculateByPVVA(fre, dis, numMirror);
-	renderer->AddActor(temPtr->getActor());
 
-	QTreeWidgetItem * tree = new QTreeWidgetItem(QStringList
-	(QString("Field")+QString::number(fieldNum)));
-	tree->setData(0, Qt::UserRole, QVariant(FIELD));
-	tree->setData(1, Qt::UserRole, QVariant(fieldNum));
-	fieldTreeItem->addChild(tree);
-	fieldNum++;
-	updateVtk();
+	PVVAprogressDialog = new PVVAProgressDialog();
+	PVVAprogressDialog->setMirrorNum(numMirror);
+	PVVAprogressDialog->show();
+
+	CalculatePVVAThread *calThr = new CalculatePVVAThread(fre, dis, numMirror);
+	connect(PVVAprogressDialog, SIGNAL(sendStop()), this, SLOT(toReceiveFDTDStop()));
+	connect(PVVAprogressDialog, SIGNAL(sendStop()), calThr, SLOT(killFDTD()));
+
+	connect(calThr, SIGNAL(sendMainValue(int)), PVVAprogressDialog, SLOT(setMainValue(int)));
+	connect(calThr, SIGNAL(sendSlaverValue(int)), PVVAprogressDialog, SLOT(setSlaverValue(int)));
+	connect(calThr, SIGNAL(finished()), calThr, SLOT(deleteLater()));
+	connect(calThr, SIGNAL(sendField(Field *)), this, SLOT(toReceivePVVAField(Field *)));
+
+	calThr->start();
+
 	//myData->
 }
 
@@ -1442,11 +1456,11 @@ void mainWindow::toReceiveFDTDStop()
 
 void mainWindow::on_PhaseCor()
 {
+	if (phsCorprogressDialog)
+	{
+		phsCorprogressDialog->show();
+	}
 
-//if (phsCorprogressDialog)
-	//{
-	//	phsCorprogressDialog->show();
-	//}
 	if (!myData->getSourceField()) // 如果没有设置源 不能计算
 	{
 		switch (QMessageBox::question(this, tr("Question"),
@@ -1560,6 +1574,23 @@ void mainWindow::toReceivePhaseCor(Mirror * mirror)
 	mirrorTreeWidgetItem[index1]->setExpanded(true);
 	renderer->AddActor(mirror->getActor());
 	updateLight();
+	updateVtk();
+}
+
+void mainWindow::toReceivePVVAField(Field *temPtr)
+{
+	//Field * temPtr = myData->calculateByPVVA(fre, dis, numMirror);
+	renderer->AddActor(temPtr->getActor());
+
+	myData->addField(temPtr);
+	QTreeWidgetItem * tree = new QTreeWidgetItem(QStringList
+	(QString("Field") + QString::number(fieldNum)));
+	tree->setData(0, Qt::UserRole, QVariant(FIELD));
+	tree->setData(1, Qt::UserRole, QVariant(fieldNum));
+	fieldTreeItem->addChild(tree);
+	fieldNum++;
+	delete PVVAprogressDialog;
+	PVVAprogressDialog = nullptr;
 	updateVtk();
 }
 
