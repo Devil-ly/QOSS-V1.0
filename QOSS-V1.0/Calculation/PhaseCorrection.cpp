@@ -28,10 +28,12 @@ calculation::PhaseCorrection::~PhaseCorrection()
 }
 
 //基本参数设置
-void calculation::PhaseCorrection::Set(double _Frequency, double _Target_W0, int _N_Mirror, int _N_InField,
-	const vector<vector<Vector3>>& _Initial_Mirror,
+void calculation::PhaseCorrection::Set(double _Frequency, 
+	double _Target_W0, int _N_Mirror, int _N_InField,
+	const vector <vector <Vector3>> &_Initial_Mirror,
 	const vector <vector <complex<double>>> &_InField_EX,
-	const vector <vector <complex<double>>> &_InField_EY,  double _InField_ds)
+	const vector <vector <complex<double>>> &_InField_EY,
+	double _InField_ds)
 {
 	Frequency = _Frequency;
 	Lamda = C_Speed / Frequency;
@@ -45,6 +47,19 @@ void calculation::PhaseCorrection::Set(double _Frequency, double _Target_W0, int
 	Initial_Mirror = _Initial_Mirror;
 	InField_EX = _InField_EX;
 	InField_EY = _InField_EY;
+
+	ofstream outfilex1("PhsCorExEy.txt");
+	for (int i = 0; i < 201; i++)
+	{
+		for (int j = 0; j < 201; j++)
+		{
+			outfilex1 //<< abs(InField_EX[i][j]) << " " 
+				//<< arg(InField_EX[i][j]) << " "
+				<< abs(InField_EY[i][j]) << " "
+				<< arg(InField_EY[i][j]) << "\n";
+		}
+	}
+	outfilex1.close();
 
 	InField_EX1.resize(N_InField); InField_EY1.resize(N_InField);
 	for (int i = 0; i < N_InField; i++)
@@ -203,6 +218,8 @@ vector<vector<Vector3>> calculation::PhaseCorrection::Single_Correction()
 
 	}
 
+
+
 	//找到Target_LineX、Target_LineY的最大值点
 	double Target_LineX_MaxE = 0, Target_LineY_MaxE = 0;
 	int Target_LineX_MaxPoint, Target_LineY_MaxPoint;
@@ -267,7 +284,7 @@ vector<vector<Vector3>> calculation::PhaseCorrection::Single_Correction()
 	//由此可以根据高斯波束束腰公式反算D_out
 	D_out = Pi*Target_W0 / Lamda*pow(W_TargetPoint*W_TargetPoint - Target_W0*Target_W0, 0.5);
 
-	//下面开始高斯波束逆向传播到镜面上的相位（负数）
+	//下面开始高斯波束逆向传播到镜面上的相位
 	Vector3 Gauss_Position = Reflect_Point + OutField_Z.operator*(D_out);
 	vector <vector<double>> Unwrapped_Gauss_Phase(N_Mirror, vector<double>(N_Mirror, 0));
 	for (int i = 0; i < N_Mirror; i++)
@@ -286,7 +303,9 @@ vector<vector<Vector3>> calculation::PhaseCorrection::Single_Correction()
 			}
 		}
 
+
 	//下面求In_Field传到镜面上的相位并对其进行解折叠
+	vector <vector<double>> Mirror_Amplitude(N_Mirror, vector<double>(N_Mirror, 0));
 	vector <vector<double>> Wrapped_Mirror_Phase(N_Mirror, vector<double>(N_Mirror, 0));
 	for (int i = 0; i < N_Mirror; i++)
 		for (int j = 0; j < N_Mirror; j++)
@@ -299,6 +318,9 @@ vector<vector<Vector3>> calculation::PhaseCorrection::Single_Correction()
 				Vector3 Position2((Position1.operator-(InField_Position)).Dot(InField_X1),
 					(Position1.operator-(InField_Position)).Dot(InField_Y1),
 					(Position1.operator-(InField_Position)).Dot(InField_Z1));
+				//20180322测试
+				Mirror_Amplitude[i][j]= abs(Calculate_SinglePoint(Frequency, InField_ds, N_InField,
+					Infield_splittimes, Infield_splitinfo, Position2));
 				Wrapped_Mirror_Phase[i][j] = arg(Calculate_SinglePoint(Frequency, InField_ds, N_InField,
 					Infield_splittimes, Infield_splitinfo, Position2));
 			}
@@ -306,18 +328,28 @@ vector<vector<Vector3>> calculation::PhaseCorrection::Single_Correction()
 
 	vector <vector<double>> Unwrapped_Mirror_Phase(N_Mirror, vector<double>(N_Mirror, 0));
 	//检查相位修正Unwrap_2D函数
-	/*ofstream OutFile0;
-	OutFile0.open("Wrapped_Mirror_Phase.txt");//关联输出文件
+	ofstream OutFile0;
+	OutFile0.open("Original_Distribution.txt");//关联输出文件
 	for (int i = 0; i < N_Mirror; i++)
 		for (int j = 0; j < N_Mirror; j++)
 		{
-			OutFile0 << Wrapped_Mirror_Phase[i][j] << endl;
+		  OutFile0 << Mirror_Amplitude[i][j] << " " << Wrapped_Mirror_Phase[i][j] << endl;
 		}
 	OutFile0.close();//输出完毕，关闭文档
-	*/
+	
 
 	Unwrapped_Mirror_Phase= Unwrap_2D(N_Mirror, Wrapped_Mirror_Phase);
 	//完成相位的解折叠
+
+	ofstream OutFile1;
+	OutFile1.open("Unwrapped_Mirror_Phase.txt");//关联输出文件
+	for (int i = 0; i < N_Mirror; i++)
+	for (int j = 0; j < N_Mirror; j++)
+   {
+	OutFile1 << Unwrapped_Mirror_Phase[i][j] << endl;
+	}
+	OutFile1.close();//输出完毕，关闭文档
+	
 
 	//对于初次修正且只修正一次，可以使用固定入射角Theta进行修正
 	vector <vector<double>> Delta(N_Mirror, vector<double>(N_Mirror, 0));
@@ -326,7 +358,7 @@ vector<vector<Vector3>> calculation::PhaseCorrection::Single_Correction()
 		{
 			{
 				Delta[i][j] = (Unwrapped_Gauss_Phase[i][j] - Unwrapped_Mirror_Phase[i][j])
-					*Lamda / 2.0 / Pi / cos(Theta);
+					*Lamda / 4.0 / Pi / cos(Theta);
 			}
 		}
 	

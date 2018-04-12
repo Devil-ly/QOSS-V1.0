@@ -10,6 +10,7 @@
 #include "util/Definition.h"
 #include "../Calculation/PVVA.h"
 
+#include "VTK/include/Paraboloid.h"
 using namespace calculation;
 
 MyData::MyData()
@@ -70,7 +71,7 @@ Mirror * MyData::getMirror(int index) const
 		return nullptr;
 }
 
-void MyData::createDefaultMirror()
+void MyData::createModelMirror()
 {
 	vector<GraphTrans> position;
 	mirrorPosition->getInitialPosition(position);
@@ -128,6 +129,67 @@ void MyData::createDefaultMirror()
 		mirrors[3] = temp;
 		
 	}
+	else // 波导
+	{
+		GraphTrans graphTrans;
+		graphTrans.setGraphTransPar(4, 0, 5, 0, 1, 0, -130);
+		mirrors[0] = MirrorFactory::getMirror(PARABOLOID, graphTrans);
+		dynamic_cast<Paraboloid*>(mirrors[0])->setFocus(4);
+		dynamic_cast<Paraboloid*>(mirrors[0])->setRadius(4);
+		mirrors[1] = MirrorFactory::getMirror(PARABOLOID, GraphTrans());
+		mirrors[2] = MirrorFactory::getMirror(PARABOLOID, GraphTrans());
+	}
+}
+
+void MyData::createDefaultMirror()
+{
+	vector<GraphTrans> position;
+	mirrorPosition->getInitialPosition(position);
+	if (0 == pattern) // 低阶
+	{
+		GraphTrans mirror1Position;
+		mirror1Position.updateTranslate(Vector3(position[0].getTrans_x(),
+			0, 0));
+		double temp = abs(position[0].getTrans_x());
+		mirrors[0] = MirrorFactory::getMirror(PARABOLICCYLINDER, mirror1Position);
+
+		dynamic_cast<ParabolicCylinder*>(mirrors[0])->setParameter(temp, temp * 2.5, 0,
+			radiator->getFirstMirrorHeight(temp));
+		vector<double> dataPlane(2);
+		dataPlane[0] = 0.2;
+		dataPlane[1] = 0.2;
+		//mirrors[0] = MirrorFactory::getMirror(PLANEMIRROR, position[0], dataPlane);
+		mirrors[1] = MirrorFactory::getMirror(PLANEMIRROR, position[1], dataPlane);
+		mirrors[2] = MirrorFactory::getMirror(PLANEMIRROR, position[2], dataPlane);
+		
+	}
+	else if (1 == pattern) // 高阶
+	{
+		STLMirror* temp = new STLMirror;
+		temp->setNameFile("Mirror1.stl");
+		mirrors[0] = temp;
+		temp = new STLMirror;
+		temp->setNameFile("Mirror2.stl");
+		mirrors[1] = temp;
+		temp = new STLMirror;
+		temp->setNameFile("Mirror3.stl");
+		mirrors[2] = temp;
+		temp = new STLMirror;
+		numOfMirrors = 4; // for test
+		temp->setNameFile("TE226DenisovLauncher.stl");
+		mirrors[3] = temp;
+
+	}
+	else // 波导
+	{
+		GraphTrans graphTrans;
+		graphTrans.setGraphTransPar(4, 0, 5, 0, 1, 0, -130);
+		mirrors[0] = MirrorFactory::getMirror(PARABOLOID, graphTrans);
+		dynamic_cast<Paraboloid*>(mirrors[0])->setFocus(4);
+		dynamic_cast<Paraboloid*>(mirrors[0])->setRadius(4);
+		mirrors[1] = MirrorFactory::getMirror(PARABOLOID, GraphTrans());
+		mirrors[2] = MirrorFactory::getMirror(PARABOLOID, GraphTrans());
+	}
 }
 
 Mirror * MyData::getMirrorByNum(int num) const
@@ -175,6 +237,12 @@ void MyData::createRadiator()
 	else if (1 == pattern) // 高阶
 	{
 
+	}
+	else
+	{
+		//radiator = RadiatorFactory::getRadiator(LOWORDER, source);
+		//radiator->calActorModel();
+		//radiator->calActorRay();
 	}
 	
 }
@@ -246,8 +314,8 @@ void MyData::calcPhsCorField()
 	// 设置单位
 	pvva.setUnit(1);
 	// 设置频率
-	double fre = 1e10;
-	pvva.setFre(fre);
+	//double fre = 4.4e10;
+	pvva.setFre(frequency);
 	// 读入源并分配内存
 	pvva.setSource(getSourceField());
 	//int N = 2;

@@ -18,8 +18,13 @@ namespace  userInterface {
 		PreDialog(QWidget *parent = 0);
 		~PreDialog();
 
-		private slots:
+		bool getIsModel() const { return isModel; };
+
+	private slots:
 		void createModel();
+		void createNew();
+	private:
+		bool isModel;
 
 	};
 

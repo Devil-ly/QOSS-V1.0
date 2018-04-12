@@ -37,7 +37,7 @@ void FDTDRadiator::SetReturnFloat(void(*returnFloat)(float, void*), void *_user)
 	this->returnFloat = returnFloat;
 	this->user = _user;
 }
-
+//获取电场分布
 void FDTDRadiator::GetProFieldE(vector<vector<complex<double>>>& _Eu, vector<vector<complex<double>>>& _Ev, int _Nu, int _Nv)
 {
 	for (int u = 0; u < _Nu; u++) {
@@ -49,6 +49,23 @@ void FDTDRadiator::GetProFieldE(vector<vector<complex<double>>>& _Eu, vector<vec
 			_Ev[u][v] = temp;
 		}
 	}
+}
+//获取磁场分布
+void FDTDRadiator::GetProFieldH(vector<vector<complex<double>>>& _Hu, vector<vector<complex<double>>>& _Hv, int _Nu, int _Nv)
+{
+	for (int u = 0; u < _Nu; u++) {
+		for (int v = 0; v < _Nv; v++) {
+			complex<double> temp;
+			temp = complex<double>(double(FDTDRadiator::Hu[u][v].real()), double(FDTDRadiator::Hu[u][v].imag()));
+			_Hu[u][v] = temp;
+			temp = complex<double>(double(FDTDRadiator::Hv[u][v].real()), double(FDTDRadiator::Hv[u][v].imag()));
+			_Hv[u][v] = temp;
+		}
+	}
+}
+
+void FDTDRadiator::GetProPowerRatio(double& _PowerRatio) {
+	_PowerRatio = FDTDRadiator::PowerRatio;
 }
 
 void FDTDRadiator::LoadProFieldE(const char* _filename,vector<vector<complex<double>>>& _Eu, vector<vector<complex<double>>>& _Ev, int _Nu, int _Nv)
@@ -62,6 +79,8 @@ void FDTDRadiator::LoadProFieldE(const char* _filename,vector<vector<complex<dou
 	fread(&temp, sizeof(float), 1, Binread);	//du
 	fread(&temp, sizeof(float), 1, Binread);	//dv
 	fread(&temp, sizeof(float), 1, Binread);	//freq
+	//fread(&temp, sizeof(float), 1, Binread);	//PowerRatio
+	//FDTDRadiator::PowerRatio = double(temp);
 	//注意 文件里是complex<float>的，目标位置是complex<double>的
 	complex<float> readbuf;
 	for (int v = 0; v<_Nv; v++) {
@@ -78,8 +97,55 @@ void FDTDRadiator::LoadProFieldE(const char* _filename,vector<vector<complex<dou
 		}
 	}
 	fclose(Binread);
-
 }
+
+void FDTDRadiator::LoadProFieldH(const char* _filename, vector<vector<complex<double>>>& _Hu, vector<vector<complex<double>>>& _Hv, int _Nu, int _Nv)
+{
+	FILE* Binread;
+	Binread = fopen(_filename, "rb");
+	int tempNu, tempNv;
+	fread(&tempNu, sizeof(int), 1, Binread);	//Nu
+	fread(&tempNv, sizeof(int), 1, Binread);	//Nv
+	float temp;
+	fread(&temp, sizeof(float), 1, Binread);	//du
+	fread(&temp, sizeof(float), 1, Binread);	//dv
+	fread(&temp, sizeof(float), 1, Binread);	//freq
+	//fread(&temp, sizeof(float), 1, Binread);	//PowerRatio
+	//FDTDRadiator::PowerRatio = double(temp);
+	
+	//注意 文件里是complex<float>的，目标位置是complex<double>的
+	complex<float> readbuf;
+	//笨笨的shift
+	for (int v = 0; v<_Nv; v++) {
+		for (int u = 0; u<_Nu; u++) {
+			fread(&readbuf, sizeof(complex<float>), 1, Binread);
+			//_Eu[u][v] = complex<double>(double(readbuf.real()), double(readbuf.imag()));
+
+		}
+	}
+	for (int v = 0; v<_Nv; v++) {
+		for (int u = 0; u<_Nu; u++) {
+			fread(&readbuf, sizeof(complex<float>), 1, Binread);
+			//_Ev[u][v] = complex<double>(double(readbuf.real()), double(readbuf.imag()));
+		}
+	}
+	//磁场
+	for (int v = 0; v<_Nv; v++) {
+		for (int u = 0; u<_Nu; u++) {
+			fread(&readbuf, sizeof(complex<float>), 1, Binread);
+			_Hu[u][v] = complex<double>(double(readbuf.real()), double(readbuf.imag()));
+
+		}
+	}
+	for (int v = 0; v<_Nv; v++) {
+		for (int u = 0; u<_Nu; u++) {
+			fread(&readbuf, sizeof(complex<float>), 1, Binread);
+			_Hv[u][v] = complex<double>(double(readbuf.real()), double(readbuf.imag()));
+		}
+	}
+	fclose(Binread);
+}
+
 
 
 
@@ -138,6 +204,20 @@ void FDTDRadiator::SetUpAperturePlane(Position3D _AperturePosition, Vector3D _Ap
 			FDTDRadiator::Ev[u][v] = complex<float>(0.0, 0.0);
 		}
 	}
+	//磁场
+	FDTDRadiator::Hu.resize(Nu);
+	FDTDRadiator::Hv.resize(Nu);
+	for (int u = 0; u < Nu; u++) {
+		FDTDRadiator::Hu[u].resize(Nv);
+		FDTDRadiator::Hv[u].resize(Nv);
+	}
+	//归零初始化
+	for (int u = 0; u < Nu; u++) {
+		for (int v = 0; v < Nv; v++) {
+			FDTDRadiator::Hu[u][v] = complex<float>(0.0, 0.0);
+			FDTDRadiator::Hv[u][v] = complex<float>(0.0, 0.0);
+		}
+	}
 }
 
 void FDTDRadiator::WriteApertureDataToFile(const char* _filename) {
@@ -150,8 +230,11 @@ void FDTDRadiator::WriteApertureDataToFile(const char* _filename) {
 	fwrite(&temp, sizeof(float), 1, Binwrite);
 	temp = Lv / (Nv-1); //dv
 	fwrite(&temp, sizeof(float), 1, Binwrite);
-	temp = float(Frequency);
+	temp = float(FDTDRadiator::Frequency);
 	fwrite(&temp, sizeof(float), 1, Binwrite);	//还得改哦 多频的情况
+	//temp = float(FDTDRadiator::PowerRatio);
+	//fwrite(&temp, sizeof(float), 1, Binwrite);	//这个是功率传输系数，还得改哦， 多频的情况
+	//先写电场
 	for(int v=0; v<Nv; v++){
 		for (int u=0; u<Nu; u++) {
 			fwrite(&(FDTDRadiator::Eu[u][v]), sizeof(complex<float>), 1, Binwrite);
@@ -160,6 +243,18 @@ void FDTDRadiator::WriteApertureDataToFile(const char* _filename) {
 	for (int v = 0; v<Nv; v++) {
 		for (int u = 0; u<Nu; u++) {
 			fwrite(&(FDTDRadiator::Ev[u][v]), sizeof(complex<float>), 1, Binwrite);
+		}
+	}
+	//再写磁场
+	for (int v = 0; v < Nv; v++) {
+		for (int u = 0; u < Nu; u++) {
+			fwrite(&(FDTDRadiator::Hu[u][v]), sizeof(complex<float>), 1, Binwrite);
+		}
+	}
+	//再写磁场
+	for (int v = 0; v < Nv; v++) {
+		for (int u = 0; u < Nu; u++) {
+			fwrite(&(FDTDRadiator::Hv[u][v]), sizeof(complex<float>), 1, Binwrite);
 		}
 	}
 	fclose(Binwrite);
@@ -250,7 +345,9 @@ void FDTDRadiator::run() {
 	if (FDTDRadiator::SourceKind == 1 && FDTDRadiator::SourceType == 1) {//低阶TE圆电辐射器
 		Radiator.ResetRadiator_RoundL(float(C_Speed / FDTDRadiator::Frequency), float(FDTDRadiator::Radius), FDTDRadiator::Ns, FDTDRadiator::Ns, FDTDRadiator::N_spa, FDTDRadiator::Lc, FDTDRadiator::Lp);
 		Radiator.GenerateCellArray_RoundL();
-		Radiator.SetFirstMirror_RoundL(FDTDRadiator::F); //待查验
+		if (FDTDRadiator::F > 0) {
+			Radiator.SetFirstMirror_RoundL(FDTDRadiator::F); //待查验
+		}
 		//cout << " LowOrder Radiator and Mirror Parameters:" << endl;
 		//cout << "   Radius:" << Radius << "m, Cut Propagation Section Length: " << Lc << "m, Mirror Height: " << Radiator.MirrorHeight << "m, Mirror Focus Length:" << F << "m." << endl;
 		//cout << "   Model Domain Size, Nx: " << Radiator.Nx_model << ", Ny: " << Radiator.Ny_model << ", Nz: " << Radiator.Nz_model << endl;
@@ -291,12 +388,24 @@ void FDTDRadiator::run() {
 	//SetUpHuygens - Freq;
 	HuygensPro.SetUpFrequency(FDTD.Nfreq, FDTD.freq, FDTD.BW);
 	HuygensPro.SetUpPropagatedAperture(FDTDRadiator::AperturePosition, FDTDRadiator::ApertureDirection, FDTDRadiator::UDirection, FDTDRadiator::VDirection, FDTDRadiator::Lu, FDTDRadiator::Lv, FDTDRadiator::Nu, FDTDRadiator::Nv);
-
-	int Nx_exc = Ns;	int Ny_exc = Ns;
 	
-	int Nz_exc = Radiator.Pz_model;
-	int Px_exc = Radiator.Px_model + N_spa;
-	int Py_exc = Radiator.Py_model + N_spa;
+	int Nx_exc;	int Ny_exc;
+	int Nz_exc;
+	int Px_exc;
+	int Py_exc;
+
+	if(FDTDRadiator::F>0){
+		Nx_exc = Ns;	Ny_exc = Ns;
+		Nz_exc = Radiator.Pz_model;
+		Px_exc = Radiator.Px_model + N_spa;
+		Py_exc = Radiator.Py_model + N_spa;
+	}
+	else {
+		Nx_exc = Ns;	Ny_exc = Ns;
+		Nz_exc = Radiator.Pz_model;
+		Px_exc = Radiator.Px_model + 2*N_spa;
+		Py_exc = Radiator.Py_model + 2*N_spa;
+	}
 	//Feed Excitation from Waveguide Port
 
 	//Load PEC Structure From Radiator
@@ -325,7 +434,7 @@ void FDTDRadiator::run() {
 	{
 		returnInt(2, user);//开始Huygens外推计算
 	}
-	HuygensPro.Propagation5FaceBox(FDTDRadiator::Eu, FDTDRadiator::Ev, FDTD.HuygensBoxData, FDTDRadiator::OmpNum, 0);
+	HuygensPro.Propagation5FaceBox(FDTDRadiator::Eu, FDTDRadiator::Ev,FDTDRadiator::Hu,FDTDRadiator::Hv,FDTDRadiator::PowerRatio, FDTD.HuygensBoxData, FDTDRadiator::OmpNum, 0);
 	FDTDRadiator::WriteApertureDataToFile("./PropagatedEField.dat");
 
 	//cout << "Calculation Completed. ENTER to exit. " << endl;

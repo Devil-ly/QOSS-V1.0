@@ -124,7 +124,7 @@ void GraphTransWidget::addBtn(QGridLayout * _layoutbt, int wayButton)
 {
 
 	createbtn = new QPushButton(tr("Ok"));
-	closebtn = new QPushButton(tr("Cancle"));
+	closebtn = new QPushButton(tr("Cancel"));
 
 	connect(createbtn, SIGNAL(clicked()), this, SLOT(buttonOk()));
 	connect(closebtn, SIGNAL(clicked()), this, SLOT(buttonClose()));

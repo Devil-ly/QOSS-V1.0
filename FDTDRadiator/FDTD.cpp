@@ -234,7 +234,7 @@ void CFDTD::MemoryAllocate(int _timemode,int _Nfreq, float _BW)
 
 	stopnn = int(tao * 2/dt + Nz*6);
 	//stopnn = 100;
-	Step2Show = int(stopnn / 5);
+	Step2Show = int(stopnn / 50);
 
 
 	//cout << "Total size: " << Nx << " " << Nz << ", time interval(s): " << dt << ", stopnn: " << stopnn << ", steptoshow: " << Step2Show << endl;
@@ -753,7 +753,7 @@ void CFDTD::Update(){
 			(*Logfile) << "step" << nn << " done! " << stopnn - nn << " left!" << " ";
 		}
 		//回调计算进度
-		if (nn % 10 == 0) {
+		if (nn%Step2Show == 0) {
 			if (returnFloat) // 没有注册则不回调
 			{
 				returnFloat(float(nn*1.0 / stopnn * 100.0), user);
@@ -2222,6 +2222,29 @@ void CFDTD::Output(){
 		if(nn%Step2Show == 0){
 			//输出瞬时场分布
 			//cout<<Despath<<" "<<FileoutPath<<endl;
+			j = Ny / 2;
+			FILE* Fieldout;
+			Fieldout = fopen("./XOZ.dat", "wb");
+			int TNz = Nz - 20;
+			fwrite(&Nx, sizeof(int), 1, Fieldout);
+			fwrite(&TNz, sizeof(int), 1, Fieldout);
+			for (k = 1; k <= TNz; k++) {
+				for (i = 1; i <= Nx; i++) {
+					fwrite(&Ex[k+20][j][i], sizeof(float), 1, Fieldout);
+				}
+			}
+			for (k = 1; k <= TNz; k++) {
+				for (i = 1; i <= Nx; i++) {
+					fwrite(&Ey[k + 20][j][i], sizeof(float), 1, Fieldout);
+				}
+			}
+			for (k = 1; k <= TNz; k++) {
+				for (i = 1; i <= Nx; i++) {
+					fwrite(&Ez[k + 20][j][i], sizeof(float), 1, Fieldout);
+				}
+			}
+			fclose(Fieldout);
+			
 			/*
 			fstream FieldFile;
 			FieldFile.open("./sizeXOZ.txt", ios::out);
@@ -2235,6 +2258,7 @@ void CFDTD::Output(){
 				}
 			}
 			FieldFile.close();
+
 			//cout << Despath << " " << FileoutPath << endl;
 			FieldFile.open("./sizeYOZ.txt", ios::out);
 			FieldFile << Ny << " " << Nz << endl;

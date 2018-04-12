@@ -48,6 +48,7 @@ public:
 
 	// 构造默认的镜子
 	void createDefaultMirror();
+	void createModelMirror();
 	Mirror* getMirrorByNum(int num) const;
 
 	// 设置源

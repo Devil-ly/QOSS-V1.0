@@ -4,6 +4,7 @@
 
 #include "Qt/include/PreDialog.h"
 #include "Qt/include/ModelWizard.h"
+#include "Qt/include/ModelBtnDialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -24,20 +25,27 @@ namespace  userInterface {
 		QLabel *logoLabel = new QLabel(tr("Quasi optical simulation system"));
 		logoLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-		QPushButton *createBtn = new QPushButton(tr("Create a new model"));
+		QPushButton *createBtn = new QPushButton(tr("Create a new project"));
 		createBtn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-		connect(createBtn, SIGNAL(clicked()), this, SLOT(createModel()));
+		connect(createBtn, SIGNAL(clicked()), this, SLOT(createNew()));
 
-		QPushButton *openBtn = new QPushButton(tr("Open an existing model"));
+		QPushButton *modelBtn = new QPushButton(tr("Open a model"));
+		modelBtn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+		connect(modelBtn, SIGNAL(clicked()), this, SLOT(createModel()));
+
+		QPushButton *openBtn = new QPushButton(tr("Open a project"));
 		openBtn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
 		QVBoxLayout *layout = new QVBoxLayout;
 		layout->addWidget(logoLabel);
 		layout->addWidget(createBtn);
+		layout->addWidget(modelBtn);
 		layout->addWidget(openBtn);
 		QHBoxLayout *layoutH = new QHBoxLayout(this);
 		layoutH->addLayout(layout, Qt::AlignLeft);
 		layoutH->addSpacing(99);
+
+		isModel = false;
 
 	}
 
@@ -46,13 +54,24 @@ namespace  userInterface {
 
 	}
 
-	void PreDialog::createModel()
+	void PreDialog::createNew()
 	{
 		ModelWizard modelWizard;
 		if (modelWizard.exec() != QDialog::Accepted)
 		{
 			rejected();
 		}
+		accept();
+	}
+
+	void PreDialog::createModel()
+	{
+		ModelBtnDialog modelWizard;
+		if (modelWizard.exec() != QDialog::Accepted)
+		{
+			rejected();
+		}
+		isModel = true;
 		accept();
 	}
 }

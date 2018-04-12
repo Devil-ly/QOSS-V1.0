@@ -70,7 +70,7 @@ public:
 	void SetUpHuygens(Position3D _SourceCenter, int _Nx, int _Ny, int _Nz, float _dx, float _dy, float _dz);
 	void SetUpFrequency(int _NumFreq, float _CenterFreq, float _Bandwidth);
 	void SetUpPropagatedAperture(Position3D _ApertureCenter, Vector3D _ApertureDirection, Vector3D _UDirection, Vector3D _VDirection, float _Lu, float _Lv, int _Nu, int _Nv);
-	void Propagation5FaceBox(vector<vector<complex<float>>>& _Eu, vector<vector<complex<float>>>& _Ev, complex<float>* _HuygensBoxData, int OmpNum, int _Freqindex);
+	void Propagation5FaceBox(vector<vector<complex<float>>>& _Eu, vector<vector<complex<float>>>& _Ev, vector<vector<complex<float>>>& _Hu, vector<vector<complex<float>>>& _Hv, double& _PowerRatio, complex<float>* _HuygensBoxData, int _OmpNum, int _Freqindex);
 	
 	//Propagated Fields from Approximated Cut
 	void SetUpSurfaceCurrent();

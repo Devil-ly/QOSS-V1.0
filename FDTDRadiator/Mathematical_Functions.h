@@ -18,6 +18,10 @@ double fact(int n);//已测试，阶乘函数没问题
 //返回M阶Bessel函数的一阶导数
 double D1_J(int m, double z);
 
+//共轭
+complex<float> conjf(complex<float> x);
+
+complex<double> conjd(complex<double> x);
 
 //返回场分布值H_phi(复数形式的，默认为右旋)
 complex<double> H_phi(double Kz0, double Kr0, int m0, double r0, double Phi0);

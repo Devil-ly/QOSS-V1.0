@@ -1,5 +1,5 @@
 #include "../include/CalculateFDTDThread.h"
-#include <../Calculation/FDTDRadiator.h>
+#include "../../FDTDRadiator/FDTDRadiator.h"
 
 using namespace userInterface;
 void CalculateFDTDThread::run()

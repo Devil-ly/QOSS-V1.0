@@ -28,12 +28,20 @@
 #include <QMessageBox>
 #include <thread>
 
+
+
 using namespace userInterface;
 
 mainWindow::mainWindow(QWidget *parent)
 	: QMainWindow(parent)
 {
-	setCentralWidget(&widget);
+	tabWidget = new QTabWidget;
+	tabWidget->addTab(&widget, QString::fromLocal8Bit("Main"));
+	
+	//tabWidget->setTabsClosable(true);
+	setCentralWidget(tabWidget);
+
+	//setCentralWidget(&widget);
 	resize(1200, 800);
 
 	renderer = vtkSmartPointer<vtkRenderer>::New();
@@ -51,13 +59,25 @@ mainWindow::mainWindow(QWidget *parent)
 
 	if (0 == myData->getPattern()) // 低阶
 	{
+		showFDTDPtr = new showFDTD;
+		tabWidget->addTab(showFDTDPtr, QString::fromLocal8Bit("Radiator"));
+
 		//创建默认辐射器
 		myData->createRadiator();
 		renderer->AddActor(myData->getRadiator()->getActorModel());
 		renderer->AddActor(myData->getRadiator()->getActorRay());
 
-		// 创建默认的镜子
-		myData->createDefaultMirror();
+		if (preDialog.getIsModel())
+		{
+			// 创建默认的镜子
+			myData->createModelMirror();
+		}
+		else
+		{
+			// 创建默认的镜子
+			myData->createDefaultMirror();
+		}
+
 		//for (int i = 0; i < myData->getNumOfMirrors(); ++i)
 		for (int i = 0; i < 3; ++i)
 		{
@@ -74,8 +94,10 @@ mainWindow::mainWindow(QWidget *parent)
 		for (auto& x : tempActors)
 			renderer->AddActor(x);
 	}
-	else
+	else if(1 == myData->getPattern()) // 高阶
 	{
+		showDenisovPtr = new showDenisov;
+		tabWidget->addTab(showDenisovPtr, QString::fromLocal8Bit("Radiator"));
 		// 创建默认的镜子
 		myData->createDefaultMirror();
 		//for (int i = 0; i < myData->getNumOfMirrors(); ++i)
@@ -84,7 +106,89 @@ mainWindow::mainWindow(QWidget *parent)
 			renderer->AddActor(myData->getMirrorByNum(i)->getActor());
 		}
 	}
+	else
+	{
+		// 创建默认的镜子
+		myData->createDefaultMirror();
+		GraphTrans graphTrans;
+		graphTrans.setGraphTransPar(0, 0, 0, 0, 1, 0, 0);
+		Mirror * mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(1.01, 0.81, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(1.01, 0, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(0, 0.81, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(0, 0.81*2, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(1.01, 0.81 * 2, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(1.01*2, 0.81 * 2, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(1.01 * 2, 0, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(1.01 * 2, 0.81, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(-1.01, -0.81, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(-1.01*2, -0.81*2, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(-1.01, -0.81 * 2, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(-1.01 * 2, -0.81, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(-1.01 * 2, 0, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(0, -0.81 * 2, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(1.01 * 2, -0.81 * 2, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(1.01, -0.81 * 2, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(-1.01 * 2, 0.81, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(-1.01 * 2, 0.81 * 2, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(-1.01, 0.81 * 2, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(-1.01, 0.81, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(-1.01, 0, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(0, -0.81, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(1.01 * 2, -0.81, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
+		graphTrans.setGraphTransPar(1.01, -0.81, 0, 0, 1, 0, 0);
+		mirror = MirrorFactory::getMirror(PLANEMIRROR, graphTrans);
+		renderer->AddActor(mirror->getActor());
 
+		renderer->AddActor(myData->getMirrorByNum(0)->getActor());
+	}
 	
 	double axesScale = myData->getLimitBox()->getMaxSize();
 	// 初始化vtk窗口
@@ -157,6 +261,9 @@ mainWindow::mainWindow(QWidget *parent)
 	//creareWindows();
 
 	init();
+
+	//showDenisovPtr =  new showDenisov; 
+	//showDenisovPtr->show();
 }
 
 mainWindow::~mainWindow()
@@ -379,7 +486,11 @@ void mainWindow::createTreeWidgetItem()
 		childRadiator->setText(0, tr("Vlasov Launcher"));
 	}	
 	else if (1 == myData->getPattern())
+	{
 		childPar->setText(0, tr("Pattern: Higher order"));
+		childRadiator->setText(0, tr("Denisov Launcher"));
+		childRadiator->setData(0, Qt::UserRole, QVariant(DENISOVVAL));
+	}
 	else
 		childPar->setText(0, tr("Pattern: Waveguide"));
 
@@ -499,6 +610,13 @@ void mainWindow::createRightMenu()
 
 	R_Tree_RestrictionMenu->addAction(modifyingRestrictionAction);
 	R_Tree_RestrictionMenu->addAction(delRestrictionAction);
+
+	radiatorParametersAction = new QAction(tr("Modifying Restriction"), this);
+	radiatorParametersAction->setStatusTip(tr("Modifying Restriction"));
+	connect(radiatorParametersAction, SIGNAL(triggered()), this, SLOT(on_DenisovParameters()));
+
+	R_Tree_RadiatorMenu = new QMenu(this);
+	R_Tree_RadiatorMenu->addAction(radiatorParametersAction);
 
 }
 
@@ -1532,6 +1650,10 @@ void mainWindow::on_PhaseCor()
 		dialog.getData(dsIndex, length);
 		calThr->setDs_Length(dsIndex, length);
 	}
+	double targetW = 0.0;
+	dialog.getTarget(targetW);
+
+	calThr->setTarget_W(targetW);
 
 	//connect(FDTDprogressDialog, SIGNAL(sendStop()), this, SLOT(toReceiveFDTDStop()));
 	//connect(FDTDprogressDialog, SIGNAL(sendStop()), calThr, SLOT(killFDTD()));
@@ -1594,6 +1716,13 @@ void mainWindow::toReceivePVVAField(Field *temPtr)
 	updateVtk();
 }
 
+void mainWindow::on_DenisovParameters()
+{
+	//showDenisovPtr = new showDenisov; 
+	//showDenisovPtr->show();
+	//showDenisovPtr->setWindowFlags(Qt::WindowStaysOnTopHint); // 子窗口保持置顶
+}
+
 void mainWindow::on_treeWidget_ContextMenuRequested(QPoint pos)
 {
 	rightSelectItem = treeWidget->itemAt(pos);
@@ -1643,6 +1772,14 @@ void mainWindow::on_treeWidget_ContextMenuRequested(QPoint pos)
 		if (R_BlankMenu->isEmpty())
 		{
 			R_Tree_RestrictionMenu->exec(QCursor::pos());
+
+		}
+	}
+	else if (var == DENISOVVAL)
+	{
+		if (R_BlankMenu->isEmpty())
+		{
+			R_Tree_RadiatorMenu->exec(QCursor::pos());
 
 		}
 	}

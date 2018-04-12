@@ -11,7 +11,7 @@ PlaneMirror::PlaneMirror(const GraphTrans & _graphTrans)
 	graphTrans = _graphTrans;
 	data.resize(2);
 	data[0] = 1;
-	data[1] = 1;
+	data[1] = 0.8;
 	updateData();
 }
 

@@ -84,7 +84,7 @@ bool calculation::SourceModeGenerationT::SetWaveguideMode(int m0, int n0)
 	return true;
 }
 
-//计算并输出圆波导模式场分布-切向电磁场-金铭改写 201712
+//计算并输出圆波导模式场分布-切向电磁场-金铭改写 201712 为 FDTD提供输入，需考虑采样位置的空间移位
 bool calculation::SourceModeGenerationT::FieldCalculation_CircularT()
 {
 	//开始计算场分布

@@ -38,7 +38,10 @@
 #include "Qt/include/FDTDProgressDialog.h"
 #include "Qt/include/PVVAProgressDialog.h"
 
-#include <Calculation/FDTDRadiator.h>
+#include "DenisovRadiator/showDenisov.h"
+#include "DenisovRadiator/showFDTD.h"
+
+#include "../../FDTDRadiator/FDTDRadiator.h"
 
 using namespace userInterface;
 class mainWindow : public QMainWindow
@@ -46,7 +49,8 @@ class mainWindow : public QMainWindow
 	Q_OBJECT
 	enum QVariantType
 	{	
-		FIELD = 10,		
+		FIELD = 10,	
+		DENISOVVAL
 	};
 
 public:
@@ -127,6 +131,8 @@ private slots:
 	void toReceivePhaseCor(Mirror*);
 	void toReceivePVVAField(Field*);
 
+	void on_DenisovParameters();
+
 	// ------------------- 右键函数 ----------------------------------
 	void on_treeWidget_ContextMenuRequested(QPoint pos);// 右键菜单
 
@@ -138,6 +144,9 @@ private slots:
 private:
 	vtkSmartPointer<vtkOrientationMarkerWidget> widget1;
 	QVTKWidget widget; // vtk 显示窗口
+	QVTKWidget widgetRadiator;
+	QTabWidget * tabWidget; // 主窗口
+
 	vtkSmartPointer<vtkRenderWindowInteractor> interactor; // 交互
 	vtkSmartPointer<vtkRenderer> renderer;
 	vtkSmartPointer<vtkAxesActor> axes; // 坐标
@@ -163,6 +172,7 @@ private:
 	QMenu *R_Tree_MirrorTypeMenu;
 	QMenu *R_Tree_MirrorParMenu;
 	QMenu *R_Tree_RestrictionMenu;
+	QMenu *R_Tree_RadiatorMenu;
 	QMenu *R_BlankMenu;
 
 	//----------- ToolBar ------------------- 
@@ -199,6 +209,8 @@ private:
 	QAction * saveSTLction;     // 保存模型
 
 	QAction * loadFDTDAction; // 加载FDTD计算的源
+
+	QAction * radiatorParametersAction;
 
 	//------------- TreeWidgetItem------------------- 
 	QTreeWidgetItem * definitionsTreeItem;
@@ -257,6 +269,9 @@ private:
 	bool isExistenceOpenWin;
 	bool isNew;
 	int fieldNum;
+
+	showDenisov *showDenisovPtr;
+	showFDTD * showFDTDPtr;
 
 };
 

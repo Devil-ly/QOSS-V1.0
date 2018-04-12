@@ -54,6 +54,12 @@
     <Filter Include="Source Files\Calculation">
       <UniqueIdentifier>{5480e517-d2dd-46e9-8dab-4657b987fcd4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Denisov">
+      <UniqueIdentifier>{f6fda26b-c42f-4d9a-8534-da124e4f171c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\FDTDShow">
+      <UniqueIdentifier>{7bd17171-f570-4e83-9c28-6444bb43ea62}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -100,15 +106,6 @@
     </ClCompile>
     <ClCompile Include="VTK\src\MirrorFactory.cpp">
       <Filter>Source Files\VTK</Filter>
-    </ClCompile>
-    <ClCompile Include="Qt\src\QPaintField.cpp">
-      <Filter>Source Files\Qt</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_QPaintField.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_QPaintField.cpp">
-      <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_QPaint2DMirror.cpp">
       <Filter>Generated Files\Debug</Filter>
@@ -377,6 +374,87 @@
     <ClCompile Include="Qt\src\PVVAProgressDialog.cpp">
       <Filter>Source Files\Qt</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QPaint2DField.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QPaint2DField.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Qt\src\QPaint2DField.cpp">
+      <Filter>Source Files\Qt</Filter>
+    </ClCompile>
+    <ClCompile Include="DenisovRadiator\CodeJin\Mathematical_Functions.cpp">
+      <Filter>Header Files\Denisov</Filter>
+    </ClCompile>
+    <ClCompile Include="DenisovRadiator\CodeJin\qcustomplot.cpp">
+      <Filter>Header Files\Denisov</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qcustomplot.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qcustomplot.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="DenisovRadiator\CodeJin\QPaintField.cpp">
+      <Filter>Header Files\Denisov</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QPaintField.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QPaintField.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="DenisovRadiator\CodeJin\SourceModeGenerationD.cpp">
+      <Filter>Header Files\Denisov</Filter>
+    </ClCompile>
+    <ClCompile Include="DenisovRadiator\QTFDTDThread.cpp">
+      <Filter>Header Files\FDTDShow</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QTFDTDThread.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QTFDTDThread.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="DenisovRadiator\showFDTD.cpp">
+      <Filter>Header Files\FDTDShow</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_showFDTD.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_showFDTD.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ModelBtnDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ModelBtnDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Qt\src\ModelBtnDialog.cpp">
+      <Filter>Source Files\Qt</Filter>
+    </ClCompile>
+    <ClCompile Include="DenisovRadiator\CodeJin\Mathematical_Functions_Jin.cpp">
+      <Filter>Header Files\Denisov</Filter>
+    </ClCompile>
+    <ClCompile Include="DenisovRadiator\DenisovRadiator.cpp">
+      <Filter>Header Files\Denisov</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_DenisovRadiator.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_DenisovRadiator.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="DenisovRadiator\showDenisov.cpp">
+      <Filter>Header Files\Denisov</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_showDenisov.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_showDenisov.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwindow.h">
@@ -392,9 +470,6 @@
       <Filter>Header Files\Qt</Filter>
     </CustomBuild>
     <CustomBuild Include="Qt\include\ModelWizard.h">
-      <Filter>Header Files\Qt</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Qt\include\QPaintField.h">
       <Filter>Header Files\Qt</Filter>
     </CustomBuild>
     <CustomBuild Include="Qt\include\QPaint2DMirror.h">
@@ -453,6 +528,30 @@
     </CustomBuild>
     <CustomBuild Include="Qt\include\PVVAProgressDialog.h">
       <Filter>Header Files\Qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Qt\include\QPaint2DField.h">
+      <Filter>Header Files\Qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DenisovRadiator\CodeJin\qcustomplot.h">
+      <Filter>Header Files\Denisov</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DenisovRadiator\CodeJin\QPaintField.h">
+      <Filter>Header Files\Denisov</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DenisovRadiator\QTFDTDThread.h">
+      <Filter>Header Files\FDTDShow</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DenisovRadiator\showFDTD.h">
+      <Filter>Header Files\FDTDShow</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Qt\include\ModelBtnDialog.h">
+      <Filter>Header Files\Qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DenisovRadiator\DenisovRadiator.h">
+      <Filter>Header Files\Denisov</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DenisovRadiator\showDenisov.h">
+      <Filter>Header Files\Denisov</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -593,6 +692,21 @@
     </ClInclude>
     <ClInclude Include="Calculation\Correlation_Coefficient.h">
       <Filter>Header Files\Calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="DenisovRadiator\CodeJin\Mathematical_Functions.h">
+      <Filter>Header Files\Denisov</Filter>
+    </ClInclude>
+    <ClInclude Include="DenisovRadiator\CodeJin\OMTfunctions.h">
+      <Filter>Header Files\Denisov</Filter>
+    </ClInclude>
+    <ClInclude Include="DenisovRadiator\CodeJin\SourceModeGenerationD.h">
+      <Filter>Header Files\Denisov</Filter>
+    </ClInclude>
+    <ClInclude Include="DenisovRadiator\CodeJin\Vector3.h">
+      <Filter>Header Files\Denisov</Filter>
+    </ClInclude>
+    <ClInclude Include="DenisovRadiator\CodeJin\Mathematical_Functions_Jin.h">
+      <Filter>Header Files\Denisov</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -20,6 +20,21 @@ double D1_J(int m, double z)
 	return a;
 }
 
+//¹²éî
+complex<float> conjf(complex<float> x)
+{
+	complex<float> result;
+	result = complex<float>(x.real(), -x.imag());
+	return result;
+}
+
+complex<double> conjd(complex<double> x)
+{
+	complex<double> result;
+	result = complex<double>(x.real(), -x.imag());
+	return result;
+}
+
 complex<double> H_phi(double Kz0, double Kr0, int m0, double r0, double Phi0)
 {
 	complex <double> a1(0, -m0*Phi0);//-j*m0*Phi0

@@ -16,9 +16,10 @@
 #include <QGridLayout>
 #include <QScrollArea>
 #include <QPainter>
+#include <QPushButton>
 #include <memory>
 
-#include "..\include\QPaintField.h"
+#include "..\include\QPaint2DField.h"
 #include "..\include\QPaint2DMirror.h"
 #include "..\Calculation\SourceModeGeneration.h"
 #include "MirrorPosition.h"
@@ -92,6 +93,7 @@ namespace  userInterface {
 		void on_radiusLineEditChange(const QString &);
 		void on_amplitudeLineEditChange(const QString &);
 		void on_rotationComboBoxChange(int);
+		void on_openBtn();
 
 	private:
 		void updatePaint();
@@ -118,9 +120,21 @@ namespace  userInterface {
 
 		QGroupBox *groupBox;
 
+		QLabel *nnLabel;
+		QLabel *mmLabel;
+		QLabel *openLabel;
+		QLabel *dsLabel;
+		QLineEdit *nnLineEdit;
+		QLineEdit *mmLineEdit;
+		QLineEdit *openLineEdit;
+		QLineEdit *dsLineEdit;
+		QPushButton *openBtn;
+
+		QGroupBox *recGroupBox;
+
 		QPainter *paint;
 
-		QPaintField* imgLabel2;
+		QPaint2DField* imgLabel2;
 
 		shared_ptr<calculation::SourceModeGeneration> source;
 

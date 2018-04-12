@@ -32,13 +32,11 @@ void Field_Split(double frequency0, double ds, int N0,
 				Whole_Power0 = Whole_Power0 + AbsE1[i][j] * AbsE1[i][j];
 			}
 		}//得到相位和幅值分布(E1用于消减)
-	//20180306检查至此，没问题
-	//20180307取消E0赋值，不用它，只用E1
-
+	
 	//下面开始将场分布分解为一系列的高斯波束
 
 	//首先来定义分解信息
-	int Max_SplitTimes = 300;//定义最大分解次数
+	int Max_SplitTimes = 200;//定义最大分解次数，最多分解200次
 
 	Actual_SplitTimes = 0;//将实际分解次数初始化为0
 
@@ -48,7 +46,7 @@ void Field_Split(double frequency0, double ds, int N0,
 		Split_Info[i].resize(15);
 	}//Split_Info是分解总信息（Max_SplitTimes*15），其中单次分解包含15个数字信息
 
-	double Remained_Power_Ratio = 0.002;//定义剩余能量阈值，剩余能量低于0.2%时停止分解
+	double Remained_Power_Ratio = 0.001;//定义剩余能量阈值，剩余能量低于0.1%时停止分解
 
 	//为方便测试，添加一个小数组
 	vector <double> Power_Remained(Max_SplitTimes);
@@ -75,7 +73,6 @@ void Field_Split(double frequency0, double ds, int N0,
 						MaxP_i = i;
 						MaxP_j = j;
 					}
-
 				}
 			}
 
@@ -87,26 +84,21 @@ void Field_Split(double frequency0, double ds, int N0,
 		if (MaxP_i > 0 & MaxP_i < N0 - 1)
 		{
 			a = PhaseE1[MaxP_i - 1][MaxP_j];
-			if ((PhaseE1[MaxP_i][MaxP_j] - PhaseE1[MaxP_i - 1][MaxP_j])>0.75 * 2.0 * Pi)
-				a = PhaseE1[MaxP_i - 1][MaxP_j] + 2.0 * Pi;
-			if ((PhaseE1[MaxP_i][MaxP_j] - PhaseE1[MaxP_i - 1][MaxP_j]) < -0.75 * 2.0 * Pi)
-				a = PhaseE1[MaxP_i - 1][MaxP_j] - 2.0 * Pi;//消除相位折叠
-
 			b = PhaseE1[MaxP_i + 1][MaxP_j];
-			if ((PhaseE1[MaxP_i][MaxP_j] - PhaseE1[MaxP_i + 1][MaxP_j]) > 0.75 * 2.0 * Pi)
-				b = PhaseE1[MaxP_i + 1][MaxP_j] + 2.0 * Pi;
-			if ((PhaseE1[MaxP_i][MaxP_j] - PhaseE1[MaxP_i + 1][MaxP_j]) < -0.75 * 2.0 * Pi)
-				b = PhaseE1[MaxP_i + 1][MaxP_j] - 2.0 * Pi;//消除相位折叠
+			if ((PhaseE1[MaxP_i + 1][MaxP_j] - PhaseE1[MaxP_i - 1][MaxP_j]) > 0.75 * 2.0 * Pi)
+				b = PhaseE1[MaxP_i + 1][MaxP_j] - 2.0 * Pi;
+			if ((PhaseE1[MaxP_i + 1][MaxP_j] - PhaseE1[MaxP_i + 1][MaxP_j]) < -0.75 * 2.0 * Pi)
+				b = PhaseE1[MaxP_i + 1][MaxP_j] + 2.0 * Pi;//消除相位折叠
 		}
 
 		if (MaxP_i == 0)
 		{
 			a = PhaseE1[MaxP_i][MaxP_j];
 			b = PhaseE1[MaxP_i + 2][MaxP_j];
-			if ((PhaseE1[MaxP_i][MaxP_j] - PhaseE1[MaxP_i + 2][MaxP_j]) > 0.75 * 2.0 * Pi)
-				b = PhaseE1[MaxP_i + 2][MaxP_j] + 2.0 * Pi;
-			if ((PhaseE1[MaxP_i][MaxP_j] - PhaseE1[MaxP_i + 2][MaxP_j]) < -0.75 * 2.0 * Pi)
-				b = PhaseE1[MaxP_i + 2][MaxP_j] - 2.0 * Pi;//消除相位折叠
+			if ((PhaseE1[MaxP_i + 2][MaxP_j] - PhaseE1[MaxP_i][MaxP_j]) > 0.75 * 2.0 * Pi)
+				b = PhaseE1[MaxP_i + 2][MaxP_j] - 2.0 * Pi;
+			if ((PhaseE1[MaxP_i + 2][MaxP_j] - PhaseE1[MaxP_i][MaxP_j]) < -0.75 * 2.0 * Pi)
+				b = PhaseE1[MaxP_i + 2][MaxP_j] + 2.0 * Pi;//消除相位折叠
 		}
 
 		if (MaxP_i == N0 - 1)
@@ -119,12 +111,12 @@ void Field_Split(double frequency0, double ds, int N0,
 				b = PhaseE1[MaxP_i][MaxP_j] + 2.0 * Pi;//消除相位折叠
 		}
 
-		if (((b - a) / 2.0 / Pi*lamda) < (2.0*ds))
+		if (abs((b - a) / 2.0 / Pi*lamda) < (2.0*ds))
 			Ni = Vector3(cos(Pi / 2.0 - acos((b - a) / 2.0 / Pi*lamda / 2.0 / ds)),
 				0,
 				sin(Pi / 2.0 - acos((b - a) / 2.0 / Pi*lamda / 2.0 / ds)));
 
-		if (((b - a) / 2.0 / Pi*lamda) >= (2.0*ds))
+		if (abs((b - a) / 2.0 / Pi*lamda) >= (2.0*ds))
 			Ni = Vector3(1, 0, 0);
 		//Ni计算完成
 
@@ -133,15 +125,10 @@ void Field_Split(double frequency0, double ds, int N0,
 		if (MaxP_j > 0 & MaxP_j < N0 - 1)
 		{
 			c = PhaseE1[MaxP_i][MaxP_j - 1];
-			if ((PhaseE1[MaxP_i][MaxP_j] - PhaseE1[MaxP_i][MaxP_j - 1])>0.75 * 2.0 * Pi)
-				c = PhaseE1[MaxP_i][MaxP_j - 1] + 2.0 * Pi;
-			if ((PhaseE1[MaxP_i][MaxP_j] - PhaseE1[MaxP_i][MaxP_j - 1]) < -0.75 * 2.0 * Pi)
-				c = PhaseE1[MaxP_i][MaxP_j - 1] - 2.0 * Pi;//消除相位折叠
-
 			d = PhaseE1[MaxP_i][MaxP_j + 1];
-			if ((PhaseE1[MaxP_i][MaxP_j] - PhaseE1[MaxP_i][MaxP_j + 1]) > 0.75 * 2.0 * Pi)
-				d = PhaseE1[MaxP_i][MaxP_j + 1] + 2.0 * Pi;
-			if ((PhaseE1[MaxP_i][MaxP_j] - PhaseE1[MaxP_i][MaxP_j + 1]) < -0.75 * 2.0 * Pi)
+			if ((PhaseE1[MaxP_i][MaxP_j + 1] - PhaseE1[MaxP_i][MaxP_j - 1]) > 0.75 * 2.0 * Pi)
+				d = PhaseE1[MaxP_i][MaxP_j + 1] - 2.0 * Pi;
+			if ((PhaseE1[MaxP_i][MaxP_j + 1] - PhaseE1[MaxP_i][MaxP_j - 1]) < -0.75 * 2.0 * Pi)
 				d = PhaseE1[MaxP_i][MaxP_j + 1] - 2.0 * Pi;//消除相位折叠
 		}
 
@@ -149,10 +136,10 @@ void Field_Split(double frequency0, double ds, int N0,
 		{
 			c = PhaseE1[MaxP_i][MaxP_j];
 			d = PhaseE1[MaxP_i][MaxP_j + 2];
-			if ((PhaseE1[MaxP_i][MaxP_j] - PhaseE1[MaxP_i][MaxP_j + 2]) > 0.75 * 2.0 * Pi)
-				d = PhaseE1[MaxP_i][MaxP_j + 2] + 2.0 * Pi;
-			if ((PhaseE1[MaxP_i][MaxP_j] - PhaseE1[MaxP_i][MaxP_j + 2]) < -0.75 * 2.0 * Pi)
-				d = PhaseE1[MaxP_i][MaxP_j + 2] - 2.0 * Pi;//消除相位折叠
+			if ((PhaseE1[MaxP_i][MaxP_j + 2] - PhaseE1[MaxP_i][MaxP_j]) > 0.75 * 2.0 * Pi)
+				d = PhaseE1[MaxP_i][MaxP_j + 2] - 2.0 * Pi;
+			if ((PhaseE1[MaxP_i][MaxP_j + 2] - PhaseE1[MaxP_i][MaxP_j]) < -0.75 * 2.0 * Pi)
+				d = PhaseE1[MaxP_i][MaxP_j + 2] + 2.0 * Pi;//消除相位折叠
 		}
 
 		if (MaxP_j == N0 - 1)
@@ -165,12 +152,12 @@ void Field_Split(double frequency0, double ds, int N0,
 				d = PhaseE1[MaxP_i][MaxP_j] + 2.0 * Pi;//消除相位折叠
 		}
 
-		if (((d - c) / 2.0 / Pi*lamda) < (2.0*ds))
+		if (abs((d - c) / 2.0 / Pi*lamda) < (2.0*ds))
 			Nj = Vector3(0,
 				cos(Pi / 2.0 - acos((d - c) / 2.0 / Pi*lamda / 2.0 / ds)),
 				sin(Pi / 2.0 - acos((d - c) / 2.0 / Pi*lamda / 2.0 / ds)));
 
-		if (((d - c) / 2.0 / Pi*lamda) >= (2.0*ds))
+		if (abs((d - c) / 2.0 / Pi*lamda) >= (2.0*ds))
 			Nj = Vector3(0, 1, 0);
 		//Nj计算完成
 
@@ -186,6 +173,7 @@ void Field_Split(double frequency0, double ds, int N0,
 			MaxDirection.z / pow((MaxDirection.y*MaxDirection.y + MaxDirection.z*MaxDirection.z),0.5),
 			-MaxDirection.y / pow((MaxDirection.y*MaxDirection.y + MaxDirection.z*MaxDirection.z), 0.5));
 		Ix = Iy.Cross(Iz);//叉积
+		Ix.Normalization(); Iy.Normalization(); Iz.Normalization();
 
 		//P1是以MaxP点为中心的场分布坐标系，同时倾斜
 		for (int i = 0; i < N0; i++)
@@ -276,33 +264,23 @@ void Field_Split(double frequency0, double ds, int N0,
 		//先算Wx
 		double Dx1 = fabs(Vector3(ii0*ds, 0, 0).Dot(Ix));
 		double Dx2 = fabs(Vector3((ii1 - MaxP_i)*ds, 0, 0).Dot(Ix));
-		double Wx1 = sqrt(Dx1*Dx1 / (1.0e-10 - log(AbsE1[MaxP_i - ii0][MaxP_j] / AbsE1[MaxP_i][MaxP_j])));
-		double Wx2 = sqrt(Dx2*Dx2 / (1.0e-10 - log(AbsE1[ii1][MaxP_j] / AbsE1[MaxP_i][MaxP_j])));
-		double Wx;
-		if (fabs(Wx1) > 1.0e-5 & fabs(Wx2) > 1.0e-5)
-		{
-			Wx = Wx1;
-			if (Wx1 > Wx2)
-				Wx = Wx2;//取较小束腰值
-		}
-		else Wx = Wx1 + Wx2;
+		double Wx1 = sqrt(Dx1*Dx1 / 
+			-(1.0e-10 + log((AbsE1[MaxP_i - ii0][MaxP_j] + 1.0e-10)/ MaxE)));
+		double Wx2 = sqrt(Dx2*Dx2 / 
+			-(1.0e-10 + log((AbsE1[ii1][MaxP_j] + 1.0e-10)/ MaxE)));
+		double Wx = 0.5*(Wx1 + Wx2);
 
 		if (Wx > W0x_max) Wx = W0x_max;
 
 		//再算Wy
 		double Dy1 = fabs(Vector3(0, jj0*ds, 0).Dot(Iy));
 		double Dy2 = fabs(Vector3(0, (jj1 - MaxP_j)*ds, 0).Dot(Iy));
-		double Wy1 = sqrt(Dy1*Dy1 / (1.0e-10 - log(AbsE1[MaxP_i][MaxP_j - jj0] / AbsE1[MaxP_i][MaxP_j])));
-		double Wy2 = sqrt(Dy2*Dy2 / (1.0e-10 - log(AbsE1[MaxP_i][jj1] / AbsE1[MaxP_i][MaxP_j])));
-		double Wy;
-		if (fabs(Wy1) > 1.0e-5 & fabs(Wy2) > 1.0e-5)
-		{
-			Wy = Wy1;
-			if (Wy1 > Wy2)
-				Wy = Wy2;//取较小束腰值
-		}
-		else Wy = Wy1 + Wy2;
+		double Wy1 = sqrt(Dy1*Dy1 / 
+			-(1.0e-10 + log((AbsE1[MaxP_i][MaxP_j - jj0] + 1.0e-10) / MaxE)));
+		double Wy2 = sqrt(Dy2*Dy2 /
+			-(1.0e-10 + log((AbsE1[MaxP_i][jj1] + 1.0e-10) / MaxE)));
 
+		double Wy = 0.5*(Wy1 + Wy2);
 		if (Wy > W0y_max) Wy = W0y_max;
 
 		//先确定相位与幅值的比例系数

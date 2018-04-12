@@ -1,6 +1,6 @@
 #ifndef CalculateFDTDThread_H
 #define CalculateFDTDThread_H
-#include "../Calculation/FDTDRadiator.h"
+#include "../../FDTDRadiator/FDTDRadiator.h"
 #include "../VTK/include/Field.h"
 #include <QThread>
 

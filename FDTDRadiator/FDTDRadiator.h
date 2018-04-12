@@ -13,14 +13,6 @@
 using namespace std;
 
 
-
-void  Delay1(int   time)//time*1000为秒数 
-{
-	clock_t  now = clock();
-
-	while (clock() - now   <   time);
-}
-
 //This Part Set the FDTD Computation for a Radiator
 class _declspec(dllexport) FDTDRadiator //整个类都写成了接口
 {
@@ -37,7 +29,10 @@ public:
 	void SetReturnFloat(void(*returnFloat)(float, void*), void*_user);// 注册回调函数
 	void WriteApertureDataToFile(const char* _filename);
 	void GetProFieldE(vector<vector<complex<double>>>& _Eu, vector<vector<complex<double>>>& _Ev, int _Nu, int _Nv);
+	void GetProFieldH(vector<vector<complex<double>>>& _Hu, vector<vector<complex<double>>>& _Hv, int _Nu, int _Nv);
+	void GetProPowerRatio(double& _PowerRatio);
 	void LoadProFieldE(const char* _filename, vector<vector<complex<double>>>& _Eu, vector<vector<complex<double>>>& _Ev, int _Nu, int _Nv);
+	void LoadProFieldH(const char* _filename, vector<vector<complex<double>>>& _Hu, vector<vector<complex<double>>>& _Hv, int _Nu, int _Nv);
 
 private:
 	// 回调函数指针
@@ -82,6 +77,8 @@ public:
 	float Lv;
 	vector<vector<complex<float>>> Eu;
 	vector<vector<complex<float>>> Ev;
+	vector<vector<complex<float>>> Hu;//添加磁场
+	vector<vector<complex<float>>> Hv;//添加电场
 	char* FILENAME;
 
 	//圆电模式辐射器结构参量
@@ -107,6 +104,8 @@ public:
 	int NN;
 	int N_spa = 10;
 	int OmpNum = 4;
+
+	double PowerRatio;
 
 	//fstream logfile
 

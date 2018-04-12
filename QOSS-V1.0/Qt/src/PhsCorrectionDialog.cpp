@@ -10,7 +10,7 @@ PhsCorrectionDialog::PhsCorrectionDialog(QWidget *parent)
 	setWindowTitle(tr("Phase Correction"));
 	
 	lengthLabel = new QLabel(tr("Length:"));
-	lengthLineEdit = new QLineEdit(tr("0.016"));
+	lengthLineEdit = new QLineEdit(tr("0.12"));
 	dsLabel = new QLabel(tr("Accuracy:"));
 	dsComboBox = new QComboBox;
 	dsComboBox->addItem(tr("Crude"));

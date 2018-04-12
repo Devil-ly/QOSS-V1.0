@@ -4,7 +4,7 @@
 #include "../Calculation/PhaseCorrection.h"
 #include "../VTK/include/PhsCorMirror.h"
 
-#define Test
+//#define Test
 
 using namespace userInterface;
 using namespace calculation;
@@ -57,6 +57,8 @@ void CalculatePhsCorThread::run()
 	double dir_t;
 	rayTracing.calcNormalOfLine_Mirror(Org_Source,
 		n_Source, reflectnormal, reflectposition, isInter, dir_t);
+	reflectnormal.Normalization();
+
 	if (!isInter)
 	{
 		// 如果入射场没有和反射面不相交 报错
@@ -93,7 +95,7 @@ void CalculatePhsCorThread::run()
 	infieldposition = translateMatrix * rotatMatrixSou * infieldposition;
 	Eu_infield = rotatMatrixSou * Eu_infield;
 	Ev_infield = rotatMatrixSou * Ev_infield;
-	En_infield = rotatMatrixSou * Ev_infield;
+	En_infield = rotatMatrixSou * En_infield;
 
 	// 镜面的位置信息
 	GraphTrans graphTrans1 = mirror->getGraphTrans();
@@ -112,17 +114,19 @@ void CalculatePhsCorThread::run()
 	Ev_mirror = rotatMatrixSou1 * Ev_mirror;
 	En_mirror = rotatMatrixSou1 * En_mirror;
 
-	//int N_mirror0 = phsCorMirror->getLattice().size();
-	int N_mirror0 = 201;
+	int N_mirror0 = phsCorMirror->getLattice().size();
+	//int N_mirror0 = 201;
 	vector<vector<Vector3>> mirror1(N_mirror0, vector<Vector3>(N_mirror0, 0));
 
 	PhaseCorrection M;
 	//double Target_W = 0.016;
-	M.Set(myData->getFrequency(), Target_W, N_mirror0,
+	//double inFieldDs = myData->getPhsCorField()->getDs();
+	M.Set(myData->getFrequency(), target_W, N_mirror0,
 		myData->getPhsCorField()->getEx().size(),
 		phsCorMirror->getLattice(),
 		myData->getPhsCorField()->getEx(),
-		myData->getPhsCorField()->getEy(), ds);
+		myData->getPhsCorField()->getEy(), 
+		myData->getPhsCorField()->getDs());
 
 	M.SetCoordinate(infieldposition, Eu_infield, Ev_infield, En_infield,
 		mirrorposition, Eu_mirror, Ev_mirror, En_mirror,

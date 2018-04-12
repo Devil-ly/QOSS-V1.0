@@ -7,6 +7,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QMessageBox>
+#include <QFileDialog>
 
 namespace  userInterface {
 	ModelWizard::ModelWizard(QWidget *parent)
@@ -15,7 +16,6 @@ namespace  userInterface {
 		addPage(new BasePage);
 		addPage(new SourcePage);
 		addPage(new PositionPage);
-
 		setWizardStyle(ModernStyle);
 		//setPixmap(QWizard::BannerPixmap, QPixmap("Qt/images/WizardBanner.png"));
 		//setPixmap(QWizard::BackgroundPixmap, QPixmap(":/images/background.png"));
@@ -258,6 +258,45 @@ namespace  userInterface {
 		groupBox = new  QGroupBox(tr("Source Parameter"));
 		groupBox->setLayout(layout);
 
+		nnLabel = new QLabel(tr("n:"));
+		nnLineEdit = new QLineEdit(tr("5"));
+		nLabel->setBuddy(nnLineEdit);
+		QValidator *nnvalidator = new QRegExpValidator(regx, nnLineEdit);
+		nnLineEdit->setValidator(nnvalidator);
+
+		mmLabel = new QLabel(tr("n:"));
+		mmLineEdit = new QLineEdit(tr("5"));
+		nLabel->setBuddy(mmLineEdit);
+		QValidator *mmvalidator = new QRegExpValidator(regx, mmLineEdit);
+		mmLineEdit->setValidator(mmvalidator);
+
+		dsLabel = new QLabel(tr("ds:"));
+		dsLineEdit = new QLineEdit(tr("0.05"));
+
+		openLabel = new QLabel(tr("file"));
+		openLineEdit = new QLineEdit(tr(""));
+		openLineEdit->setEnabled(false);
+		openBtn = new QPushButton(tr("Open"));
+		connect(openBtn, SIGNAL(clicked()), this, SLOT(on_openBtn()));
+
+
+		QGridLayout *layout1 = new QGridLayout;
+		layout1->setColumnMinimumWidth(0, 20);
+
+		layout1->addWidget(nnLabel, 0, 0);
+		layout1->addWidget(nnLineEdit, 0, 1);
+		layout1->addWidget(mmLabel, 1, 0);
+		layout1->addWidget(mmLineEdit, 1, 1);
+		layout1->addWidget(dsLabel, 2, 0);
+		layout1->addWidget(dsLineEdit, 2, 1);
+		layout1->addWidget(openLabel, 3, 0);
+		layout1->addWidget(openLineEdit, 3, 1);
+		layout1->addWidget(openBtn, 3, 2);
+
+		recGroupBox = new  QGroupBox(tr("Source Parameter"));
+		recGroupBox->setLayout(layout1);
+		recGroupBox->setHidden(true);
+
 		QImage* img = new QImage;
 		img->load("Qt/images/Pattern.png");
 		imgLabel = new QLabel;
@@ -276,7 +315,7 @@ namespace  userInterface {
 		source->GetEY(Ey);
 		source->GetEX(Ex);
 
-		imgLabel2 = new QPaintField();
+		imgLabel2 = new QPaint2DField();
 		imgLabel2->calcData(Ex, Ey);
 
 		QHBoxLayout *hBoxLayout = new QHBoxLayout;
@@ -285,6 +324,7 @@ namespace  userInterface {
 
 		QVBoxLayout *groupBoxLayout = new QVBoxLayout;
 		groupBoxLayout->addWidget(groupBox);
+		groupBoxLayout->addWidget(recGroupBox);
 		groupBoxLayout->addSpacing(20);
 		groupBoxLayout->addLayout(hBoxLayout);
 		setLayout(groupBoxLayout);
@@ -340,6 +380,11 @@ namespace  userInterface {
 			amplitude = 1;
 			rotation = 1;
 			MyData::getInstance()->setPattern(0);
+
+			groupBox->setHidden(false);
+			recGroupBox->setHidden(true);
+			imgLabel->setHidden(false);
+			imgLabel2->setHidden(false);
 		}
 		else if (field("higherRadioButton").toBool())
 		{
@@ -362,6 +407,11 @@ namespace  userInterface {
 			amplitude = 1;
 			radius = 0.064 / unit;
 			MyData::getInstance()->setPattern(1);
+
+			groupBox->setHidden(false);
+			recGroupBox->setHidden(true);
+			imgLabel->setHidden(false);
+			imgLabel2->setHidden(false);
 		}
 		else if (field("waveguideRadioButton").toBool())
 		{
@@ -372,6 +422,11 @@ namespace  userInterface {
 			kind = 3;
 
 			MyData::getInstance()->setPattern(2);
+			groupBox->setHidden(true);
+			recGroupBox->setHidden(false);
+			imgLabel->setHidden(true);
+			imgLabel2->setHidden(true);
+			//QWizard::NextButton;
 		}
 		fre = field("freLine").toDouble();
 		switch (field("freUnit").toInt())
@@ -472,6 +527,18 @@ namespace  userInterface {
 	void SourcePage::on_rotationComboBoxChange(int index)
 	{
 		rotation = index + 1;
+	}
+
+	void SourcePage::on_openBtn()
+	{
+		QString filename = QFileDialog::getOpenFileName(this,
+			tr("Open the file"),
+			"",
+			tr("*.txt"));
+		if (!filename.isEmpty())
+		{
+			openLineEdit->setText(filename);
+		}
 	}
 
 	void SourcePage::on_mLineEditChange(const QString & valStr)
@@ -813,6 +880,7 @@ namespace  userInterface {
 
 	void PositionPage::initializePage()
 	{
+
 		disconnect(phiLineEdit1, SIGNAL(textChanged(QString)),
 			this, SLOT(on_phiLineEdit1Change(QString)));
 		disconnect(phiLineEdit2, SIGNAL(textChanged(QString)),
@@ -858,6 +926,12 @@ namespace  userInterface {
 		xLineEdit->setText(QString::number(length));
 		zLineEdit->setText(QString::number(width));
 
+		if (field("waveguideRadioButton").toBool())
+		{
+			xLineEdit->setText(tr("0.5"));
+			zLineEdit->setText(tr("0.5"));
+
+		}
 		propagationLengthLineEdit1->setText(QString::number(Length1));
 		propagationLengthLineEdit2->setText(QString::number(Length2));
 		propagationLengthLineEdit3->setText(QString::number(Length3));
@@ -881,6 +955,20 @@ namespace  userInterface {
 			this, SLOT(on_propagationLengthLineEdit3Change(QString)));
 		connect(propagationLengthLineEdit4, SIGNAL(textChanged(QString)),
 			this, SLOT(on_propagationLengthLineEdit4Change(QString)));
+
+		if (field("waveguideRadioButton").toBool())
+		{
+			scrollArea->setHidden(true);
+			imgLabel->setHidden(true);
+			numLabel->setHidden(true);
+			numComboBox->setHidden(true);
+			return;
+		}
+		scrollArea->setHidden(false);
+		imgLabel->setHidden(false);
+		numLabel->setHidden(false);
+		numComboBox->setHidden(false);
+
 	}
 
 	bool PositionPage::validatePage()

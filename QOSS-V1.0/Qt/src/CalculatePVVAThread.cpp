@@ -1,5 +1,5 @@
 #include "../include/CalculatePVVAThread.h"
-#include <../Calculation/FDTDRadiator.h>
+#include "../../FDTDRadiator/FDTDRadiator.h"
 #include "../Calculation/PVVA.h"
 
 using namespace userInterface;
