@@ -12,5 +12,6 @@ int main(int argc, char *argv[])
 	w.show();
 	//test...
 	//testly
+	//12x3d
 	return a.exec();
 }
