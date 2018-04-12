@@ -199,7 +199,7 @@ void PVVA::getVirtualSurface(shared_ptr<Field>_field)
 {
 	_field->setNM(N, M);
 	_field->setPlane(SourceGraphTrans, ds);
-	_field->setField(Ex1, Ey1);
+	_field->setField(Ex_In, Ey_In);
 	_field->setShowPara(1, 1, 0);
 }
 

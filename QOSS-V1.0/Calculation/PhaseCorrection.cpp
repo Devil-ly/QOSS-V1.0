@@ -48,7 +48,7 @@ void calculation::PhaseCorrection::Set(double _Frequency,
 	InField_EX = _InField_EX;
 	InField_EY = _InField_EY;
 
-	ofstream outfilex1("PhsCorExEy.txt");
+	/*ofstream outfilex1("PhsCorExEy.txt");
 	for (int i = 0; i < 201; i++)
 	{
 		for (int j = 0; j < 201; j++)
@@ -59,7 +59,7 @@ void calculation::PhaseCorrection::Set(double _Frequency,
 				<< arg(InField_EY[i][j]) << "\n";
 		}
 	}
-	outfilex1.close();
+	outfilex1.close();*/
 
 	InField_EX1.resize(N_InField); InField_EY1.resize(N_InField);
 	for (int i = 0; i < N_InField; i++)
