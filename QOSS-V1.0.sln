@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QOSS-V1.0", "QOSS-V1.0\QOSS
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FDTDRadiator", "FDTDRadiator\FDTDRadiator.vcxproj", "{96E692D8-718E-410F-96BD-DC8E8B00D43A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUDARayTracing", "CUDADLL\CUDADLL.vcxproj", "{2428086A-1640-4655-AD9D-7C8E76ECBE12}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{96E692D8-718E-410F-96BD-DC8E8B00D43A}.Release|x64.Build.0 = Release|x64
 		{96E692D8-718E-410F-96BD-DC8E8B00D43A}.Release|x86.ActiveCfg = Release|Win32
 		{96E692D8-718E-410F-96BD-DC8E8B00D43A}.Release|x86.Build.0 = Release|Win32
+		{2428086A-1640-4655-AD9D-7C8E76ECBE12}.Debug|x64.ActiveCfg = Debug|x64
+		{2428086A-1640-4655-AD9D-7C8E76ECBE12}.Debug|x64.Build.0 = Debug|x64
+		{2428086A-1640-4655-AD9D-7C8E76ECBE12}.Debug|x86.ActiveCfg = Debug|Win32
+		{2428086A-1640-4655-AD9D-7C8E76ECBE12}.Debug|x86.Build.0 = Debug|Win32
+		{2428086A-1640-4655-AD9D-7C8E76ECBE12}.Release|x64.ActiveCfg = Release|x64
+		{2428086A-1640-4655-AD9D-7C8E76ECBE12}.Release|x64.Build.0 = Release|x64
+		{2428086A-1640-4655-AD9D-7C8E76ECBE12}.Release|x86.ActiveCfg = Release|Win32
+		{2428086A-1640-4655-AD9D-7C8E76ECBE12}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

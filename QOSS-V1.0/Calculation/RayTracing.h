@@ -15,6 +15,7 @@
 
 #include "../Calculation/Matrix4D.h"
 #include "../Calculation/Vector3D.h"
+
 #include <vector>
 
 namespace calculation
@@ -40,10 +41,10 @@ namespace calculation
 			Vector3 &reflex, Vector3 &intersection,
 			bool &isIntersect);
 
-		void calcReflectBatch(const vector<vector<Vector3>>& startPiont,
-			const vector<vector<Vector3>>& direction,
-			vector<vector<Vector3>> &reflex, vector<vector<Vector3>> &intersection,
-			vector<vector<bool>> &isIntersect);
+		void calcReflectBatch(const vector<Vector3>& startPiont,
+			const vector<Vector3>& direction,
+			vector<Vector3> &nomal, vector<Vector3> &intersection,
+			vector<bool> &isIntersect, vector<float> &port);
 
 		// 根据入射光线和法线求反射光线
 		static Vector3 reflectLight(const Vector3& a, const Vector3& n);
@@ -53,10 +54,10 @@ namespace calculation
 	private:
 
 		// 根据模型剖分数据计算反射
-		void calcReflectByPolyDataBatch(const vector<vector<Vector3>>& startPiont,
-			const vector<vector<Vector3>>& direction,
-			vector<vector<Vector3>> &reflex, vector<vector<Vector3>> &intersection,
-			vector<vector<bool>> &isIntersect);
+		void calcReflectByPolyDataBatch(const vector<Vector3>& startPiont,
+			const vector<Vector3>& direction,
+			vector<Vector3> &nomal, vector<Vector3> &intersection,
+			vector<bool> &isIntersect, vector<float> &port);
 
 		void calcReflectByPolyData(const Vector3& startPiont,
 			const Vector3& direction, Vector3 &reflex,
@@ -72,6 +73,11 @@ namespace calculation
 			const Vector3& direction,
 			Vector3 &normal, Vector3 &intersection,
 			bool &isIntersect, double &t);
+
+		void calcNormalOfLine_MirrorByQuadricSurfaceBatch(const vector<Vector3>& startPiont,
+			const vector<Vector3>& direction,
+			vector<Vector3> &nomal, vector<Vector3> &intersection,
+			vector<bool> &isIntersect, vector<float> &port);
 
 		void calcNormalOfLine_MirrorByPolyData(const Vector3& startPiont,
 			const Vector3& direction,

@@ -2,7 +2,7 @@
 
 #include "../util/Definition.h"
 #include "../VTK/include/Restriction.h"
-
+#include "../../../CUDADLL/CUDARayTracing.h"
 
 calculation::RayTracing::RayTracing(Mirror* _mirror)
 	:mirror(_mirror)
@@ -43,15 +43,25 @@ void calculation::RayTracing::calcNormalOfLine_Mirror(const Vector3 & startPiont
 	}
 }
 
-void calculation::RayTracing::calcReflectBatch(const vector<vector<Vector3>>& startPiont,
-	const vector<vector<Vector3>>& direction,
-	vector<vector<Vector3>> &reflex, vector<vector<Vector3>> &intersection,
-	vector<vector<bool>> &isIntersect)
+void calculation::RayTracing::calcReflectBatch(const vector<Vector3>& startPiont,
+	const vector<Vector3>& direction,
+	vector<Vector3> &nomal, vector<Vector3> &intersection,
+	vector<bool> &isIntersect, vector<float> &port)
 {
 	switch (mirror->getMirrorsType())
 	{
 	case PLANEMIRROR:
-		calcReflectByPolyDataBatch(startPiont, direction, reflex, intersection, isIntersect);
+	case STLMIRROR:
+	case PHSCORMIRROR:
+		calcReflectByPolyDataBatch(startPiont, direction, nomal, intersection, isIntersect, port);
+		break;
+	case QUADRICSURFACE:
+	case PARABOLICCYLINDER:
+	case PARABOLOID:
+	case ELLIPSOID:
+		//calcReflectByPolyDataBatch(startPiont, direction, nomal, intersection, isIntersect, port);
+
+		calcNormalOfLine_MirrorByQuadricSurfaceBatch(startPiont, direction, nomal, intersection, isIntersect, port);
 		break;
 	default:
 		break;
@@ -80,19 +90,40 @@ void calculation::RayTracing::calcReflect(const Vector3 & startPiont, const Vect
 }
 
 
-void calculation::RayTracing::calcReflectByPolyDataBatch(const vector<vector<Vector3>>& startPiont,
-	const vector<vector<Vector3>>& direction,
-	vector<vector<Vector3>> &reflex, vector<vector<Vector3>> &intersection,
-	vector<vector<bool>> &isIntersect)
+void calculation::RayTracing::calcReflectByPolyDataBatch(
+	const vector<Vector3>& startPiont,
+	const vector<Vector3>& direction,
+	vector<Vector3> &nomal, vector<Vector3> &intersection,
+	vector<bool> &isIntersect, vector<float> &port)
 {
-	for (int i = 0; i < startPiont.size(); i++)
-		for (int j = 0; j < startPiont[i].size(); j++)
+	if (IS_USE_CUDE)
+	{
+		// 以后加 判断是否能运行cuda
+		//CUDARayTracing::getCUDAInfo();
+		CUDARayTracing cudaAPI;
+		cudaAPI.setSTL(mirror->getPolyData().GetPointer());
+		cudaAPI.setRays(startPiont, direction);
+		if (cudaAPI.run() != 0)
+		{
+			return;
+		}
+		cudaAPI.getRes(nomal, intersection, isIntersect, port);
+
+	}
+	else
+	{
+		for (int i = 0; i < startPiont.size(); i++)
 		{
 			bool isTmep = false;
-			calcReflectByPolyData(startPiont[i][j], direction[i][j], reflex[i][j],
-				intersection[i][j], isTmep);
-			isIntersect[i][j] = isTmep;
+			double t = 0;
+			calcNormalOfLine_MirrorByPolyData(startPiont[i], direction[i], nomal[i],
+				intersection[i], isTmep, t);
+			isIntersect[i] = isTmep;
+			port[i] = t;
 		}
+	}
+
+
 }
 
 void calculation::RayTracing::calcReflectByPolyData(const Vector3 & startPiont, 
@@ -320,6 +351,22 @@ void calculation::RayTracing::calcNormalOfLine_MirrorByQuadricSurface(
 	normal = rotatMatrix[0] * tempn; // 更新方向
 	isIntersect = true;
 	
+}
+
+void calculation::RayTracing::calcNormalOfLine_MirrorByQuadricSurfaceBatch(
+	const vector<Vector3>& startPiont, const vector<Vector3>& direction,
+	vector<Vector3>& nomal, vector<Vector3>& intersection, 
+	vector<bool>& isIntersect, vector<float>& port)
+{
+	for (int i = 0; i < startPiont.size(); i++)
+	{
+		bool isTmep = false;
+		double t = 0;
+		calcNormalOfLine_MirrorByQuadricSurface(startPiont[i], direction[i], nomal[i],
+			intersection[i], isTmep, t);
+		isIntersect[i] = isTmep;
+		port[i] = t;
+	}
 }
 
 void calculation::RayTracing::calcNormalOfLine_MirrorByPolyData(

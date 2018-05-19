@@ -4,3 +4,5 @@
 #define MIRROR_POSITION_2DSHOW_Y 500
 #define MIRROR_POSITION_2DSHOW_SCALE 1.2
 #define THRESHOLD 1e-8
+
+const bool IS_USE_CUDE = true;
