@@ -20,7 +20,8 @@ public:
 	STLMirror(const GraphTrans & _graphTrans);
 	// 构造平面镜 传入参数
 	STLMirror(const GraphTrans & _graphTrans,
-		const std::vector<double> parameter);
+		const std::vector<double> parameter,
+		const string & filename);
 	virtual ~STLMirror();
 
 	virtual void calPolyData(double ds = 0);
@@ -32,6 +33,8 @@ public:
 	void setNameFile(const std::string & file);
 
 	void readData();
+
+	virtual Json::Value getDataJson(const string& dir, int index) const;
 
 private:
 	std::string fileName;

@@ -205,3 +205,9 @@ void Mirror::saveSTL()
 	writer->Update();
 }
 
+Json::Value  Mirror::getDataJson(const string& dir, int index) const
+{
+	return Json::Value();
+	// TODO: 在此处插入 return 语句
+}
+

@@ -16,6 +16,10 @@ class PhsCorMirror : public Mirror
 public:
 	PhsCorMirror(); 
 
+	PhsCorMirror(const GraphTrans & _graphTrans,
+		const std::vector<double> parameter, 
+		const string & filename, int N);
+
 	virtual ~PhsCorMirror();
 
 	virtual void calPolyData(double ds = 0);
@@ -32,6 +36,10 @@ public:
 	const vector<vector<Vector3>> & getLattice() const; 
 
 	void setLattice(const vector<vector<Vector3>> &);
+
+	virtual Json::Value getDataJson(const string& dir, int index) const;
+
+	void read(const string & filename, int N);
 
 protected:
 

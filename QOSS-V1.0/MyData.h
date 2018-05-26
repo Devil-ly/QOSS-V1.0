@@ -37,6 +37,8 @@ public:
 	void setFrequency(double fre) { frequency = fre; isModifiedFlag = true; }
 	double getFrequency() const { return frequency; }
 
+	void setNameProject(const string & name) { nameProject = name; }
+
 	void setUnit(double _unit) { unit = _unit; }
 	double getUnit() const { return unit; }
 
@@ -84,6 +86,12 @@ public:
 
 	bool getIsNeedCalcPhsCorFlag() const { return isNeedCalcPhsCorFlag; }
 
+	int save(const string & dir);
+
+	int open(const string & dir);
+
+	void clear();
+
 private:
 	static MyData * _myData;
 	bool isModifiedFlag;  // 标志该类数据是否被修改
@@ -93,6 +101,8 @@ private:
 	double frequency;
 	int pattern; // 0——Lower order  1——higher order 2——waveguide
 	double unit;
+
+	string nameProject;
 
 	//镜子
 	std::vector<Mirror*> mirrors;

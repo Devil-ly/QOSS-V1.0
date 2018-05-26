@@ -139,6 +139,7 @@ namespace  userInterface {
 
 	bool BasePage::validatePage()
 	{
+		MyData::getInstance()->setNameProject(projectNameLineEdit->text().toStdString());
 		double fre = freLineEdit->text().toDouble();
 		switch (field("freUnit").toInt())
 		{
@@ -185,7 +186,7 @@ namespace  userInterface {
 		type = 1;
 		rotation = 2;
 		radius = 0.064;
-		fre = 44.0e9;
+		fre = MyData::getInstance()->getFrequency();
 		kind = 1;
 
 		setTitle(tr("Excitation source"));

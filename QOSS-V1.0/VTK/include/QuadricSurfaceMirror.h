@@ -32,6 +32,8 @@ public:
 	// 输出x,y 得到Z 若z有多个值时 只返回负值
 	double calcZ(double x, double y);
 
+	virtual Json::Value getDataJson(const string& dir, int index) const;
+
 private:
 
 	void calcRestriction();

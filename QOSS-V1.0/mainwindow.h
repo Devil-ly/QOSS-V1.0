@@ -67,8 +67,12 @@ private:
 	void createStatusBar();
 
 	void createTreeWidgetItem(); // 创建tree
+	void clearTreeWidgetItem(); // 创建tree
+
 	void createRightMenu(); // 右键菜单
 	void createDetails(); //zuojian
+
+	void clearMirrors(); // 创建tree
 
 	void createProject();
 	// 
@@ -81,12 +85,15 @@ private:
 	// 改变3D显示窗口
 	void showDetails(int);
 
+	void clear();
+
 
 private slots:
 
 	// 菜单响应函数
 	void openFile();
 	void newFile();
+	void saveFile();
 	void viewInitFile();
 	void setView(int);
 

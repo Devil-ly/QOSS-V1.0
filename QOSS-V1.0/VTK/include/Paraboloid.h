@@ -27,6 +27,7 @@ public:
 	double getRadius() const { return radius; }
 
 	virtual QTreeWidgetItem* getTree();
+
 private:
 	double focus;
 	double radius;

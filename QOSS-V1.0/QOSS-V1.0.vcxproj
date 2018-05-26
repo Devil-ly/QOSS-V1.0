@@ -449,6 +449,7 @@
     <ClCompile Include="Qt\src\QPaint2DField.cpp" />
     <ClCompile Include="Qt\src\RestrictionWidget.cpp" />
     <ClCompile Include="Qt\src\STLMirrorWidget.cpp" />
+    <ClCompile Include="util\comUtil.cpp" />
     <ClCompile Include="VTK\src\ApertureField.cpp" />
     <ClCompile Include="VTK\src\BasicParameters.cpp" />
     <ClCompile Include="VTK\src\Ellipsoid.cpp" />
@@ -842,6 +843,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets" "-IC:\Program Privacy\openNI\nite2\Include" "-IC:\Program Privacy\OpenNI\Include"</Command>
     </CustomBuild>
+    <ClInclude Include="util\comUtil.h" />
     <ClInclude Include="VTK\include\PhsCorMirror.h" />
     <ClInclude Include="VTK\include\STLMirror.h" />
     <CustomBuild Include="Qt\include\RestrictionWidget.h">
@@ -1040,7 +1042,6 @@
     </CustomBuild>
     <ClInclude Include="util\Constant_Var.h" />
     <ClInclude Include="util\Definition.h" />
-    <ClInclude Include="util\GraphTrans.h" />
     <ClInclude Include="util\Vector3.h" />
     <ClInclude Include="VTK\include\LightShow.h" />
     <ClInclude Include="VTK\include\LimitBox.h" />

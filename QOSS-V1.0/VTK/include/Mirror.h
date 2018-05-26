@@ -17,6 +17,7 @@
 #include <vtkAxesActor.h>
 #include <vector>
 #include <../util/Vector3.h>
+#include <vtkjsoncpp/json/json.h>
 
 #include "BasicParameters.h"
 #include "Restriction.h"
@@ -81,6 +82,8 @@ public:
 
 	// 输出STL 格式文件
 	void saveSTL();
+
+	virtual Json::Value getDataJson(const string& dir, int index) const;
 
 protected:
 

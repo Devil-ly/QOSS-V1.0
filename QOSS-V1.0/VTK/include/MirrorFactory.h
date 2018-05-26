@@ -10,6 +10,7 @@
 #include "Mirror.h"
 
 #include <vector>
+#include <vtkjsoncpp/json/json.h>
 
 class MirrorFactory
 {
@@ -22,6 +23,7 @@ public:
 
 	static Mirror* getDefaultMirror(const GraphTrans& graphTrans);
 
+	static Mirror* getMirrorByJson(const Json::Value & js);
 private:
 	MirrorFactory() {};
 	~MirrorFactory() {};

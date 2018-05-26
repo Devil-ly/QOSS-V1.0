@@ -79,3 +79,28 @@ void LimitBox::setIsTransparent(bool ok)
 	}
 
 }
+
+Json::Value LimitBox::getDataJson() const
+{
+	Json::Value js;
+	js["length"] = length;
+	js["width"] = width;
+	js["height"] = height;
+
+	return js;
+}
+
+int LimitBox::setDataJson(const Json::Value &js)
+{
+	if (!js.isMember("length") ||
+		!js.isMember("width") || 
+		!js.isMember("height"))
+	{
+		return -1;
+	}
+	length = js["length"].asDouble();
+	width = js["width"].asDouble();
+	height = js["height"].asDouble();
+	updateData();
+	return 0;
+}

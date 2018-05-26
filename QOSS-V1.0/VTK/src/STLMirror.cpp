@@ -2,9 +2,13 @@
 #include <vtkSTLReader.h>
 #include <vtkTransform.h>
 #include <vtkTransformPolyDataFilter.h>
+#include <vtkSTLWriter.h>
+
+#include "util/comUtil.h"
 
 STLMirror::STLMirror()
 {
+	type = STLMIRROR;
 }
 
 STLMirror::STLMirror(const GraphTrans & _graphTrans)
@@ -16,8 +20,13 @@ STLMirror::STLMirror(const GraphTrans & _graphTrans)
 }
 
 STLMirror::STLMirror(const GraphTrans & _graphTrans,
-	const std::vector<double> parameter)
+	const std::vector<double> parameter,
+	const string & filename)
 {
+	type = STLMIRROR;
+	graphTrans = _graphTrans;
+	setData(parameter);
+	setNameFile(filename);
 }
 
 STLMirror::~STLMirror()
@@ -86,4 +95,31 @@ void STLMirror::readData()
 
 	calPolyData();
 	calActor();
+}
+
+Json::Value STLMirror::getDataJson(const string& dir, int index) const
+{
+	Json::Value js;
+	js["type"] = type;
+
+	for (const auto &x : data)
+	{
+		js["Data"].append(x);
+	}
+	js["isTransparent"] = isTransparent;
+	js["isShow"] = isShow;
+	Json::Value jsGraphTrans;
+	packGraphTransToJson(graphTrans, jsGraphTrans);
+	js["graphTrans"] = jsGraphTrans;
+
+	// save stl
+	string fileDir = dir + "/STLMirror" + to_string(index) + ".stl";
+	vtkSmartPointer<vtkSTLWriter> writer =
+		vtkSmartPointer<vtkSTLWriter>::New();
+	writer->SetInputData(polyData);
+	writer->SetFileName(fileDir.c_str());
+	writer->Update();
+	js["path"] = fileDir;
+
+	return js;
 }

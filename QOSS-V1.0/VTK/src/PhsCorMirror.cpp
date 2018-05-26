@@ -9,12 +9,25 @@
 #include <vtkTransform.h>
 #include <vtkTransformPolyDataFilter.h>
 #include <../Calculation/RayTracing.h>
+#include "../util/comUtil.h"
+
 using namespace std;
 PhsCorMirror::PhsCorMirror()
 	//:lattice(201,vector<Vector3>(201,Vector3()))
 {
 	type = PHSCORMIRROR;
 	lattice = nullptr;
+}
+
+PhsCorMirror::PhsCorMirror(const GraphTrans & _graphTrans,
+	const std::vector<double> parameter,
+	const string & filename, int N)
+{
+	type = PHSCORMIRROR;
+	graphTrans = _graphTrans;
+	setData(parameter);
+	read(filename, N);
+	updateData();
 }
 
 PhsCorMirror::~PhsCorMirror()
@@ -210,5 +223,59 @@ void PhsCorMirror::setLattice(const vector<vector<Vector3>> & temp)
 		for (int j = 0; j < N; j++)
 		{
 			(*lattice)[i][j] = temp[i][j];
+		}
+}
+
+Json::Value PhsCorMirror::getDataJson(const string & dir, int index) const
+{
+
+	Json::Value js;
+	js["type"] = type;
+
+	for (const auto &x : data)
+	{
+		js["Data"].append(x);
+	}
+	js["isTransparent"] = isTransparent;
+	js["isShow"] = isShow;
+	Json::Value jsGraphTrans;
+	packGraphTransToJson(graphTrans, jsGraphTrans);
+	js["graphTrans"] = jsGraphTrans;
+
+	// save points
+	string fileDir = dir + "/pointsMirror" + to_string(index) + ".pts";;
+	ofstream file(fileDir.c_str(), ios::binary);
+
+	FILE *outfile = fopen(fileDir.c_str(), "wb");
+	int N = (*lattice).size();
+	for (int i = 0; i < N; i++)
+		for (int j = 0; j < N; j++)
+		{
+			fwrite(&(*lattice)[i][j].x, sizeof(double), 1, outfile);
+			fwrite(&(*lattice)[i][j].y, sizeof(double), 1, outfile);
+			fwrite(&(*lattice)[i][j].z, sizeof(double), 1, outfile);
+		}
+	fclose(outfile);
+	js["path"] = fileDir;
+	js["N"] = N;
+	return js;
+
+}
+
+void PhsCorMirror::read(const string & filename, int N)
+{
+	FILE *file = fopen(filename.c_str(), "rb");
+	if (!file)
+		return;
+	(*lattice).resize(N);
+	for (int i = 0; i < N; i++)
+		(*lattice)[i].resize(N);
+
+	for (int i = 0; i < N; i++)
+		for (int j = 0; j < N; j++)
+		{
+			fread(&(*lattice)[i][j].x, sizeof(double), 1, file);
+			fread(&(*lattice)[i][j].y, sizeof(double), 1, file);
+			fread(&(*lattice)[i][j].z, sizeof(double), 1, file);
 		}
 }

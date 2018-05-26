@@ -28,7 +28,7 @@
 #include <QMessageBox>
 #include <thread>
 
-
+#pragma execution_character_set("utf-8")
 
 using namespace userInterface;
 
@@ -56,6 +56,9 @@ mainWindow::mainWindow(QWidget *parent)
 		exit(1);
 	}
 	myData = MyData::getInstance();
+
+	showFDTDPtr = nullptr;
+	showDenisovPtr = nullptr;
 
 	if (0 == myData->getPattern()) // 低阶
 	{
@@ -261,9 +264,6 @@ mainWindow::mainWindow(QWidget *parent)
 	//creareWindows();
 
 	init();
-
-	//showDenisovPtr =  new showDenisov; 
-	//showDenisovPtr->show();
 }
 
 mainWindow::~mainWindow()
@@ -552,6 +552,21 @@ void mainWindow::createTreeWidgetItem()
 
 }
 
+void mainWindow::clearTreeWidgetItem()
+{
+	if (definitionsTreeItem)
+	{
+		delete definitionsTreeItem;
+		definitionsTreeItem = nullptr;
+	} 
+	if (modelTreeItem)
+	{
+		delete modelTreeItem;
+		modelTreeItem = nullptr;
+	}
+
+}
+
 void mainWindow::createRightMenu()
 {
 	R_Tree_MirrorTypeMenu = new QMenu(this);
@@ -742,6 +757,11 @@ void mainWindow::createDetails()
 	detailsDockWidget->close();
 }
 
+void mainWindow::clearMirrors()
+{
+
+}
+
 void mainWindow::createProject()
 {
 
@@ -756,7 +776,7 @@ void mainWindow::isNeedSave()
 			QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
 		if (rb == QMessageBox::Yes)
 		{
-			QMessageBox::aboutQt(NULL, "About Qt");
+			saveFile();
 		}
 	}
 }
@@ -766,7 +786,67 @@ void mainWindow::isNeedSave()
 void mainWindow::openFile()
 {
 	isNeedSave();
+	QString filename = QFileDialog::getOpenFileName(this,
+		tr("Open the file"),
+		"",
+		tr("*.QOSS"));
+	if (!filename.isEmpty())
+	{
+		if (myData->open(filename.toStdString()) != 0) // open失败
+		{
+			QMessageBox::warning(NULL, "Error",
+				"open error!");
+			return;
+		}
+	}
 
+	clear();
+
+	renderer = vtkSmartPointer<vtkRenderer>::New();
+	renderer->SetBackground(1.0, 1.0, 1.0);
+
+	auto window = widget.GetRenderWindow();
+	window->AddRenderer(renderer);
+
+	if (0 == myData->getPattern()) // 低阶
+	{
+		showFDTDPtr = new showFDTD;
+		tabWidget->addTab(showFDTDPtr, QString::fromLocal8Bit("Radiator"));
+
+		//创建默认辐射器
+		myData->createRadiator();
+		renderer->AddActor(myData->getRadiator()->getActorModel());
+		renderer->AddActor(myData->getRadiator()->getActorRay());
+
+		//for (int i = 0; i < myData->getNumOfMirrors(); ++i)
+		for (int i = 0; i < 3; ++i)
+		{
+			renderer->AddActor(myData->getMirrorByNum(i)->getActor());
+		}
+
+		// 加入限制盒子
+		renderer->AddActor(myData->getLimitBox()->getActor());
+
+		// 创建默认的光线
+		myData->createDefaultLigthShow();
+		std::list<vtkSmartPointer<vtkActor>> tempActors =
+			myData->getDefaultLightShow()->getActors();
+		for (auto& x : tempActors)
+			renderer->AddActor(x);
+	}
+
+	createTreeWidgetItem();
+	double axesScale = myData->getLimitBox()->getMaxSize();
+
+	vtkCamera *aCamera = vtkCamera::New();
+	aCamera->SetViewUp(0, 0, 1);//设视角位置 
+	aCamera->SetPosition(0, -3 * axesScale, 0);//设观察对象位
+	aCamera->SetFocalPoint(0, 0, 0);//设焦点 
+	aCamera->ComputeViewPlaneNormal();//自动
+	renderer->SetActiveCamera(aCamera);
+
+	renderer->ResetCamera();
+	window->Render();
 }
 
 void mainWindow::newFile()
@@ -778,6 +858,76 @@ void mainWindow::newFile()
 		return;
 	}
 
+	myData->clear();
+	clear();
+
+	renderer = vtkSmartPointer<vtkRenderer>::New();
+	renderer->SetBackground(1.0, 1.0, 1.0);
+
+	auto window = widget.GetRenderWindow();
+	window->AddRenderer(renderer);
+
+	if (0 == myData->getPattern()) // 低阶
+	{
+		showFDTDPtr = new showFDTD;
+		tabWidget->addTab(showFDTDPtr, QString::fromLocal8Bit("Radiator"));
+
+		//创建默认辐射器
+		myData->createRadiator();
+		renderer->AddActor(myData->getRadiator()->getActorModel());
+		renderer->AddActor(myData->getRadiator()->getActorRay());
+
+
+		// 创建默认的镜子
+		myData->createDefaultMirror();
+
+
+		//for (int i = 0; i < myData->getNumOfMirrors(); ++i)
+		for (int i = 0; i < 3; ++i)
+		{
+			renderer->AddActor(myData->getMirrorByNum(i)->getActor());
+		}
+
+		// 加入限制盒子
+		renderer->AddActor(myData->getLimitBox()->getActor());
+
+		// 创建默认的光线
+		myData->createDefaultLigthShow();
+		std::list<vtkSmartPointer<vtkActor>> tempActors =
+			myData->getDefaultLightShow()->getActors();
+		for (auto& x : tempActors)
+			renderer->AddActor(x);
+	}
+
+	createTreeWidgetItem();
+	double axesScale = myData->getLimitBox()->getMaxSize();
+
+	vtkCamera *aCamera = vtkCamera::New();
+	aCamera->SetViewUp(0, 0, 1);//设视角位置 
+	aCamera->SetPosition(0, -3 * axesScale, 0);//设观察对象位
+	aCamera->SetFocalPoint(0, 0, 0);//设焦点 
+	aCamera->ComputeViewPlaneNormal();//自动
+	renderer->SetActiveCamera(aCamera);
+
+	renderer->ResetCamera();
+	window->Render();
+}
+
+void mainWindow::saveFile()
+{
+	QString filename = QFileDialog::getSaveFileName(this,
+		tr("Save the file"),
+		"",
+		tr("*.QOSS"));
+	if (!filename.isEmpty())
+	{
+		if (myData->save(filename.toStdString()) != 0) // 保存失败
+		{
+			QMessageBox::warning(NULL, "Error",
+				"save error!");
+
+		}
+	}
 }
 
 void mainWindow::viewInitFile()
@@ -1962,5 +2112,48 @@ void mainWindow::showDetails(int index)
 	vecLabelVal->setText(QString::number(tempField->getVectorCorrelationCoefficient()));
 
 	detailsDockWidget->show();
+}
+
+void mainWindow::clear()
+{
+	isExistenceOpenWin = false;
+	isNew = true;
+	fieldNum = 1;
+	if (FDTDprogressDialog)
+	{
+		delete FDTDprogressDialog;
+		FDTDprogressDialog = nullptr;
+	}
+	if (radiatorField)
+	{
+		delete radiatorField;
+		radiatorField = nullptr;
+	}
+	if (PVVAprogressDialog)
+	{
+		delete PVVAprogressDialog;
+		PVVAprogressDialog = nullptr;
+	}
+	if (phsCorprogressDialog)
+	{
+		delete phsCorprogressDialog;
+		phsCorprogressDialog = nullptr;
+	}
+	clearTreeWidgetItem();
+
+
+	if (showFDTDPtr)
+	{
+		delete showFDTDPtr;
+		showFDTDPtr = nullptr;
+	}
+	if (showDenisovPtr)
+	{
+		delete showDenisovPtr;
+		showDenisovPtr = nullptr;
+	}
+	tabWidget->removeTab(1);
+	
+	renderer->Delete();
 }
 

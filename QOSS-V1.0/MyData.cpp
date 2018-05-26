@@ -11,6 +11,11 @@
 #include "../Calculation/PVVA.h"
 
 #include "VTK/include/Paraboloid.h"
+#include <vtkjsoncpp/json/json.h>
+
+#include <direct.h> 
+#include <fstream>
+
 using namespace calculation;
 
 MyData::MyData()
@@ -20,6 +25,7 @@ MyData::MyData()
 	source = NULL;
 	mirrors.resize(MAX_NUM_OF_MIRROS);
 	fieldNum = 1;
+	nameProject = "project";
 	for (auto &x : mirrors)
 	{
 		x = nullptr;
@@ -60,7 +66,8 @@ void MyData::setMirror(int index, Mirror * _mirror)
 		{
 			isNeedCalcPhsCorFlag = true;
 		}
-	}		
+	}
+	isModifiedFlag = true;
 }
 
 Mirror * MyData::getMirror(int index) const
@@ -203,17 +210,20 @@ Mirror * MyData::getMirrorByNum(int num) const
 void MyData::setSource(const shared_ptr<calculation::SourceModeGeneration> & ptr)
 {
 	source = ptr;
+	isModifiedFlag = true;
 }
 
 void MyData::setMirrorPosition(const shared_ptr<calculation::MirrorPosition>&ptr)
 {
 	mirrorPosition = ptr;
 	setNumOfMirrors(mirrorPosition->getMirrorNum());
+	isModifiedFlag = true;
 }
 
 void MyData::setLimitBox(const shared_ptr<LimitBox>&ptr)
 {
 	limitBox = ptr;
+	isModifiedFlag = true;
 }
 
 void MyData::createDefaultLigthShow()
@@ -255,6 +265,7 @@ void MyData::setSourceField(Field *ptr)
 	}
 	fieldMap[0] = ptr;
 	isNeedCalcPhsCorFlag = true;
+	isModifiedFlag = true;
 }
 
 Field * MyData::getSourceField() const
@@ -332,5 +343,214 @@ void MyData::calcPhsCorField()
 	}
 	
 	pvva.getVirtualSurface(phsCorField);
+}
+
+int MyData::save(const string & dir)
+{
+	if (mkdir(dir.c_str()))
+		return -1;
+
+	string jsQOSS = dir + "/" + nameProject + ".QOSS";
+	// 判断文件是否存在
+	fstream _file;
+	_file.open(jsQOSS, ios::in);
+	if (_file)
+	{
+		_file.close();
+		return -1;
+	}
+
+	string jsDir = dir + "/" + nameProject + ".QOSS";
+	Json::Value js;
+
+	js["Version"] = 1.0;
+
+	Json::Value baseInfo;
+	
+	baseInfo["frequency"] = frequency;
+	baseInfo["pattern"] = pattern;
+	baseInfo["unit"] = unit;
+	baseInfo["nameProject"] = nameProject;
+	baseInfo["Box"] = limitBox->getDataJson();
+
+	js["baseInfo"] = baseInfo;
+
+	//source
+	Json::Value jsSource;
+	int SourceKind = source->getSourceKind();
+	int SourceType = source->getSourceType();
+	int Rotation = source->getRotation();
+	int m = source->getM();
+	int n = source->getN();
+	double Radius = source->getRadius();
+	jsSource["SourceKind"] = SourceKind;
+	jsSource["SourceType"] = SourceType;
+	jsSource["Rotation"] = Rotation;
+	jsSource["m"] = m;
+	jsSource["n"] = n;
+	jsSource["Radius"] = Radius;
+	js["Source"] = jsSource;
+
+	// mirror
+	js["numOfMirrors"] = numOfMirrors;
+	for (int i = 0; i < numOfMirrors; ++i)
+	{		
+		js["Mirror"].append(mirrors[i]->getDataJson(dir, i));
+	}
+
+	ofstream outfile(jsDir);
+	if (!outfile.is_open())
+	{
+		return -1;
+	}
+	outfile << js.toStyledString();
+
+
+	outfile.close();
+	// 校验 以后来
+	isModifiedFlag = false;
+
+	return 0;
+}
+
+int MyData::open(const string & dir)
+{
+	ifstream file(dir);
+	if (!file.is_open())
+	{
+		return -1;
+	}
+	Json::Reader reader;
+	Json::Value js;
+	if (!reader.parse(file, js))  // reader将Json字符串解析到root，root将包含Json里所有子元素  
+	{
+		return -1;
+	}
+
+	// 确定版本
+	if (!js.isMember("Version"))
+	{
+		return -1;
+	}
+	if (js["Version"].asDouble() < 0.0) //控制版本
+	{
+		return -1;
+	}
+
+
+	// baseInfo
+	if (!js.isMember("baseInfo"))
+	{
+		return -1;
+	}
+	const Json::Value & baseInfo = js["baseInfo"];
+
+	if (!baseInfo.isMember("frequency") ||
+		!baseInfo.isMember("pattern") ||
+		!baseInfo.isMember("unit") ||
+		!baseInfo.isMember("nameProject") ||
+		!baseInfo["Box"])
+	{
+		return -1;
+	}
+	frequency = baseInfo["frequency"].asDouble();
+	pattern = baseInfo["pattern"].asInt();
+	unit = baseInfo["unit"].asDouble();
+	nameProject = baseInfo["nameProject"].asString();
+
+	if (limitBox->setDataJson(baseInfo["Box"]) != 0)
+	{
+		return -1;
+	}
+
+	// source
+	if (!js.isMember("Source"))
+	{
+		return -1;
+	}
+	const Json::Value &jsSource = js["Source"];
+	if (!jsSource.isMember("SourceKind") ||
+		!jsSource.isMember("SourceType") || 
+		!jsSource.isMember("Rotation") || 
+		!jsSource.isMember("m") || 
+		!jsSource.isMember("n") || 
+		!jsSource.isMember("Radius"))
+	{
+		return -1;
+	}
+	int SourceKind = jsSource["SourceKind"].asInt();
+	int SourceType = jsSource["SourceType"].asInt();
+	int Rotation = jsSource["Rotation"].asInt();
+	int m = jsSource["m"].asInt();
+	int n = jsSource["n"].asInt();
+	double Radius = jsSource["Radius"].asDouble();
+
+	shared_ptr<calculation::SourceModeGeneration> tempSource = make_shared<calculation::SourceModeGeneration>();
+	tempSource->SetSource_Circular(SourceKind, SourceType, Rotation, m, n, frequency, Radius);
+
+	if (!tempSource->FieldCalculation_Circular())
+	{
+		return -1;
+	}
+
+	// mirror
+	if (!js.isMember("numOfMirrors"))
+	{
+		return -1;
+	}
+	numOfMirrors = js["numOfMirrors"].asInt();	
+
+	// 创建 mirror
+	vector<Mirror*> tempMirrors(numOfMirrors); // 创建一个临时mirror 如果打开失败 不影响原有mirror
+	for (int i = 0; i < numOfMirrors; i++)
+	{
+		if ((tempMirrors[i] = MirrorFactory::getMirrorByJson(js["Mirror"][i])) == nullptr)
+		{
+			for (int j = 0; j < i; j++) // 创建失败 析构之前的mirror
+			{
+				delete tempMirrors[i];
+				tempMirrors[i] = nullptr;
+			}
+			return -1;
+		}
+	}
+
+	clear();
+
+
+	// 替换
+	for (int i = 0; i < numOfMirrors; i++)
+	{
+		mirrors[i] = tempMirrors[i];
+		tempMirrors[i] = nullptr;
+	}
+	source = tempSource;
+
+	return 0;
+}
+
+void MyData::clear()
+{
+	// 释放申请mirror 和 field的内存
+	// 其他的有智能指针管理
+	for (int i = 0; i < mirrors.size(); i++)
+	{
+		if (mirrors[i])
+		{
+			delete mirrors[i];
+			mirrors[i] = nullptr;
+		}
+	}
+	for (auto & x : fieldMap)
+	{
+		if (x.second)
+		{
+			delete x.second;
+			x.second = nullptr;
+		}
+	}
+	fieldMap.clear();
+	isModifiedFlag = true;
+	isNeedCalcPhsCorFlag = true;
 }
 

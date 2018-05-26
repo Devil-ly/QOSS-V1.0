@@ -60,6 +60,9 @@
     <Filter Include="Header Files\FDTDShow">
       <UniqueIdentifier>{7bd17171-f570-4e83-9c28-6444bb43ea62}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\util">
+      <UniqueIdentifier>{7feda769-2da5-48c3-b662-5a91fc3108e4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -455,6 +458,9 @@
     <ClCompile Include="GeneratedFiles\Release\moc_showDenisov.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="util\comUtil.cpp">
+      <Filter>Source Files\util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwindow.h">
@@ -563,9 +569,6 @@
     </ClInclude>
     <ClInclude Include="VTK\include\Mirror.h">
       <Filter>Header Files\VTK</Filter>
-    </ClInclude>
-    <ClInclude Include="util\GraphTrans.h">
-      <Filter>Header Files\util</Filter>
     </ClInclude>
     <ClInclude Include="util\Definition.h">
       <Filter>Header Files\util</Filter>
@@ -707,6 +710,9 @@
     </ClInclude>
     <ClInclude Include="DenisovRadiator\CodeJin\Mathematical_Functions_Jin.h">
       <Filter>Header Files\Denisov</Filter>
+    </ClInclude>
+    <ClInclude Include="util\comUtil.h">
+      <Filter>Header Files\util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

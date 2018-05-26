@@ -11,6 +11,7 @@
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkProperty.h>
+#include <vtkjsoncpp/json/json.h>
 
 class LimitBox
 {
@@ -34,6 +35,10 @@ public:
 	double getMaxSize() const;
 
 	void setIsTransparent(bool);
+
+	Json::Value getDataJson() const;
+
+	int setDataJson(const Json::Value &);
 
 private:
 	vtkSmartPointer<vtkActor> actor;

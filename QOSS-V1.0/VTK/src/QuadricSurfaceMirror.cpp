@@ -11,6 +11,8 @@
 
 #include <vtkBooleanOperationPolyDataFilter.h>
 
+#include "../util/comUtil.h"
+
 QuadricSurfaceMirror::QuadricSurfaceMirror()
 {
 }
@@ -130,6 +132,24 @@ double QuadricSurfaceMirror::calcZ(double x, double y)
 			return res1;
 	}
 	return res;
+}
+
+Json::Value QuadricSurfaceMirror::getDataJson(const string& dir, int index) const
+{
+	Json::Value js;
+	js["type"] = type;
+
+	for (const auto &x : data)
+	{
+		js["Data"].append(x);
+	}
+	js["isTransparent"] = isTransparent;
+	js["isShow"] = isShow;
+	Json::Value jsGraphTrans;
+	packGraphTransToJson(graphTrans, jsGraphTrans);
+	js["graphTrans"] = jsGraphTrans;
+
+	return js;
 }
 
 void QuadricSurfaceMirror::calcRestriction()

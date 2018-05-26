@@ -116,7 +116,13 @@ namespace calculation
 		void GetHZ(vector <vector <complex <double>>> &HZ0);//输出HZ
 
 		double getRadius() const { return Radius; }
-		
+
+		int getSourceKind() { return SourceKind; }
+		int getSourceType() { return SourceType; }
+		int getRotation() { return Rotation; }
+		int getM() { return m; }
+		int getN() { return n; }
+		double getRadius() { return Radius; }
 	private:
 
 		int SourceKind;//这是种类，1是低阶TE模式；2是高阶TE模式；3是矩形波导模式
