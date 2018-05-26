@@ -15,6 +15,7 @@
 #include <vtkProperty.h>
 #include <QTreeWidgetItem>
 #include <QString>
+#include <vtkjsoncpp/json/json.h>
 
 class Restriction : public BasicParameters
 {
@@ -42,6 +43,8 @@ public:
 	void calActor();
 
 	void setDataByNum(int, double);
+
+	Json::Value getDataJson() const;
 
 private:
 

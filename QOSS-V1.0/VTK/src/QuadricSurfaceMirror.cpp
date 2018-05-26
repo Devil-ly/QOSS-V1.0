@@ -149,6 +149,12 @@ Json::Value QuadricSurfaceMirror::getDataJson(const string& dir, int index) cons
 	packGraphTransToJson(graphTrans, jsGraphTrans);
 	js["graphTrans"] = jsGraphTrans;
 
+	js["restrictionNum"] = restrictions.size();
+	for (const auto &x : restrictions)
+	{
+		js["restriction"].append(x->getDataJson());
+	}
+
 	return js;
 }
 

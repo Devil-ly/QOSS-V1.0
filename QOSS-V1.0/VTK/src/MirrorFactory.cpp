@@ -6,6 +6,7 @@
 #include "../include/Ellipsoid.h"
 #include "../include/STLMirror.h"
 #include "../include/PhsCorMirror.h"
+#include "../include/Restriction.h"
 
 #include "util/comUtil.h"
 
@@ -134,11 +135,37 @@ Mirror * MirrorFactory::getMirrorByJson(const Json::Value & js)
 	default:
 		break;
 	}
+	if (js.isMember("restrictionNum"))
+	{
+		int size = js["restrictionNum"].asInt();
+		for (int i = 0; i < size; i++)
+		{
+			const Json::Value & jsRes = js["restriction"][i];
+			if (!jsRes.isMember("Data") ||
+				!jsRes.isMember("graphTrans"))
+			{
+				break;
+			}
+
+			std::vector<double> parameterRes(jsRes["Data"].size());
+			for (int i = 0; i < jsRes["Data"].size(); i++)
+			{
+				parameterRes[i] = jsRes["Data"][i].asDouble();
+			}
+
+			GraphTrans graphTransRes;
+			if (!parseJsonToGraphTrans(jsRes["graphTrans"], graphTransRes))
+				return nullptr;
+			Restriction * restriction = new Restriction(graphTransRes, parameterRes);
+			res->addRestriction(restriction);
+		}
+		
+	}
 	if (res)
 	{
 		if (!js["isShow"].asBool())
 			res->switchIsShow();
-		if (!js["isTransparent"].asBool())
+		if (js["isTransparent"].asBool())
 			res->switchIsTransparent();
 			
 	}

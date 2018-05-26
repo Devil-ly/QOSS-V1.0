@@ -437,7 +437,6 @@ int MyData::open(const string & dir)
 		return -1;
 	}
 
-
 	// baseInfo
 	if (!js.isMember("baseInfo"))
 	{

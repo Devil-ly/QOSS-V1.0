@@ -1,8 +1,8 @@
 #include "Correlation_Coefficient.h"
 
 void Correlation_Coefficient_Omega(double frequency0, double ds, int N0,
-	vector <vector <complex<double>>> EX,
-	vector <vector <complex<double>>> EY,
+	const vector <vector <complex<double>>> &EX,
+	const vector <vector <complex<double>>> &EY,
 	int &index, int &MaxE_i, int &MaxE_j, double &W0)
 {
 	double MaxEX = 0;//≥ı ºªØ
@@ -113,8 +113,8 @@ void Correlation_Coefficient_Omega(double frequency0, double ds, int N0,
 
 
 double Scalar_Correlation_Coefficient(double frequency0, double ds, int N0,
-	vector <vector <complex<double>>> EX,
-	vector <vector <complex<double>>> EY) 
+	const vector <vector <complex<double>>> &EX,
+	const vector <vector <complex<double>>> &EY)
 {
 	int index0 = 0; int MaxE_i0 = 0; int MaxE_j0 = 0; double w0 = 0;
 	Correlation_Coefficient_Omega(frequency0, ds, N0, EX, EY,
@@ -166,8 +166,8 @@ double Scalar_Correlation_Coefficient(double frequency0, double ds, int N0,
 
 
 double Vector_Correlation_Coefficient(double frequency0, double ds, int N0,
-	vector <vector <complex<double>>> EX,
-	vector <vector <complex<double>>> EY)
+	const vector <vector <complex<double>>> &EX,
+	const vector <vector <complex<double>>> &EY)
 {
 	int index0 = 0; int MaxE_i0 = 0; int MaxE_j0 = 0; double w0 = 0;
 	Correlation_Coefficient_Omega(frequency0, ds, N0, EX, EY,
@@ -222,8 +222,8 @@ double Vector_Correlation_Coefficient(double frequency0, double ds, int N0,
 
 
 double Scalar_Correlation_Coefficient_TargetW0(double frequency0, double ds, int N0,
-	vector <vector <complex<double>>> EX,
-	vector <vector <complex<double>>> EY,
+	const vector <vector <complex<double>>> &EX,
+	const vector <vector <complex<double>>> &EY,
 	double Target_W0)
 {
 	int index0 = 0; int MaxE_i0 = 0; int MaxE_j0 = 0; double w0 = 0;
@@ -276,8 +276,8 @@ double Scalar_Correlation_Coefficient_TargetW0(double frequency0, double ds, int
 
 
 double Vector_Correlation_Coefficient_TargetW0(double frequency0, double ds, int N0,
-	vector <vector <complex<double>>> EX,
-	vector <vector <complex<double>>> EY,
+	const vector <vector <complex<double>>> &EX,
+	const vector <vector <complex<double>>> &EY,
 	double Target_W0)
 {
 	int index0 = 0; int MaxE_i0 = 0; int MaxE_j0 = 0; double w0 = 0;

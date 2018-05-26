@@ -5,6 +5,7 @@
 #include <vtkTransformPolyDataFilter.h>
 #include <vtkTriangleFilter.h>
 #include <vtkPolyDataMapper.h>
+#include "util/comUtil.h"
 
 Restriction::Restriction()
 {
@@ -162,4 +163,19 @@ void Restriction::setDataByNum(int index, double var)
 {
 	data[index] = var;
 	updateData();
+}
+
+Json::Value Restriction::getDataJson() const
+{
+	Json::Value js;
+	for (const auto &x : data)
+	{
+		js["Data"].append(x);
+	}
+
+	Json::Value jsGraphTrans;
+	packGraphTransToJson(graphTrans, jsGraphTrans);
+	js["graphTrans"] = jsGraphTrans;
+
+	return js;
 }
