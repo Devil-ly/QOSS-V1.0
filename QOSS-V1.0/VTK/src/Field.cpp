@@ -22,6 +22,8 @@
 #include <QCoreApplication>
 #include <QTimer>
 
+#include "../util/Definition.h"
+
 Field::Field()
 {
 	init();
@@ -357,14 +359,9 @@ void Field::calActor()
 					temp.imag() * temp.imag()), 0.5);
 			if (!isLinear && !isPhs)
 			{
-				if(tempD = 0)
-					tempD = -40;
-				else
-				{
-					tempD = 20 * log(tempD);
-					if (-40 > tempD)
-						tempD = -40;
-				}
+				tempD = 20 * log(tempD + 0.000000001);
+				if (min > tempD)
+					min = tempD;
 				if (max < tempD)
 					max = tempD;
 			}
@@ -382,7 +379,7 @@ void Field::calActor()
 	vtkSmartPointer<vtkLookupTable> colorTable =
 		vtkSmartPointer<vtkLookupTable>::New();
 	if (!isLinear && !isPhs)
-		min = -40;
+		min = max - dB_RABNGE;
 	if (!isPhs)
 	{
 		for (int i = 0; i<N_width * M_depth * 1; i++, ptr++)

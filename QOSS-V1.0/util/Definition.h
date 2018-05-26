@@ -6,3 +6,4 @@
 #define THRESHOLD 1e-8
 
 const bool IS_USE_CUDE = true;
+const double dB_RABNGE = 60;
